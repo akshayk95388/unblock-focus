@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;500;700;900&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-high": "#2a2a2b",
+                    "on-tertiary-fixed-variant": "#004e60",
+                    "surface-container": "#201f20",
+                    "on-secondary": "#25217e",
+                    "primary-container": "#ff823c",
+                    "tertiary": "#4cd6fd",
+                    "secondary-container": "#3f3d98",
+                    "outline": "#a68b7f",
+                    "surface-container-highest": "#353436",
+                    "on-tertiary-fixed": "#001f28",
+                    "on-tertiary": "#003543",
+                    "secondary-fixed-dim": "#c2c1ff",
+                    "on-surface": "#e5e2e3",
+                    "secondary": "#c2c1ff",
+                    "on-tertiary-container": "#004150",
+                    "surface-bright": "#39393a",
+                    "error": "#ffb4ab",
+                    "surface-tint": "#ffb692",
+                    "on-error-container": "#ffdad6",
+                    "error-container": "#93000a",
+                    "inverse-on-surface": "#313031",
+                    "secondary-fixed": "#e2dfff",
+                    "surface-variant": "#353436",
+                    "on-primary-fixed": "#341100",
+                    "on-secondary-fixed": "#0d006a",
+                    "on-secondary-container": "#b2b1ff",
+                    "primary": "#ffb692",
+                    "outline-variant": "#574238",
+                    "tertiary-container": "#00b4da",
+                    "on-background": "#e5e2e3",
+                    "on-primary-container": "#662800",
+                    "on-surface-variant": "#dec0b3",
+                    "inverse-surface": "#e5e2e3",
+                    "tertiary-fixed-dim": "#4cd6fd",
+                    "surface-container-lowest": "#0e0e0f",
+                    "background": "#131314",
+                    "on-error": "#690005",
+                    "on-primary": "#562000",
+                    "inverse-primary": "#9f4200",
+                    "surface-dim": "#131314",
+                    "on-secondary-fixed-variant": "#3d3a95",
+                    "on-primary-fixed-variant": "#793000",
+                    "surface": "#131314",
+                    "tertiary-fixed": "#b5ebff",
+                    "primary-fixed": "#ffdbcb",
+                    "surface-container-low": "#1c1b1c",
+                    "primary-fixed-dim": "#ffb692"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .timer-ring {
+            transition: stroke-dashoffset 1s linear;
+        }
+        .deep-glow {
+            box-shadow: 0 0 60px -15px rgba(255, 130, 60, 0.15);
+        }
+        .glass-panel {
+            background: rgba(28, 27, 28, 0.4);
+            backdrop-filter: blur(24px);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body overflow-hidden min-h-screen">
+<!-- Top Navigation Anchor (from JSON) -->
+<nav class="fixed top-0 left-0 w-full z-50 bg-transparent backdrop-blur-xl flex justify-between items-center px-8 py-6 max-w-screen-2xl mx-auto">
+<div class="text-2xl font-black tracking-tighter text-[#FF823C] font-headline">Unblock</div>
+<div class="flex items-center gap-6">
+<button class="text-gray-400 hover:text-[#FF823C] transition-colors"><span class="material-symbols-outlined">local_fire_department</span></button>
+<button class="text-gray-400 hover:text-[#FF823C] transition-colors"><span class="material-symbols-outlined">account_circle</span></button>
+</div>
+</nav>
+<!-- Main Focused Sanctuary Content -->
+<main class="relative min-h-screen flex flex-col items-center justify-center px-6">
+<!-- Ambient Background Glow -->
+<div class="absolute inset-0 pointer-events-none overflow-hidden">
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary-container/5 rounded-full blur-[120px]"></div>
+<div class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-secondary-container/10 rounded-full blur-[100px]"></div>
+</div>
+<!-- Intent Display (Editorial Impact) -->
+<div class="z-10 mb-12 text-center">
+<span class="label-sm uppercase tracking-[0.2em] text-primary mb-4 block font-medium opacity-80">Current Objective</span>
+<h1 class="text-4xl md:text-5xl font-black tracking-tight max-w-2xl mx-auto text-on-surface leading-tight">
+                Finish the Project Architecture
+            </h1>
+</div>
+<!-- Signature Deep Work Timer Component -->
+<div class="relative z-10 group">
+<!-- Progress Ring -->
+<div class="relative flex items-center justify-center w-[340px] h-[340px] md:w-[420px] md:h-[420px]">
+<svg class="absolute w-full h-full transform -rotate-90">
+<circle class="text-surface-container-highest" cx="50%" cy="50%" fill="transparent" r="48%" stroke="currentColor" stroke-width="2"></circle>
+<circle class="timer-ring" cx="50%" cy="50%" fill="transparent" r="48%" stroke="url(#sunset-gradient)" stroke-dasharray="1000" stroke-dashoffset="200" stroke-linecap="round" stroke-width="6"></circle>
+<defs>
+<lineargradient id="sunset-gradient" x1="0%" x2="100%" y1="0%" y2="100%">
+<stop offset="0%" style="stop-color:#FF823C"></stop>
+<stop offset="100%" style="stop-color:#3f3d98"></stop>
+</lineargradient>
+</defs>
+</svg>
+<!-- Timer Display -->
+<div class="glass-panel w-[280px] h-[280px] md:w-[340px] md:h-[340px] rounded-full flex flex-col items-center justify-center deep-glow border border-white/5">
+<div class="text-[5.5rem] md:text-[7.5rem] font-black tracking-tighter text-[#FF823C] leading-none mb-2">
+                        05:00
+                    </div>
+<div class="text-xs uppercase tracking-[0.3em] font-bold text-on-surface/40">
+                        Minutes Remaining
+                    </div>
+</div>
+</div>
+</div>
+<!-- Ambient Audio Controls (Floating Player) -->
+<div class="z-20 mt-16 glass-panel px-8 py-4 rounded-full flex items-center gap-8 border border-white/5">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Close up of vintage radio knobs and golden analog textures with soft focus studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAA1m-FYgFjpMNwV5va0ZnNrn6pNHIvOZ-L_l_KP9UqCK3UVdsBwGPa8rJL3ng_eiYbZoY8R6fe44wLp2LZfcbVubMrxYMlZg196MC6DoNkoYVTY-4E-yxskalMYpvVXjLWGvMjOotpwsf7r7hS4gZp_uyE_A-EShDJgyssLG5-NKRrahJt4F6Z9SIIlM2iUitxSVZ_Wvmb7QHVHYu3b6HhMS4vhvNUPfuKlgQ18FkxndpyBOMHpKBeZnQJ0r5BAcw7G8c9lukaZDxt"/>
+</div>
+<div>
+<div class="text-[10px] uppercase tracking-widest text-on-surface/40 font-bold mb-0.5">Atmosphere</div>
+<div class="text-sm font-semibold text-on-surface">Brown Noise</div>
+</div>
+</div>
+<div class="h-6 w-[1px] bg-white/10"></div>
+<div class="flex items-center gap-6">
+<button class="text-on-surface/60 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">skip_previous</span>
+</button>
+<button class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-on-primary-container active:scale-90 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">pause</span>
+</button>
+<button class="text-on-surface/60 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">skip_next</span>
+</button>
+</div>
+<div class="h-6 w-[1px] bg-white/10"></div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-on-surface/40">volume_up</span>
+<div class="w-24 h-1 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="w-2/3 h-full bg-primary/60"></div>
+</div>
+</div>
+</div>
+<!-- Exit Button (The Quit Trap) -->
+<div class="z-10 mt-12 group relative">
+<button class="px-8 py-3 rounded-full text-sm font-medium text-on-surface/30 hover:text-on-surface/80 hover:bg-surface-container-low transition-all duration-300">
+                End Focus Session
+            </button>
+<!-- Subtle Tooltip for 'Quit Trap' -->
+<div class="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-48 text-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+<p class="text-[10px] uppercase tracking-tighter text-error leading-relaxed">
+                    Leaving now will reset your <br/>momentum streak.
+                </p>
+</div>
+</div>
+</main>
+<!-- Side Navigation (from JSON) - Tablet/Desktop -->
+<aside class="fixed left-0 top-0 h-full w-64 flex flex-col p-6 z-40 hidden md:flex bg-[#1c1b1c]/40 backdrop-blur-2xl rounded-r-[2rem] my-4 shadow-[40px_0_60px_-15px_rgba(255,130,60,0.08)]">
+<div class="mb-12">
+<div class="text-xl font-bold text-[#FF823C] mb-1">Unblock</div>
+<div class="text-[10px] uppercase tracking-[0.1em] text-gray-500 font-headline">Deep Work Mode</div>
+</div>
+<nav class="flex-1 flex flex-col gap-8">
+<div class="flex items-center gap-4 text-[#FF823C] border-r-2 border-[#FF823C] pr-4 cursor-pointer translate-x-1 transition-all">
+<span class="material-symbols-outlined">target</span>
+<span class="font-headline uppercase tracking-[0.1em] text-[10px] font-bold">Focus</span>
+</div>
+<div class="flex items-center gap-4 text-gray-500 hover:text-gray-300 pr-4 cursor-pointer hover:bg-[#353436]/50 transition-all rounded-lg p-2">
+<span class="material-symbols-outlined">leaderboard</span>
+<span class="font-headline uppercase tracking-[0.1em] text-[10px]">Stats</span>
+</div>
+<div class="flex items-center gap-4 text-gray-500 hover:text-gray-300 pr-4 cursor-pointer hover:bg-[#353436]/50 transition-all rounded-lg p-2">
+<span class="material-symbols-outlined">graphic_eq</span>
+<span class="font-headline uppercase tracking-[0.1em] text-[10px]">Sounds</span>
+</div>
+</nav>
+<div class="mt-auto">
+<div class="flex items-center gap-3 mb-6 p-3 bg-surface-container rounded-xl">
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-highest">
+<img class="w-full h-full object-cover" data-alt="User profile portrait of a professional in a minimalist creative studio environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBVlVZzVhtnIR-BlpCsWymelo3DOukuZRjIUJim0CkaGNYCGDeOqFCONbR7t9h3MYJAhyrO3oaSuokCKq08P3drCh78ezZx1wz75jKD4Pngy4JfOEKU12wuXKDELHMCmwBE_YE1InpkSaPPm_gYTmo8DPVjSeonMMQS06e4uvbcoWzqYZc4u8IMtcNkiMI6h4alv8GOy_ihuvf1X5TBkO7hxQsE_1ZRsdngwibU8-wP_UtwWPgLHiscAsZSUaEXt9Kfsp6W3LD6aLuD"/>
+</div>
+<div class="flex-1 overflow-hidden">
+<div class="text-[10px] font-bold truncate">ALEX R.</div>
+<div class="text-[8px] text-primary">FLOW LEVEL 4</div>
+</div>
+</div>
+<button class="w-full py-4 bg-primary-container text-on-primary-container rounded-full text-[10px] font-bold uppercase tracking-widest hover:scale-[1.02] transition-transform">
+                Start Session
+            </button>
+</div>
+</aside>
+<!-- Bottom Navigation (from JSON) - Mobile -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-6 pb-8 pt-4 md:hidden bg-[#131314]/60 backdrop-blur-3xl rounded-t-[2rem] bg-gradient-to-t from-[#131314] shadow-[0_-10px_40px_rgba(255,130,60,0.05)]">
+<div class="flex flex-col items-center justify-center bg-[#FF823C] text-black rounded-full w-12 h-12 mb-2 scale-90 duration-150">
+<span class="material-symbols-outlined">adjust</span>
+<span class="font-['Inter'] font-medium text-[11px] hidden">Focus</span>
+</div>
+<div class="flex flex-col items-center justify-center text-gray-500 hover:text-[#FF823C] transition-all">
+<span class="material-symbols-outlined">library_music</span>
+<span class="font-['Inter'] font-medium text-[11px]">Library</span>
+</div>
+<div class="flex flex-col items-center justify-center text-gray-500 hover:text-[#FF823C] transition-all">
+<span class="material-symbols-outlined">bar_chart</span>
+<span class="font-['Inter'] font-medium text-[11px]">Progress</span>
+</div>
+</nav>
+</body></html>

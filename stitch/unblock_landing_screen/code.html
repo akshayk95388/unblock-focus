@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-high": "#2a2a2b",
+                    "on-tertiary-fixed-variant": "#004e60",
+                    "surface-container": "#201f20",
+                    "on-secondary": "#25217e",
+                    "primary-container": "#ff823c",
+                    "tertiary": "#4cd6fd",
+                    "secondary-container": "#3f3d98",
+                    "outline": "#a68b7f",
+                    "surface-container-highest": "#353436",
+                    "on-tertiary-fixed": "#001f28",
+                    "on-tertiary": "#003543",
+                    "secondary-fixed-dim": "#c2c1ff",
+                    "on-surface": "#e5e2e3",
+                    "secondary": "#c2c1ff",
+                    "on-tertiary-container": "#004150",
+                    "surface-bright": "#39393a",
+                    "error": "#ffb4ab",
+                    "surface-tint": "#ffb692",
+                    "on-error-container": "#ffdad6",
+                    "error-container": "#93000a",
+                    "inverse-on-surface": "#313031",
+                    "secondary-fixed": "#e2dfff",
+                    "surface-variant": "#353436",
+                    "on-primary-fixed": "#341100",
+                    "on-secondary-fixed": "#0d006a",
+                    "on-secondary-container": "#b2b1ff",
+                    "primary": "#ffb692",
+                    "outline-variant": "#574238",
+                    "tertiary-container": "#00b4da",
+                    "on-background": "#e5e2e3",
+                    "on-primary-container": "#662800",
+                    "on-surface-variant": "#dec0b3",
+                    "inverse-surface": "#e5e2e3",
+                    "tertiary-fixed-dim": "#4cd6fd",
+                    "surface-container-lowest": "#0e0e0f",
+                    "background": "#131314",
+                    "on-error": "#690005",
+                    "on-primary": "#562000",
+                    "inverse-primary": "#9f4200",
+                    "surface-dim": "#131314",
+                    "on-secondary-fixed-variant": "#3d3a95",
+                    "on-primary-fixed-variant": "#793000",
+                    "surface": "#131314",
+                    "tertiary-fixed": "#b5ebff",
+                    "primary-fixed": "#ffdbcb",
+                    "surface-container-low": "#1c1b1c",
+                    "primary-fixed-dim": "#ffb692"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #131314;
+            color: #e5e2e3;
+            font-family: 'Inter', sans-serif;
+        }
+        .glow-shadow {
+            box-shadow: 0 10px 40px -10px rgba(255, 130, 60, 0.4);
+        }
+        .ambient-glow {
+            background: radial-gradient(circle at center, rgba(255, 130, 60, 0.05) 0%, transparent 70%);
+        }
+        .glass-card {
+            background: rgba(53, 52, 54, 0.4);
+            backdrop-filter: blur(24px);
+        }
+    </style>
+</head>
+<body class="selection:bg-primary-container selection:text-on-primary-container">
+<!-- Top Navigation -->
+<nav class="fixed top-0 z-50 w-full bg-transparent backdrop-blur-xl">
+<div class="flex justify-between items-center px-8 py-6 w-full max-w-screen-2xl mx-auto">
+<div class="text-2xl font-black tracking-tighter text-[#FF823C] font-['Inter']">Unblock</div>
+<div class="flex items-center gap-6">
+<span class="material-symbols-outlined text-gray-400 hover:text-[#FF823C] transition-colors cursor-pointer">local_fire_department</span>
+<span class="material-symbols-outlined text-gray-400 hover:text-[#FF823C] transition-colors cursor-pointer">account_circle</span>
+</div>
+</div>
+</nav>
+<main class="relative min-h-screen pt-32 pb-24 overflow-hidden">
+<!-- Ambient Background Decoration -->
+<div class="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] ambient-glow rounded-full pointer-events-none"></div>
+<div class="absolute bottom-[-10%] left-[-5%] w-[800px] h-[800px] bg-secondary-container/5 rounded-full blur-[120px] pointer-events-none"></div>
+<!-- Hero Section -->
+<section class="max-w-screen-2xl mx-auto px-8 md:px-20 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+<div class="lg:col-span-7 flex flex-col items-start">
+<div class="mb-6 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-surface-container-high border border-outline-variant/10">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="text-[10px] uppercase tracking-[0.2em] font-medium text-on-surface-variant">System Active: Sanctuary Mode</span>
+</div>
+<h1 class="text-6xl md:text-8xl font-black tracking-tighter mb-8 leading-[0.9] text-on-surface">
+                    Unblock <br/>
+<span class="text-primary-container">My Focus</span>
+</h1>
+<p class="text-xl md:text-2xl text-on-surface-variant max-w-xl mb-12 font-light leading-relaxed">
+                    Break the doomscrolling loop and start your deep work in 60 seconds. Our intervention protocol rewire your immediate impulse into sustained flow.
+                </p>
+<div class="flex flex-col sm:flex-row items-center gap-6 w-full sm:w-auto">
+<button class="w-full sm:w-auto px-10 py-6 bg-primary-container text-on-primary-container rounded-full font-bold text-lg hover:scale-[1.02] active:scale-95 transition-all glow-shadow">
+                        Unblock My Focus
+                    </button>
+<button class="w-full sm:w-auto px-10 py-6 bg-surface-container-highest text-on-surface rounded-full font-medium text-lg hover:bg-surface-variant transition-all">
+                        Why it works
+                    </button>
+</div>
+<div class="mt-16 flex items-center gap-8 opacity-50">
+<div class="flex flex-col">
+<span class="text-2xl font-bold">12k+</span>
+<span class="text-[10px] uppercase tracking-widest">Active Flows</span>
+</div>
+<div class="w-px h-8 bg-outline-variant/30"></div>
+<div class="flex flex-col">
+<span class="text-2xl font-bold">98%</span>
+<span class="text-[10px] uppercase tracking-widest">Recovery Rate</span>
+</div>
+</div>
+</div>
+<!-- Visual Intervention Element (Bento-style Glass Card) -->
+<div class="lg:col-span-5 relative">
+<div class="glass-card p-8 rounded-xl border border-outline-variant/10 shadow-2xl relative z-10 overflow-hidden">
+<div class="flex justify-between items-center mb-12">
+<div class="flex gap-1.5">
+<div class="w-3 h-3 rounded-full bg-error/40"></div>
+<div class="w-3 h-3 rounded-full bg-primary/40"></div>
+<div class="w-3 h-3 rounded-full bg-tertiary/40"></div>
+</div>
+<span class="text-xs font-mono text-outline">SESSION_01</span>
+</div>
+<!-- Signature Timer Component -->
+<div class="relative flex items-center justify-center py-12">
+<svg class="w-64 h-64 -rotate-90">
+<circle class="text-surface-container-highest" cx="128" cy="128" fill="transparent" r="120" stroke="currentColor" stroke-width="2"></circle>
+<circle cx="128" cy="128" fill="transparent" r="120" stroke="url(#paint0_linear)" stroke-dasharray="753.6" stroke-dashoffset="188.4" stroke-linecap="round" stroke-width="4"></circle>
+<defs>
+<lineargradient gradientunits="userSpaceOnUse" id="paint0_linear" x1="0" x2="256" y1="0" y2="256">
+<stop stop-color="#FF823C"></stop>
+<stop offset="1" stop-color="#3f3d98"></stop>
+</lineargradient>
+</defs>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-6xl font-black tracking-tighter text-on-surface">60</span>
+<span class="text-[10px] uppercase tracking-widest text-primary-container font-bold">Seconds to Flow</span>
+</div>
+</div>
+<div class="mt-8 space-y-4">
+<div class="h-2 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary-container w-3/4"></div>
+</div>
+<div class="flex justify-between text-[10px] uppercase tracking-widest text-on-surface-variant font-medium">
+<span>Breathing Protocol</span>
+<span>75% Complete</span>
+</div>
+</div>
+</div>
+<!-- Decorative Layer -->
+<div class="absolute -top-10 -right-10 w-40 h-40 bg-primary/20 blur-[60px] rounded-full"></div>
+<div class="absolute -bottom-10 -left-10 w-60 h-60 bg-secondary/10 blur-[80px] rounded-full"></div>
+</div>
+</section>
+<!-- Features Grid / Bento Section -->
+<section class="max-w-screen-2xl mx-auto px-8 md:px-20 mt-32">
+<h2 class="text-3xl font-bold tracking-tight mb-16 text-center lg:text-left">The Deep Work Protocol</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Bento Item 1 -->
+<div class="md:col-span-2 bg-surface-container-low p-10 rounded-lg group hover:bg-surface-container transition-all cursor-default relative overflow-hidden">
+<div class="relative z-10">
+<span class="material-symbols-outlined text-primary-container text-4xl mb-6">air</span>
+<h3 class="text-2xl font-bold mb-4">The 60s Breathing Intervention</h3>
+<p class="text-on-surface-variant leading-relaxed max-w-md">Our algorithm detects high-dopamine loops and triggers a physiological reset. 60 seconds of box breathing to lower your heart rate and reclaim your prefrontal cortex.</p>
+</div>
+<div class="absolute right-[-10%] bottom-[-20%] w-64 h-64 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-all"></div>
+</div>
+<!-- Bento Item 2 -->
+<div class="bg-surface-container-high p-10 rounded-lg border border-outline-variant/10 flex flex-col justify-between">
+<div>
+<span class="material-symbols-outlined text-secondary text-4xl mb-6">bolt</span>
+<h3 class="text-xl font-bold mb-4">5-Min Jumpstart</h3>
+</div>
+<p class="text-sm text-on-surface-variant leading-relaxed mb-6">Can't commit to an hour? Start with a non-negotiable 5-minute micro-sprint. Momentum is the antidote to paralysis.</p>
+<div class="flex -space-x-3">
+<img class="w-10 h-10 rounded-full border-2 border-surface shadow-xl" data-alt="portrait of a focused young professional man in a minimal office setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDNebxKgo61m4c4RlrbWMSYL97kDK143sRtr86663AlK0LWxwqFxPq1ANwZd3XGbZwIhCUlCWf7NIbVF5YcxiH9mPMdX66CJhumEfrhWBm5TViXSsdsRgAZqmRp9QWcIQ42rue9BqMbneMvhwj1rAFy1fIo6ejc_ang8g44B0umUXKRa8aNzv3bpy6kstLX5RSx2kO2HbpvZozuUwErE9jE8FtaqvdGu5F3NuKi0cMvcnFDutuFwtwCPOxjyLv0JY7PBpLWsUfX4mTl"/>
+<img class="w-10 h-10 rounded-full border-2 border-surface shadow-xl" data-alt="portrait of a creative woman looking concentrated with soft dramatic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCN1txFBEAN5gJ4522J-w-cVgXnTU5up2NYCnScFqOClbPOxsyM4t0ps7DXSVTE9Q6RAugzD1nBQc0pVMsch_F3wRL9j2zy0T6mP5e6izLQWwtFuCvzirc3Th9EQJ3LhCkNwiIu2hmKxfhlkeU844gO1CYgmwvceeDttsjTW2zMgpjSUfPAF_fKTA52lygfqbieeMWFMF3UMS26kgcYYzS4pRQUm4sJ7rvuSddCXUIMb8wlQLrQ5GnJZWfHllnq2yc38Ph1yXzlR3mP"/>
+<img class="w-10 h-10 rounded-full border-2 border-surface shadow-xl" data-alt="portrait of a person working in a dimly lit modern environment focusing on a screen" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAiZXbXenQQtSzDkT8vmDB8eAOkj8kumBp2097RGU8eC-Qp2SxPOTU_Ljg2F6_5XNaD_1a_YTz33XJY5gexw2TW2ZOw6bLzCWF_hU4BW_zAHL1MKIJgEFTo7pVcHzGxydXwx5gMhx26gRnDsl-louOVZc6IaWAcFTwXyMqhXf-9Sbg71qBvnTrVick-sqKQoBWDnVFBq7uuLmnVE3ekJd57H0OpD0JNGOHjTZ-TqVsIt-wNgKzzb3wsykXzQkDM6hdbAXTmtm6OR2HN"/>
+<div class="w-10 h-10 rounded-full bg-surface-container-highest border-2 border-surface flex items-center justify-center text-[10px] font-bold">+2k</div>
+</div>
+</div>
+<!-- Bento Item 3 -->
+<div class="bg-surface-container-low p-10 rounded-lg flex flex-col items-center text-center justify-center border border-outline-variant/5">
+<span class="material-symbols-outlined text-tertiary text-5xl mb-6">graphic_eq</span>
+<h3 class="text-xl font-bold mb-2">Neural Soundscapes</h3>
+<p class="text-sm text-on-surface-variant">Binaural beats engineered to lock your brain into Theta state.</p>
+</div>
+<!-- Bento Item 4 -->
+<div class="md:col-span-2 relative rounded-lg overflow-hidden group h-64 md:h-auto">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="wide shot of a clean minimal desk with a single laptop and a soft warm lamp glow in a dark room" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkljm3Uv1Bs2ufD_ivJj5pjJKO1J6eA_HMKjuc2U_nPBL56rr20iOaXHpYvKQERJwIOydV6sKGDtXFSv885M_bXq4JUvd25DVBGs6U5RSMfgDwD5qJDfdSIluO7Yb9ilbpcf1ejtRtleCgAswI2gjl1UfJUqtSunLVxx-KqpLJYCunWV-E1SQVwGu_Ucq-r7UZNt69i9dc-yogunhcbNFJbqt7Z4vB1FnUDml9vdQJP6U5oYFsb5nhsEutjU47seJZxwLOTMpd8D1G"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent p-10 flex flex-col justify-end">
+<h3 class="text-2xl font-bold">Deep Work Environment</h3>
+<p class="text-on-surface-variant max-w-sm">Synchronize your smart lighting and workspace devices to Unblock protocols.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- CTA Section -->
+<section class="max-w-screen-xl mx-auto px-8 mt-32 mb-16">
+<div class="bg-surface-container-highest/30 p-12 md:p-24 rounded-xl border border-outline-variant/10 text-center relative overflow-hidden">
+<div class="relative z-10 max-w-2xl mx-auto">
+<h2 class="text-4xl md:text-6xl font-black tracking-tighter mb-8 leading-tight">Ready to reclaim <br/><span class="text-primary-container">your mind?</span></h2>
+<p class="text-on-surface-variant text-lg mb-12">The loop ends here. No complicated setup, just immediate clarity.</p>
+<button class="px-12 py-6 bg-primary-container text-on-primary-container rounded-full font-black text-xl hover:scale-105 transition-transform glow-shadow">
+                        Unblock My Focus
+                    </button>
+<p class="mt-8 text-xs uppercase tracking-[0.3em] text-outline">No account required to start.</p>
+</div>
+<!-- Decorative element -->
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="border-t border-outline-variant/5 py-12">
+<div class="max-w-screen-2xl mx-auto px-8 flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="text-xl font-black tracking-tighter text-[#FF823C]">Unblock</div>
+<div class="flex gap-12 text-[10px] uppercase tracking-[0.2em] font-bold text-outline">
+<a class="hover:text-primary transition-colors" href="#">Privacy</a>
+<a class="hover:text-primary transition-colors" href="#">Protocol</a>
+<a class="hover:text-primary transition-colors" href="#">Science</a>
+<a class="hover:text-primary transition-colors" href="#">Contact</a>
+</div>
+<div class="text-[10px] uppercase tracking-widest text-outline-variant">© 2024 Sanctuary Systems Inc.</div>
+</div>
+</footer>
+<!-- Bottom Nav for Mobile -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-6 pb-8 pt-4 md:hidden bg-[#131314]/60 backdrop-blur-3xl">
+<div class="flex flex-col items-center justify-center bg-[#FF823C] text-black rounded-full w-12 h-12 mb-2">
+<span class="material-symbols-outlined">adjust</span>
+</div>
+<div class="flex flex-col items-center justify-center text-gray-500">
+<span class="material-symbols-outlined">library_music</span>
+<span class="font-['Inter'] font-medium text-[11px]">Library</span>
+</div>
+<div class="flex flex-col items-center justify-center text-gray-500">
+<span class="material-symbols-outlined">bar_chart</span>
+<span class="font-['Inter'] font-medium text-[11px]">Progress</span>
+</div>
+</nav>
+</body></html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;700;900&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-high": "#2a2a2b",
+                        "on-tertiary-fixed-variant": "#004e60",
+                        "surface-container": "#201f20",
+                        "on-secondary": "#25217e",
+                        "primary-container": "#ff823c",
+                        "tertiary": "#4cd6fd",
+                        "secondary-container": "#3f3d98",
+                        "outline": "#a68b7f",
+                        "surface-container-highest": "#353436",
+                        "on-tertiary-fixed": "#001f28",
+                        "on-tertiary": "#003543",
+                        "secondary-fixed-dim": "#c2c1ff",
+                        "on-surface": "#e5e2e3",
+                        "secondary": "#c2c1ff",
+                        "on-tertiary-container": "#004150",
+                        "surface-bright": "#39393a",
+                        "error": "#ffb4ab",
+                        "surface-tint": "#ffb692",
+                        "on-error-container": "#ffdad6",
+                        "error-container": "#93000a",
+                        "inverse-on-surface": "#313031",
+                        "secondary-fixed": "#e2dfff",
+                        "surface-variant": "#353436",
+                        "on-primary-fixed": "#341100",
+                        "on-secondary-fixed": "#0d006a",
+                        "on-secondary-container": "#b2b1ff",
+                        "primary": "#ffb692",
+                        "outline-variant": "#574238",
+                        "tertiary-container": "#00b4da",
+                        "on-background": "#e5e2e3",
+                        "on-primary-container": "#662800",
+                        "on-surface-variant": "#dec0b3",
+                        "inverse-surface": "#e5e2e3",
+                        "tertiary-fixed-dim": "#4cd6fd",
+                        "surface-container-lowest": "#0e0e0f",
+                        "background": "#131314",
+                        "on-error": "#690005",
+                        "on-primary": "#562000",
+                        "inverse-primary": "#9f4200",
+                        "surface-dim": "#131314",
+                        "on-secondary-fixed-variant": "#3d3a95",
+                        "on-primary-fixed-variant": "#793000",
+                        "surface": "#131314",
+                        "tertiary-fixed": "#b5ebff",
+                        "primary-fixed": "#ffdbcb",
+                        "surface-container-low": "#1c1b1c",
+                        "primary-fixed-dim": "#ffb692"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Breathing Animation for the Circle */
+        @keyframes breathe {
+            0%, 100% { transform: scale(0.8); opacity: 0.4; }
+            50% { transform: scale(1.2); opacity: 0.9; }
+        }
+        
+        .breathing-circle {
+            animation: breathe 8s ease-in-out infinite;
+        }
+
+        /* Sync text appearance with breathing */
+        @keyframes textFade {
+            0%, 100% { opacity: 0; transform: translateY(10px); }
+            40%, 60% { opacity: 1; transform: translateY(0px); }
+        }
+
+        .instruction-inhale {
+            animation: textFade 8s ease-in-out infinite;
+            animation-delay: 0s;
+        }
+
+        .instruction-exhale {
+            animation: textFade 8s ease-in-out infinite;
+            animation-delay: 4s;
+        }
+
+        /* Atmospheric Glow Pulse */
+        @keyframes glowPulse {
+            0%, 100% { filter: blur(60px); opacity: 0.15; }
+            50% { filter: blur(100px); opacity: 0.3; }
+        }
+
+        .ambient-glow {
+            animation: glowPulse 8s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body overflow-hidden">
+<!-- SOS Sanctuary Canvas -->
+<main class="relative h-screen w-screen flex flex-col items-center justify-center p-8">
+<!-- Subtle Branding Anchor -->
+<div class="absolute top-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 opacity-40">
+<span class="text-xs font-label tracking-[0.3em] uppercase text-on-surface-variant">Unblock</span>
+<span class="text-[10px] font-label tracking-[0.1em] text-outline">Sanctuary Mode</span>
+</div>
+<!-- Atmospheric Depth Layers -->
+<div class="absolute inset-0 pointer-events-none">
+<!-- Central Primary Glow (Sunset Glow) -->
+<div class="ambient-glow absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary-container rounded-full"></div>
+<!-- Secondary Wash (Indigo Calm) -->
+<div class="absolute bottom-0 left-0 w-full h-[512px] bg-gradient-to-t from-secondary-container/10 to-transparent"></div>
+</div>
+<!-- The Central Breathing Core -->
+<div class="relative flex flex-col items-center justify-center">
+<!-- Signature Component: Breathing Circle (Glassmorphism) -->
+<div class="breathing-circle relative w-72 h-72 md:w-96 md:h-96 rounded-full flex items-center justify-center border border-on-surface-variant/10 shadow-[0_0_80px_rgba(255,130,60,0.1)]">
+<!-- Inner Glass Layer -->
+<div class="absolute inset-0 rounded-full bg-surface-variant/20 backdrop-blur-2xl"></div>
+<!-- Inner Stroke Detail -->
+<div class="absolute inset-4 rounded-full border-[0.5px] border-primary/20"></div>
+<!-- Display Countdown (Microscopic labels + Precision center) -->
+<div class="relative flex flex-col items-center">
+<span class="text-xs font-label tracking-[0.2em] text-on-tertiary-container/60 mb-2">TIME REMAINING</span>
+<span class="text-6xl md:text-8xl font-headline font-thin tracking-tighter text-on-surface">0:60</span>
+</div>
+</div>
+<!-- Synchronized Instructions -->
+<div class="absolute -bottom-24 w-full flex flex-col items-center">
+<div class="instruction-inhale absolute inset-0 flex flex-col items-center">
+<h2 class="text-3xl md:text-5xl font-headline font-light tracking-tight text-primary">Inhale...</h2>
+<p class="text-xs font-label tracking-widest text-outline mt-2 uppercase">Fill your lungs with focus</p>
+</div>
+<!-- Exhale instruction is offset by animation delay -->
+<div class="instruction-exhale absolute inset-0 flex flex-col items-center opacity-0">
+<h2 class="text-3xl md:text-5xl font-headline font-light tracking-tight text-tertiary">Exhale...</h2>
+<p class="text-xs font-label tracking-widest text-outline mt-2 uppercase">Release all visual noise</p>
+</div>
+</div>
+</div>
+<!-- Task-Focused Footer (Minimal) -->
+<div class="absolute bottom-16 flex flex-col items-center gap-6">
+<div class="flex items-center gap-12 text-on-surface-variant/40">
+<div class="flex flex-col items-center gap-2">
+<span class="material-symbols-outlined text-lg" data-icon="air">air</span>
+<span class="text-[9px] font-label tracking-widest uppercase">Deep Rhythm</span>
+</div>
+<div class="w-[1px] h-8 bg-outline-variant/20"></div>
+<div class="flex flex-col items-center gap-2">
+<span class="material-symbols-outlined text-lg" data-icon="notifications_off">notifications_off</span>
+<span class="text-[9px] font-label tracking-widest uppercase">Zero Distraction</span>
+</div>
+</div>
+<!-- Emergency Escape (Subtle Tertiary Action) -->
+<button class="px-6 py-2 rounded-full text-[10px] font-label tracking-[0.2em] uppercase text-outline hover:text-primary transition-all duration-500 border border-outline/10 hover:border-primary/20 backdrop-blur-sm">
+                Exit Sanctuary
+            </button>
+</div>
+<!-- Editorial Metadata (Bottom Right Anchor) -->
+<div class="hidden lg:flex absolute bottom-12 right-12 flex-col items-end opacity-20">
+<span class="text-[10px] font-label tracking-tighter">PHASE: CALIBRATION</span>
+<span class="text-[10px] font-label tracking-tighter">BPM: 6.0 (OPTIMAL)</span>
+</div>
+</main>
+<!-- Noise Texture Overlay (High-end digital feel) -->
+<div class="fixed inset-0 pointer-events-none opacity-[0.03] mix-blend-overlay">
+<svg viewbox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+<filter id="noise">
+<feturbulence basefrequency="0.65" numoctaves="3" stitchtiles="stitch" type="fractalNoise"></feturbulence>
+</filter>
+<rect filter="url(#noise)" height="100%" width="100%"></rect>
+</svg>
+</div>
+</body></html>

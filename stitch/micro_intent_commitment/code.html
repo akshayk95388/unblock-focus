@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-container-high": "#2a2a2b",
+            "on-tertiary-fixed-variant": "#004e60",
+            "surface-container": "#201f20",
+            "on-secondary": "#25217e",
+            "primary-container": "#ff823c",
+            "tertiary": "#4cd6fd",
+            "secondary-container": "#3f3d98",
+            "outline": "#a68b7f",
+            "surface-container-highest": "#353436",
+            "on-tertiary-fixed": "#001f28",
+            "on-tertiary": "#003543",
+            "secondary-fixed-dim": "#c2c1ff",
+            "on-surface": "#e5e2e3",
+            "secondary": "#c2c1ff",
+            "on-tertiary-container": "#004150",
+            "surface-bright": "#39393a",
+            "error": "#ffb4ab",
+            "surface-tint": "#ffb692",
+            "on-error-container": "#ffdad6",
+            "error-container": "#93000a",
+            "inverse-on-surface": "#313031",
+            "secondary-fixed": "#e2dfff",
+            "surface-variant": "#353436",
+            "on-primary-fixed": "#341100",
+            "on-secondary-fixed": "#0d006a",
+            "on-secondary-container": "#b2b1ff",
+            "primary": "#ffb692",
+            "outline-variant": "#574238",
+            "tertiary-container": "#00b4da",
+            "on-background": "#e5e2e3",
+            "on-primary-container": "#662800",
+            "on-surface-variant": "#dec0b3",
+            "inverse-surface": "#e5e2e3",
+            "tertiary-fixed-dim": "#4cd6fd",
+            "surface-container-lowest": "#0e0e0f",
+            "background": "#131314",
+            "on-error": "#690005",
+            "on-primary": "#562000",
+            "inverse-primary": "#9f4200",
+            "surface-dim": "#131314",
+            "on-secondary-fixed-variant": "#3d3a95",
+            "on-primary-fixed-variant": "#793000",
+            "surface": "#131314",
+            "tertiary-fixed": "#b5ebff",
+            "primary-fixed": "#ffdbcb",
+            "surface-container-low": "#1c1b1c",
+            "primary-fixed-dim": "#ffb692"
+          },
+          "borderRadius": {
+            "DEFAULT": "1rem",
+            "lg": "2rem",
+            "xl": "3rem",
+            "full": "9999px"
+          },
+          "fontFamily": {
+            "headline": ["Inter"],
+            "body": ["Inter"],
+            "label": ["Inter"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      background-color: #131314;
+      color: #e5e2e3;
+      font-family: 'Inter', sans-serif;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .asymmetric-glow {
+      background: radial-gradient(circle at 70% 30%, rgba(255, 130, 60, 0.05) 0%, transparent 50%);
+    }
+  </style>
+</head>
+<body class="bg-background min-h-screen overflow-hidden flex flex-col">
+<!-- TopNavBar (Shared Component) -->
+<nav class="bg-transparent backdrop-blur-xl flex justify-between items-center px-8 py-6 w-full max-w-screen-2xl mx-auto fixed top-0 left-0 right-0 z-50">
+<div class="text-2xl font-black tracking-tighter text-[#FF823C] font-['Inter']">Unblock</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="text-[#FF823C] font-bold font-['Inter'] tracking-tight hover:text-[#FF823C] transition-colors" href="#">Focus</a>
+<a class="text-gray-400 font-['Inter'] tracking-tight hover:text-[#FF823C] transition-colors" href="#">Stats</a>
+<a class="text-gray-400 font-['Inter'] tracking-tight hover:text-[#FF823C] transition-colors" href="#">Sounds</a>
+</div>
+<div class="flex items-center gap-6">
+<button class="flex items-center gap-2 text-[#FF823C] bg-primary-container/10 px-4 py-2 rounded-full">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+<span class="text-xs font-bold tracking-widest uppercase">12 DAY STREAK</span>
+</button>
+<div class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors" data-icon="account_circle">account_circle</div>
+</div>
+</nav>
+<!-- SideNavBar (Shared Component - Hidden on Mobile via layout logic) -->
+<aside class="fixed left-0 top-0 h-full w-64 flex-col p-6 z-40 hidden md:flex bg-[#1c1b1c]/40 backdrop-blur-2xl rounded-r-[2rem] h-[calc(100vh-2rem)] my-4 shadow-[40px_0_60px_-15px_rgba(255,130,60,0.08)]">
+<div class="mb-12">
+<div class="text-xl font-bold text-[#FF823C] mb-1">Unblock</div>
+<div class="font-['Inter'] uppercase tracking-[0.1em] text-[10px] text-gray-500">Deep Work Mode</div>
+</div>
+<nav class="flex flex-col gap-8 flex-grow">
+<a class="flex items-center gap-4 text-[#FF823C] border-r-2 border-[#FF823C] pr-4 transition-all duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="target">target</span>
+<span class="font-['Inter'] uppercase tracking-[0.1em] text-[10px]">Focus</span>
+</a>
+<a class="flex items-center gap-4 text-gray-500 hover:text-gray-300 pr-4 transition-all hover:bg-[#353436]/50" href="#">
+<span class="material-symbols-outlined" data-icon="leaderboard">leaderboard</span>
+<span class="font-['Inter'] uppercase tracking-[0.1em] text-[10px]">Stats</span>
+</a>
+<a class="flex items-center gap-4 text-gray-500 hover:text-gray-300 pr-4 transition-all hover:bg-[#353436]/50" href="#">
+<span class="material-symbols-outlined" data-icon="graphic_eq">graphic_eq</span>
+<span class="font-['Inter'] uppercase tracking-[0.1em] text-[10px]">Sounds</span>
+</a>
+</nav>
+<button class="mt-auto bg-primary-container text-on-primary-container rounded-full py-4 font-bold text-xs uppercase tracking-widest active:scale-95 duration-200 shadow-lg shadow-primary-container/20">
+      Start Session
+    </button>
+</aside>
+<!-- Main Intent Canvas -->
+<main class="flex-grow flex flex-col items-center justify-center relative px-6 md:pl-72 asymmetric-glow">
+<!-- Background Depth Element -->
+<div class="absolute inset-0 pointer-events-none overflow-hidden">
+<div class="absolute top-[20%] right-[10%] w-[500px] h-[500px] bg-secondary-container opacity-5 rounded-full blur-[120px]"></div>
+<div class="absolute bottom-[10%] left-[20%] w-[400px] h-[400px] bg-primary-container opacity-[0.03] rounded-full blur-[100px]"></div>
+</div>
+<!-- Editorial Header (Asymmetric) -->
+<div class="w-full max-w-4xl mb-12">
+<span class="font-label text-[0.6875rem] uppercase tracking-[0.2em] text-primary mb-4 block opacity-80">Phase 01: The Intention</span>
+<h1 class="font-headline text-5xl md:text-7xl font-black text-on-surface tracking-[-0.04em] leading-tight max-w-2xl">
+        Clear the noise.<br/>
+        Define the path.
+      </h1>
+</div>
+<!-- Central Focus Input Area -->
+<div class="w-full max-w-4xl relative group">
+<div class="absolute -inset-1 bg-gradient-to-r from-primary-container to-secondary-container rounded-xl blur opacity-10 group-focus-within:opacity-25 transition duration-1000 group-hover:duration-200"></div>
+<div class="relative bg-surface-container-low rounded-xl p-4 md:p-8 flex flex-col md:flex-row items-center gap-6 shadow-2xl">
+<div class="flex-grow w-full">
+<input autofocus="" class="w-full bg-transparent border-none focus:ring-0 text-xl md:text-3xl font-light text-on-surface placeholder:text-surface-container-highest placeholder:italic py-2" placeholder="What is the ONE micro-step you need to do?" type="text"/>
+</div>
+<button class="w-full md:w-auto px-8 py-5 bg-primary-container text-on-primary-container rounded-full font-bold text-sm tracking-tight flex items-center justify-center gap-3 shadow-[0_10px_40px_rgba(255,130,60,0.2)] hover:scale-[1.02] active:scale-95 transition-all">
+          Start Instant Focus
+          <span class="material-symbols-outlined text-xl">arrow_forward</span>
+</button>
+</div>
+<!-- Micro-interaction hint -->
+<div class="mt-6 flex items-center justify-between text-surface-container-highest">
+<div class="flex items-center gap-2">
+<span class="px-2 py-1 bg-surface-container rounded text-[10px] font-mono border border-outline-variant/20 tracking-tighter">ENTER</span>
+<span class="text-[0.6875rem] uppercase tracking-widest font-label">to lock intention</span>
+</div>
+<div class="hidden md:flex items-center gap-4">
+<div class="flex items-center gap-1.5 cursor-pointer hover:text-secondary transition-colors">
+<span class="material-symbols-outlined text-sm">alarm</span>
+<span class="text-[0.6875rem] uppercase tracking-widest font-label">25m default</span>
+</div>
+<div class="flex items-center gap-1.5 cursor-pointer hover:text-secondary transition-colors">
+<span class="material-symbols-outlined text-sm">volume_up</span>
+<span class="text-[0.6875rem] uppercase tracking-widest font-label">Brown Noise</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Suggested Micro-steps (Editorial Grid) -->
+<div class="w-full max-w-4xl mt-24 grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="p-6 rounded-lg bg-surface-container/30 border border-outline-variant/10 hover:border-primary/30 transition-all cursor-pointer group">
+<span class="material-symbols-outlined text-primary mb-4 opacity-50 group-hover:opacity-100 transition-opacity">edit_note</span>
+<p class="text-xs font-label uppercase tracking-widest text-surface-container-highest mb-2">Drafting</p>
+<p class="text-on-surface text-sm font-medium">Outline the first three paragraphs of the project proposal.</p>
+</div>
+<div class="p-6 rounded-lg bg-surface-container/30 border border-outline-variant/10 hover:border-primary/30 transition-all cursor-pointer group">
+<span class="material-symbols-outlined text-primary mb-4 opacity-50 group-hover:opacity-100 transition-opacity">code</span>
+<p class="text-xs font-label uppercase tracking-widest text-surface-container-highest mb-2">Logic</p>
+<p class="text-on-surface text-sm font-medium">Refactor the authentication middleware for the API.</p>
+</div>
+<div class="p-6 rounded-lg bg-surface-container/30 border border-outline-variant/10 hover:border-primary/30 transition-all cursor-pointer group">
+<span class="material-symbols-outlined text-primary mb-4 opacity-50 group-hover:opacity-100 transition-opacity">architecture</span>
+<p class="text-xs font-label uppercase tracking-widest text-surface-container-highest mb-2">Design</p>
+<p class="text-on-surface text-sm font-medium">Review and finalize the typography tokens for the design system.</p>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Shared Component - Mobile Only) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-6 pb-8 pt-4 md:hidden bg-[#131314]/60 backdrop-blur-3xl shadow-[0_-10px_40px_rgba(255,130,60,0.05)] bg-gradient-to-t from-[#131314]">
+<div class="flex flex-col items-center justify-center bg-[#FF823C] text-black rounded-full w-12 h-12 mb-2 active:scale-90 duration-150">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">adjust</span>
+<span class="hidden">Focus</span>
+</div>
+<div class="flex flex-col items-center justify-center text-gray-500 hover:text-[#FF823C] transition-all">
+<span class="material-symbols-outlined" data-icon="library_music">library_music</span>
+<span class="font-['Inter'] font-medium text-[11px]">Library</span>
+</div>
+<div class="flex flex-col items-center justify-center text-gray-500 hover:text-[#FF823C] transition-all">
+<span class="material-symbols-outlined" data-icon="bar_chart">bar_chart</span>
+<span class="font-['Inter'] font-medium text-[11px]">Progress</span>
+</div>
+</nav>
+<!-- Decorative Atmosphere -->
+<div class="fixed bottom-0 right-0 p-8 hidden lg:block opacity-20 hover:opacity-50 transition-opacity">
+<div class="relative w-48 h-48">
+<img class="w-full h-full object-cover rounded-xl filter grayscale contrast-125" data-alt="Abstract architectural minimalist structure with dramatic shadows and warm sunlight hitting a dark grey textured wall" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNkP_u6sUv5vXHvVe5_St2fQxwUGii1mblCsK28_T7uii1WY1FDFvQnogrcmLuxG-EOsLM-aln1uywMcpCS2ObxbkRAgmbFCWiiS-nmAMM-AaP5jrcjfVWLzoQWbQHqNJZOPBMok6Ls9Q92JCD0swqDP7aKsrrvCTtyhL03VLayG0xAhERBBF0Gj37FROVwoziiBPPFA1PxXTx40sJf36rsN_Ku2MtOkezhYgTTqpDc4Sp9gj4nU8Cg2LdQ8qTyvmXyZ8jIWmG8u5S"/>
+<div class="absolute inset-0 bg-primary-container/20 mix-blend-overlay rounded-xl"></div>
+</div>
+</div>
+</body></html>

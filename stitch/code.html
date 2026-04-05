@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Obsidian Ember | Focused Sanctuary</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed": "#ffe171",
+                    "surface-tint": "#ffb692",
+                    "primary-fixed-dim": "#ffb692",
+                    "error-container": "#93000a",
+                    "on-error-container": "#ffdad6",
+                    "secondary-fixed": "#e2dfff",
+                    "tertiary-container": "#c3a300",
+                    "secondary-container": "#3630bf",
+                    "on-surface": "#e5e2e3",
+                    "surface-container-lowest": "#0e0e0f",
+                    "on-tertiary-container": "#473a00",
+                    "on-primary-fixed": "#341100",
+                    "surface-variant": "#353436",
+                    "on-tertiary-fixed-variant": "#554600",
+                    "secondary-fixed-dim": "#c2c1ff",
+                    "primary-fixed": "#ffdbcb",
+                    "on-secondary-container": "#b1b1ff",
+                    "surface-container-low": "#1c1b1c",
+                    "on-secondary": "#1800a7",
+                    "on-secondary-fixed-variant": "#332dbc",
+                    "on-primary-container": "#662800",
+                    "outline-variant": "#574238",
+                    "surface-bright": "#39393a",
+                    "secondary": "#c2c1ff",
+                    "primary-container": "#ff823c",
+                    "on-surface-variant": "#dec0b3",
+                    "on-error": "#690005",
+                    "tertiary-fixed-dim": "#e9c400",
+                    "surface-container-high": "#2a2a2b",
+                    "inverse-on-surface": "#313031",
+                    "tertiary": "#e9c400",
+                    "primary": "#ffb692",
+                    "outline": "#a68b7f",
+                    "on-secondary-fixed": "#0c006b",
+                    "on-primary-fixed-variant": "#793000",
+                    "on-background": "#e5e2e3",
+                    "inverse-primary": "#9f4200",
+                    "error": "#ffb4ab",
+                    "background": "#131314",
+                    "on-primary": "#562000",
+                    "surface-container-highest": "#353436",
+                    "inverse-surface": "#e5e2e3",
+                    "surface": "#131314",
+                    "on-tertiary": "#3b2f00",
+                    "on-tertiary-fixed": "#221b00",
+                    "surface-dim": "#131314",
+                    "surface-container": "#201f20"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glow-button {
+            background: linear-gradient(135deg, #ffb692 0%, #ff823c 100%);
+            box-shadow: 0px 20px 40px rgba(255, 182, 146, 0.08);
+        }
+        .glass-panel {
+            background: rgba(53, 52, 54, 0.4);
+            backdrop-filter: blur(24px);
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex overflow-hidden">
+<!-- SideNavBar Component -->
+<aside class="bg-[#1c1b1c] h-screen w-64 fixed left-0 top-16 flex flex-col gap-6 py-8 px-4 z-20">
+<div class="mb-8 px-4">
+<h2 class="text-[#e5e2e3] font-bold text-lg tracking-tight">The Curator</h2>
+<p class="text-[#dec0b3] text-xs font-medium leading-relaxed opacity-70">Deep Focus Mode</p>
+</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 text-[#e5e2e3] bg-[#353436] rounded-xl px-4 py-3 transition-transform active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-[#FF823C]">grid_view</span>
+<span class="font-['Inter'] text-sm font-medium leading-relaxed">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 text-[#dec0b3] px-4 py-3 hover:bg-[#353436]/50 hover:text-[#e5e2e3] transition-all duration-300" href="#">
+<span class="material-symbols-outlined">check_circle</span>
+<span class="font-['Inter'] text-sm font-medium leading-relaxed">Tasks</span>
+</a>
+<a class="flex items-center gap-3 text-[#dec0b3] px-4 py-3 hover:bg-[#353436]/50 hover:text-[#e5e2e3] transition-all duration-300" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-['Inter'] text-sm font-medium leading-relaxed">History</span>
+</a>
+<a class="flex items-center gap-3 text-[#dec0b3] px-4 py-3 hover:bg-[#353436]/50 hover:text-[#e5e2e3] transition-all duration-300" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-['Inter'] text-sm font-medium leading-relaxed">Settings</span>
+</a>
+</nav>
+<div class="mt-auto px-4">
+<button class="w-full glow-button text-[#341100] font-bold py-3 rounded-xl text-sm transition-all active:opacity-80 active:scale-95">
+                Start Session
+            </button>
+</div>
+</aside>
+<!-- TopNavBar Component -->
+<header class="fixed top-0 left-0 right-0 h-16 bg-[#131314] z-30 flex justify-between items-center px-12 tonal-shift bg-[#1c1b1c]">
+<div class="flex items-center gap-4">
+<span class="text-xl font-bold tracking-tighter text-[#e5e2e3] font-headline">Obsidian Ember</span>
+</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="font-['Inter'] tracking-tight text-sm font-medium text-[#FF823C] border-b-2 border-[#FF823C] pb-1" href="#">Focus</a>
+<a class="font-['Inter'] tracking-tight text-sm font-medium text-[#dec0b3] hover:text-[#e5e2e3] transition-colors duration-300" href="#">Analytics</a>
+<a class="font-['Inter'] tracking-tight text-sm font-medium text-[#dec0b3] hover:text-[#e5e2e3] transition-colors duration-300" href="#">Library</a>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2 px-3 py-1 bg-surface-container-high rounded-full">
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+<span class="text-xs font-bold text-on-surface">3 Day Streak</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-[#dec0b3] cursor-pointer hover:text-[#e5e2e3]">notifications</span>
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center border border-outline/10 overflow-hidden">
+<img alt="Profile" class="w-full h-full object-cover" data-alt="close up professional portrait of a calm focused man with neutral expression in a minimalist dark environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqGxhgdvn8TNzraTSmbWDLo_JV0PUltVTejX37dX_7J5gD02T6PDGMt_USg3OYNmyxdeeDOJkf1iu5UF6FPtEvAjpOIFDEnqNoJuwZBEDID0Tj_s1cD-SsQF9I1XT3eg3zhpuEylKcMq8a97HDgDxNtBa5sUnkDD3pS14WI3DapxCjHaYdqufC5exjnoWeecAq0lX-2JmICp55srsX4YHVS9yHFGdQgJVcGQWVYxjjfOJ_4g4u3hF_8vCCg2wnWGcl8OGlRCU1mAdw"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 mt-16 flex-1 flex overflow-hidden">
+<!-- Dashboard Scrollable Area -->
+<section class="flex-1 overflow-y-auto no-scrollbar p-12 space-y-12">
+<!-- Hero Section -->
+<div class="relative py-12">
+<div class="max-w-2xl">
+<h1 class="text-6xl font-bold tracking-tighter text-on-surface mb-6 leading-tight">Find your rhythm.</h1>
+<p class="text-on-surface-variant text-lg mb-10 max-w-lg leading-relaxed">
+                        The noise of the world is a distraction. The ember within is your focus. Enter the sanctuary of deep work.
+                    </p>
+<div class="flex gap-4">
+<button class="glow-button px-8 py-4 rounded-xl text-[#341100] font-bold transition-all hover:scale-[1.02] active:scale-95">
+                            Start Focus Session
+                        </button>
+<button class="px-8 py-4 rounded-xl border border-outline-variant/30 text-on-surface font-medium hover:bg-surface-container-low transition-all active:scale-95">
+                            I'm Overwhelmed
+                        </button>
+</div>
+</div>
+</div>
+<!-- Performance Metrics Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="bg-surface-container-low p-8 rounded-xl relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl transition-all group-hover:bg-primary/10"></div>
+<p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-4">Focus Streak</p>
+<h3 class="text-4xl font-bold text-on-surface">3 <span class="text-lg font-normal text-on-surface-variant">Days</span></h3>
+<div class="mt-4 flex gap-1">
+<div class="h-1 w-8 bg-primary rounded-full"></div>
+<div class="h-1 w-8 bg-primary rounded-full"></div>
+<div class="h-1 w-8 bg-primary rounded-full"></div>
+<div class="h-1 w-8 bg-surface-container-highest rounded-full"></div>
+<div class="h-1 w-8 bg-surface-container-highest rounded-full"></div>
+</div>
+</div>
+<div class="bg-surface-container-low p-8 rounded-xl group">
+<p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-4">Total Sessions</p>
+<h3 class="text-4xl font-bold text-on-surface">142</h3>
+<p class="text-primary text-xs mt-4 flex items-center gap-1 font-medium">
+<span class="material-symbols-outlined text-xs">trending_up</span> +12% from last week
+                    </p>
+</div>
+<div class="bg-surface-container-low p-8 rounded-xl group">
+<p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-4">Procrastination Beaten</p>
+<h3 class="text-4xl font-bold text-on-surface">82%</h3>
+<div class="w-full bg-surface-container-highest h-1 rounded-full mt-6">
+<div class="bg-primary h-full rounded-full w-[82%] shadow-[0_0_10px_rgba(255,182,146,0.5)]"></div>
+</div>
+</div>
+</div>
+<!-- Today's Schedule -->
+<div class="space-y-6">
+<div class="flex justify-between items-end">
+<h2 class="text-2xl font-bold tracking-tight">Today's Schedule</h2>
+<button class="text-primary text-sm font-medium hover:underline">View Full Calendar</button>
+</div>
+<div class="space-y-4">
+<!-- Task Item -->
+<div class="bg-surface-container-low p-6 rounded-xl flex items-center justify-between group hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-6">
+<div class="text-on-surface-variant font-mono text-sm">09:00</div>
+<div>
+<h4 class="text-on-surface font-semibold">Deep Design Sprint</h4>
+<p class="text-on-surface-variant text-xs mt-1">Obsidian Dashboard Prototypes</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tighter bg-error-container/20 text-error border border-error/20">High Priority</span>
+<span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">more_vert</span>
+</div>
+</div>
+<!-- Task Item -->
+<div class="bg-surface-container-low p-6 rounded-xl flex items-center justify-between group hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-6">
+<div class="text-on-surface-variant font-mono text-sm">11:30</div>
+<div>
+<h4 class="text-on-surface font-semibold">Technical Architecture Review</h4>
+<p class="text-on-surface-variant text-xs mt-1">Database Schema Optimization</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tighter bg-secondary-container/20 text-secondary border border-secondary/20">Planning</span>
+<span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">more_vert</span>
+</div>
+</div>
+<!-- Task Item -->
+<div class="bg-surface-container-low p-6 rounded-xl flex items-center justify-between group hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-6">
+<div class="text-on-surface-variant font-mono text-sm">14:00</div>
+<div>
+<h4 class="text-on-surface font-semibold">Product Sync</h4>
+<p class="text-on-surface-variant text-xs mt-1">Weekly alignment on Ember roadmap</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tighter bg-surface-container-highest text-on-surface-variant border border-outline-variant/20">Low Priority</span>
+<span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">more_vert</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Sidebar (Void State) -->
+<aside class="w-80 bg-surface-container-lowest border-l border-outline-variant/5 p-8 flex flex-col gap-10">
+<div class="glass-panel rounded-3xl p-8 aspect-square flex flex-col items-center justify-center text-center relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-30"></div>
+<div class="relative z-10">
+<p class="text-primary text-xs font-bold uppercase tracking-[0.2em] mb-4">The Void</p>
+<div class="text-5xl font-light tracking-tighter text-on-surface mb-2 font-mono">25:00</div>
+<p class="text-on-surface-variant text-xs font-medium">Focus Timer Ready</p>
+</div>
+<div class="absolute bottom-0 left-0 right-0 h-1 bg-surface-container-highest">
+<div class="h-full bg-primary w-0 group-hover:w-full transition-all duration-[1500s] linear"></div>
+</div>
+</div>
+<div class="space-y-6">
+<h5 class="text-sm font-bold text-on-surface tracking-tight">Daily Goal Progress</h5>
+<div class="space-y-4">
+<div class="flex flex-col gap-2">
+<div class="flex justify-between text-xs font-medium">
+<span class="text-on-surface-variant">Deep Work</span>
+<span class="text-on-surface">4 / 6 hrs</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full w-[66%]"></div>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex justify-between text-xs font-medium">
+<span class="text-on-surface-variant">Meditation</span>
+<span class="text-on-surface">15 / 20 min</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-secondary rounded-full w-[75%]"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-auto bg-surface-container-low/50 p-6 rounded-2xl border border-outline-variant/10">
+<p class="text-[10px] text-primary font-bold uppercase mb-2">Insight</p>
+<p class="text-xs text-on-surface-variant italic leading-relaxed">
+                    "You are most productive between 9 AM and 11 AM. Consider moving your 'Deep Design' block to this window."
+                </p>
+</div>
+</aside>
+</main>
+<!-- Contextual FAB (Suppressed based on logic but included for the 'Primary' screen as requested) -->
+<div class="fixed bottom-10 right-[340px] z-40">
+<button class="w-14 h-14 rounded-full glow-button flex items-center justify-center text-[#341100] transition-transform hover:scale-110 active:scale-90 shadow-2xl">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">add</span>
+</button>
+</div>
+</body></html>
