@@ -6,195 +6,297 @@ interface BreathingProps {
   onComplete: () => void;
 }
 
+type BreathPhase = "inhale" | "hold1" | "exhale" | "hold2";
+type SessionPhase = "ready" | "breathing";
+
+const PHASE_DURATION = 4000; // 4 seconds per phase
+const TOTAL_CYCLES = 4;
+const READY_SECONDS = 3;
+
+const PHASE_LABELS: Record<BreathPhase, string> = {
+  inhale: "Breathe In",
+  hold1: "Hold",
+  exhale: "Breathe Out",
+  hold2: "Hold",
+};
+
+const PHASE_ORDER: BreathPhase[] = ["inhale", "hold1", "exhale", "hold2"];
+
 export default function Breathing({ onComplete }: BreathingProps) {
-  const [secondsLeft, setSecondsLeft] = useState(60);
-  const [breathPhase, setBreathPhase] = useState<"inhale" | "exhale">("inhale");
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const breathIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [sessionPhase, setSessionPhase] = useState<SessionPhase>("ready");
+  const [readyCount, setReadyCount] = useState(READY_SECONDS);
+  const [breathPhase, setBreathPhase] = useState<BreathPhase>("inhale");
+  const [pointerAngle, setPointerAngle] = useState(0);
+  const [totalElapsed, setTotalElapsed] = useState(0);
+
+  const oceanCtxRef = useRef<AudioContext | null>(null);
+  const oceanGainRef = useRef<GainNode | null>(null);
+  const oceanSourceRef = useRef<AudioBufferSourceNode | null>(null);
+  const onCompleteRef = useRef(onComplete);
 
   useEffect(() => {
-    // Countdown timer
-    intervalRef.current = setInterval(() => {
-      setSecondsLeft((prev) => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
+  const animFrameRef = useRef<number>(0);
+  const breathingStartRef = useRef<number>(0);
+
+
+
+  // --- Ocean wave sound (procedural, plays during inhale/exhale, mutes during hold) ---
+  useEffect(() => {
+    if (sessionPhase !== "breathing") return;
+
+    try {
+      const ctx = new AudioContext();
+      oceanCtxRef.current = ctx;
+
+      // Create brown noise buffer
+      const bufferSize = 2 * ctx.sampleRate;
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      let lastOut = 0;
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        data[i] = (lastOut + 0.02 * white) / 1.02;
+        lastOut = data[i];
+        data[i] *= 3.5;
+      }
+
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      source.loop = true;
+      oceanSourceRef.current = source;
+
+      // Lowpass filter for ocean texture
+      const filter = ctx.createBiquadFilter();
+      filter.type = "lowpass";
+      filter.frequency.value = 300;
+      filter.Q.value = 1;
+
+      // Gain node — starts at 0
+      const gain = ctx.createGain();
+      gain.gain.value = 0;
+      oceanGainRef.current = gain;
+
+      source.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+      source.start();
+    } catch {
+      // Web Audio not supported
+    }
+
+    return () => {
+      try {
+        oceanSourceRef.current?.stop();
+      } catch { /* already stopped */ }
+      oceanCtxRef.current?.close();
+      oceanCtxRef.current = null;
+      oceanGainRef.current = null;
+      oceanSourceRef.current = null;
+    };
+  }, [sessionPhase]);
+
+  // --- Fade ocean sound in/out based on breath phase ---
+  useEffect(() => {
+    if (!oceanGainRef.current || !oceanCtxRef.current) return;
+    const gain = oceanGainRef.current;
+    const ctx = oceanCtxRef.current;
+    const now = ctx.currentTime;
+
+    const isMoving = breathPhase === "inhale" || breathPhase === "exhale";
+    gain.gain.cancelScheduledValues(now);
+    gain.gain.setValueAtTime(gain.gain.value, now);
+    gain.gain.linearRampToValueAtTime(isMoving ? 0.08 : 0, now + 0.6);
+  }, [breathPhase]);
+
+  // --- Ready countdown ---
+  useEffect(() => {
+    if (sessionPhase !== "ready") return;
+
+    const interval = setInterval(() => {
+      setReadyCount((prev) => {
         if (prev <= 1) {
-          clearInterval(intervalRef.current!);
-          onComplete();
+          clearInterval(interval);
+          setSessionPhase("breathing");
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
 
-    // Breathing phase toggle every 4 seconds (8s cycle = 4 inhale + 4 exhale)
-    breathIntervalRef.current = setInterval(() => {
-      setBreathPhase((prev) => (prev === "inhale" ? "exhale" : "inhale"));
-    }, 4000);
+    return () => clearInterval(interval);
+  }, [sessionPhase]);
 
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      if (breathIntervalRef.current) clearInterval(breathIntervalRef.current);
+  // --- Breathing animation loop ---
+  useEffect(() => {
+    if (sessionPhase !== "breathing") return;
+
+    breathingStartRef.current = Date.now();
+
+    const tick = () => {
+      const elapsed = Date.now() - breathingStartRef.current;
+      const cycleTime = PHASE_DURATION * 4;
+      const totalTime = cycleTime * TOTAL_CYCLES;
+
+      if (elapsed >= totalTime) {
+        cancelAnimationFrame(animFrameRef.current);
+        setTimeout(() => onCompleteRef.current(), 0);
+        return;
+      }
+
+      setTotalElapsed(elapsed);
+
+      const cycleElapsed = elapsed % cycleTime;
+      const phaseIndex = Math.min(Math.floor(cycleElapsed / PHASE_DURATION), 3);
+      const phaseElapsed = cycleElapsed - phaseIndex * PHASE_DURATION;
+      const phaseProgress = Math.min(phaseElapsed / PHASE_DURATION, 1);
+
+      setBreathPhase(PHASE_ORDER[phaseIndex]);
+
+      let angle = 0;
+      switch (phaseIndex) {
+        case 0: angle = phaseProgress * 180; break;
+        case 1: angle = 180; break;
+        case 2: angle = 180 + phaseProgress * 180; break;
+        case 3: angle = 360; break;
+      }
+
+      setPointerAngle(angle);
+      animFrameRef.current = requestAnimationFrame(tick);
     };
-  }, [onComplete]);
 
-  const minutes = Math.floor(secondsLeft / 60);
-  const secs = secondsLeft % 60;
-  const display = `${minutes}:${secs.toString().padStart(2, "0")}`;
+    animFrameRef.current = requestAnimationFrame(tick);
+
+    return () => cancelAnimationFrame(animFrameRef.current);
+  }, [sessionPhase]);
+
+  const totalProgress = totalElapsed / (PHASE_DURATION * 4 * TOTAL_CYCLES);
+
+  // SVG config — matches Timer's viewBox="0 0 100 100" approach
+  const svgCenter = 50;
+  const ringRadius = 49.85;
+
+  // Pointer position from angle
+  const pointerRad = (pointerAngle - 90) * (Math.PI / 180);
+  const pointerX = svgCenter + ringRadius * Math.cos(pointerRad);
+  const pointerY = svgCenter + ringRadius * Math.sin(pointerRad);
+
+  // Marker dot positions (12 and 6 o'clock)
+  const dot12X = svgCenter;
+  const dot12Y = svgCenter - ringRadius;
+  const dot6X = svgCenter;
+  const dot6Y = svgCenter + ringRadius;
+
+  const ringStroke = "rgba(255, 130, 60, 0.2)"; // border-primary/20 match
 
   return (
-    <main className="relative h-screen w-screen flex flex-col items-center justify-center overflow-hidden select-none">
-      {/* Subtle Branding */}
-      <div className="absolute top-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 opacity-40 z-10">
-        <span className="text-xs tracking-[0.3em] uppercase text-on-surface-variant">
-          Unblock
-        </span>
-        <span className="text-[10px] tracking-[0.1em] text-outline">
-          Sanctuary Mode
-        </span>
-      </div>
-
-      {/* Atmospheric Depth Layers */}
+    <main className="relative h-screen w-screen flex flex-col items-center justify-center overflow-hidden select-none bg-background">
+      {/* Warm amber glow behind circle */}
       <div className="absolute inset-0 pointer-events-none">
-        {/* Central Primary Glow (Sunset Glow) */}
         <div
           className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] md:w-[600px] md:h-[600px] bg-primary-container rounded-full transition-all duration-[4000ms] ease-in-out ${
-            breathPhase === "inhale"
-              ? "scale-110 opacity-30 blur-[100px]"
-              : "scale-75 opacity-15 blur-[60px]"
+            (breathPhase === "inhale" || breathPhase === "hold1")
+              ? "scale-110 opacity-30"
+              : "scale-75 opacity-15"
           }`}
-          style={{ filter: breathPhase === "inhale" ? "blur(100px)" : "blur(60px)" }}
+          style={{ filter: (breathPhase === "inhale" || breathPhase === "hold1") ? "blur(100px)" : "blur(60px)" }}
         />
-        {/* Secondary Wash (Indigo Calm) */}
-        <div className="absolute bottom-0 left-0 w-full h-[512px] bg-gradient-to-t from-secondary-container/10 to-transparent" />
       </div>
 
       {/* The Central Breathing Core */}
       <div className="relative flex flex-col items-center justify-center z-10">
-        {/* Breathing Circle (Glassmorphism) */}
-        <div
-          className={`relative w-72 h-72 md:w-96 md:h-96 rounded-full flex items-center justify-center transition-transform duration-[4000ms] ease-in-out ${
-            breathPhase === "inhale" ? "scale-110" : "scale-90"
+        {/* Outer ring container — breathes with scale animation */}
+        <div 
+          className={`relative flex items-center justify-center rounded-full w-[300px] h-[300px] md:w-[420px] md:h-[420px] transition-transform duration-[4000ms] ease-in-out ${
+            sessionPhase === "breathing"
+              ? breathPhase === "inhale" || breathPhase === "hold1"
+                ? "scale-110"
+                : "scale-90"
+              : "scale-90"
           }`}
-          style={{
-            boxShadow: "0 0 80px rgba(255, 130, 60, 0.1)",
-          }}
+          style={{ boxShadow: "0 0 80px rgba(255, 130, 60, 0.1)" }}
         >
-          {/* Inner Glass Layer */}
-          <div className="absolute inset-0 rounded-full bg-surface-variant/20 backdrop-blur-2xl border border-on-surface-variant/10" />
+          {/* Solid Warm Background Fill & Single Outer Boundary */}
+          <div 
+            className="absolute inset-0 rounded-full" 
+            style={{ backgroundColor: "rgba(70, 45, 35, 0.3)" }}
+          />
 
-          {/* Inner Stroke Detail */}
-          <div className="absolute inset-4 rounded-full border-[0.5px] border-primary/20" />
+          {/* SVG Ring + dots + pointer — overlaid on the glass circle edge */}
+          <svg className="absolute w-full h-full overflow-visible" viewBox="0 0 100 100">
+            {/* The boundary ring — sits right on the glass circle edge */}
+            <circle
+              cx={svgCenter}
+              cy={svgCenter}
+              r={ringRadius}
+              fill="transparent"
+              stroke={ringStroke}
+              strokeWidth="0.3"
+            />
 
-          {/* Display Countdown */}
-          <div className="relative flex flex-col items-center">
-            <span className="text-[10px] tracking-[0.2em] uppercase text-outline/60 mb-2">
-              Time Remaining
-            </span>
-            <span className="text-6xl md:text-8xl font-thin tracking-tighter text-on-surface tabular-nums">
-              {display}
-            </span>
+            {/* Marker dot at 12 o'clock */}
+            <circle cx={dot12X} cy={dot12Y} r="1.2" fill={ringStroke} />
+
+            {/* Marker dot at 6 o'clock */}
+            <circle cx={dot6X} cy={dot6Y} r="1.2" fill={ringStroke} />
+
+            {/* Moving pointer — white with glow */}
+            {sessionPhase === "breathing" && (
+              <circle
+                cx={pointerX}
+                cy={pointerY}
+                r="1.8"
+                fill="white"
+                style={{
+                  filter: "drop-shadow(0 0 3px rgba(255,255,255,0.8))",
+                }}
+              />
+            )}
+          </svg>
+
+          {/* Central Text */}
+          <div className="relative flex flex-col items-center justify-center text-center z-10">
+            {sessionPhase === "ready" ? (
+              <div className="flex flex-col items-center">
+                <div className="text-4xl md:text-5xl lg:text-6xl font-light tracking-tight text-white/90 leading-none mb-2">
+                  {readyCount}
+                </div>
+              </div>
+            ) : (
+              <h2
+                key={breathPhase}
+                className="text-4xl md:text-5xl lg:text-6xl font-light tracking-tight text-white/90 animate-in fade-in duration-700"
+              >
+                {PHASE_LABELS[breathPhase]}
+              </h2>
+            )}
           </div>
         </div>
 
-        {/* Synchronized Instructions */}
-        <div className="mt-12 flex flex-col items-center h-20">
-          <div
-            className={`flex flex-col items-center transition-all duration-1000 ease-in-out ${
-              breathPhase === "inhale"
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 translate-y-2"
-            }`}
-          >
-            {breathPhase === "inhale" && (
-              <>
-                <h2 className="text-3xl md:text-5xl font-light tracking-tight text-primary">
-                  Inhale...
-                </h2>
-                <p className="text-xs tracking-widest text-outline mt-2 uppercase">
-                  Fill your lungs with focus
-                </p>
-              </>
-            )}
-          </div>
-          <div
-            className={`flex flex-col items-center transition-all duration-1000 ease-in-out absolute ${
-              breathPhase === "exhale"
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 translate-y-2"
-            }`}
-          >
-            {breathPhase === "exhale" && (
-              <>
-                <h2 className="text-3xl md:text-5xl font-light tracking-tight text-secondary">
-                  Exhale...
-                </h2>
-                <p className="text-xs tracking-widest text-outline mt-2 uppercase">
-                  Release all visual noise
-                </p>
-              </>
-            )}
+        {/* Progress bar (no label) */}
+        <div
+          className={`mt-20 md:mt-24 transition-opacity duration-1000 ${
+            sessionPhase === "ready" ? "opacity-0" : "opacity-100"
+          }`}
+        >
+          <div className="w-48 h-[4px] bg-surface-container-highest rounded-full overflow-hidden">
+            <div
+              className="h-full bg-primary/60 rounded-full"
+              style={{ width: `${totalProgress * 100}%` }}
+            />
           </div>
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="absolute bottom-16 flex flex-col items-center gap-6 z-10">
-        <div className="flex items-center gap-12 text-on-surface-variant/40">
-          <div className="flex flex-col items-center gap-2">
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-              />
-            </svg>
-            <span className="text-[9px] tracking-widest uppercase">
-              Deep Rhythm
-            </span>
-          </div>
-          <div className="w-[1px] h-8 bg-outline-variant/20" />
-          <div className="flex flex-col items-center gap-2">
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M9.143 17.082a24.248 24.248 0 0 0 5.714 0m-5.714 0a1.5 1.5 0 0 1 .386-1.237L12 13.174l2.671 2.671a1.5 1.5 0 0 1 .386 1.237m-5.714 0A1.503 1.503 0 0 1 8 18.5V21h8v-2.5a1.503 1.503 0 0 1-1.143-1.418"
-              />
-            </svg>
-            <span className="text-[9px] tracking-widest uppercase">
-              Zero Distraction
-            </span>
-          </div>
-        </div>
-
-        {/* Exit button (subtle) */}
+      {/* Skip button */}
+      <div className="absolute bottom-16 z-10">
         <button
           onClick={onComplete}
           className="px-6 py-2 rounded-full text-[10px] tracking-[0.2em] uppercase text-outline hover:text-primary transition-all duration-500 ghost-border hover:border-primary/20 backdrop-blur-sm"
         >
           Skip
         </button>
-      </div>
-
-      {/* Phase metadata (desktop) */}
-      <div className="hidden lg:flex absolute bottom-12 right-12 flex-col items-end opacity-20">
-        <span className="text-[10px] tracking-tighter">
-          Phase: Calibration
-        </span>
-        <span className="text-[10px] tracking-tighter">
-          BPM: 6.0 (Optimal)
-        </span>
       </div>
     </main>
   );

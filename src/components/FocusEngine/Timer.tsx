@@ -19,6 +19,7 @@ export default function Timer({
   const [showQuitTrap, setShowQuitTrap] = useState(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [volume, setVolume] = useState(0.2); // Default to low volume (20%)
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -79,82 +80,59 @@ export default function Timer({
     };
   }, [display]);
 
-  // Audio management
+  // Audio management — HTML5 Audio (Lofi Meditation track)
   const toggleAudio = useCallback(() => {
     if (!audioRef.current) {
-      // Use a brown noise generator via Web Audio API
       try {
-        const ctx =
-          (window as unknown as { __unblockAudioCtx?: AudioContext })
-            .__unblockAudioCtx || new AudioContext();
+        const audio = new Audio("/sounds/ambient.mp3");
+        audio.loop = true;
+        audio.volume = 0;
+        audioRef.current = audio;
 
-        const bufferSize = 2 * ctx.sampleRate;
-        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-        const data = buffer.getChannelData(0);
-
-        // Generate brown noise
-        let lastOut = 0;
-        for (let i = 0; i < bufferSize; i++) {
-          const white = Math.random() * 2 - 1;
-          data[i] = (lastOut + 0.02 * white) / 1.02;
-          lastOut = data[i];
-          data[i] *= 3.5; // Amplify
+        const playPromise = audio.play();
+        if (playPromise) {
+          playPromise.catch(() => {
+            console.warn("Audio autoplay blocked");
+          });
         }
 
-        const source = ctx.createBufferSource();
-        source.buffer = buffer;
-        source.loop = true;
-
-        // Create a gain node for volume control
-        const gainNode = ctx.createGain();
-        gainNode.gain.value = 0.3;
-
-        source.connect(gainNode);
-        gainNode.connect(ctx.destination);
-
-        // Fade in
-        gainNode.gain.setValueAtTime(0, ctx.currentTime);
-        gainNode.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 2);
-
-        source.start();
-
-        // Store a fake audio element reference for toggling
-        const fakeAudio = new Audio();
-        (fakeAudio as unknown as { _source: AudioBufferSourceNode })._source =
-          source;
-        (fakeAudio as unknown as { _gain: GainNode })._gain = gainNode;
-        (fakeAudio as unknown as { _ctx: AudioContext })._ctx = ctx;
-        audioRef.current = fakeAudio;
+        // Gentle fade in to selected volume
+        let vol = 0;
+        const fadeIn = setInterval(() => {
+          vol = Math.min(vol + 0.02, volume);
+          if (audioRef.current) audioRef.current.volume = vol;
+          if (vol >= volume) clearInterval(fadeIn);
+        }, 80);
 
         setIsAudioPlaying(true);
       } catch (e) {
         console.warn("Audio failed:", e);
       }
     } else {
-      const audio = audioRef.current as unknown as {
-        _source: AudioBufferSourceNode;
-        _gain: GainNode;
-        _ctx: AudioContext;
-      };
-
       if (isAudioPlaying) {
-        // Fade out and stop
-        audio._gain.gain.linearRampToValueAtTime(
-          0,
-          audio._ctx.currentTime + 0.5
-        );
-        setTimeout(() => {
-          try {
-            audio._source.stop();
-          } catch {
-            /* already stopped */
+        // Fade out and pause
+        const audio = audioRef.current;
+        let vol = audio.volume;
+        const fadeOut = setInterval(() => {
+          vol = Math.max(vol - 0.02, 0);
+          audio.volume = vol;
+          if (vol <= 0) {
+            clearInterval(fadeOut);
+            audio.pause();
+            audioRef.current = null;
           }
-          audioRef.current = null;
-        }, 600);
+        }, 50);
         setIsAudioPlaying(false);
       }
     }
-  }, [isAudioPlaying]);
+  }, [isAudioPlaying, volume]);
+
+  // Sync volume state to audio element actively
+  useEffect(() => {
+    if (audioRef.current && isAudioPlaying) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume, isAudioPlaying]);
 
   // Auto-start audio on mount
   useEffect(() => {
@@ -169,14 +147,9 @@ export default function Timer({
   useEffect(() => {
     return () => {
       if (audioRef.current) {
-        try {
-          const audio = audioRef.current as unknown as {
-            _source: AudioBufferSourceNode;
-          };
-          audio._source.stop();
-        } catch {
-          /* already stopped */
-        }
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        audioRef.current = null;
       }
     };
   }, []);
@@ -188,14 +161,9 @@ export default function Timer({
   const handleConfirmQuit = () => {
     // Stop audio
     if (audioRef.current) {
-      try {
-        const audio = audioRef.current as unknown as {
-          _source: AudioBufferSourceNode;
-        };
-        audio._source.stop();
-      } catch {
-        /* already stopped */
-      }
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
     }
     const elapsed = Math.round((Date.now() - startTimeRef.current) / 1000);
     onQuit(elapsed);
@@ -207,9 +175,8 @@ export default function Timer({
 
   return (
     <main
-      className={`relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden px-6 transition-opacity duration-700 ${
-        mounted ? "opacity-100" : "opacity-0"
-      }`}
+      className={`relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden px-6 transition-opacity duration-700 ${mounted ? "opacity-100" : "opacity-0"
+        }`}
     >
       {/* Ambient Background */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -219,23 +186,18 @@ export default function Timer({
 
       {/* Intent Display */}
       <div
-        className={`z-10 mb-12 text-center transition-all duration-700 delay-100 ${
-          mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-        }`}
+        className={`z-10 mb-12 text-center transition-all duration-700 delay-100 ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          }`}
       >
-        <span className="text-[11px] uppercase tracking-[0.2em] text-primary mb-4 block font-medium opacity-80">
-          Current Objective
-        </span>
-        <h1 className="text-3xl md:text-5xl font-black tracking-tight max-w-2xl mx-auto text-on-surface leading-tight">
+        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight max-w-2xl mx-auto text-on-surface/80 leading-tight">
           {intentText}
         </h1>
       </div>
 
       {/* Timer Ring */}
       <div
-        className={`relative z-10 transition-all duration-700 delay-300 ${
-          mounted ? "opacity-100 scale-100" : "opacity-0 scale-95"
-        }`}
+        className={`relative z-10 transition-all duration-700 delay-300 ${mounted ? "opacity-100 scale-100" : "opacity-0 scale-95"
+          }`}
       >
         <div className="relative flex items-center justify-center w-[300px] h-[300px] md:w-[420px] md:h-[420px]">
           {/* SVG Progress Ring */}
@@ -289,19 +251,18 @@ export default function Timer({
         </div>
       </div>
 
-      {/* Audio Controls */}
+      {/* Audio Controls (Minimized) */}
       <div
-        className={`z-20 mt-12 md:mt-16 glass-panel px-6 md:px-8 py-4 rounded-full flex items-center gap-6 md:gap-8 border border-white/5 transition-all duration-700 delay-500 ${
-          mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-        }`}
+        className={`z-20 mt-12 md:mt-16 px-5 py-2.5 rounded-full flex items-center gap-5 bg-surface-variant/10 hover:bg-surface-variant/30 border border-white-[0.02] backdrop-blur-md transition-all duration-700 delay-500 ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          }`}
       >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full bg-surface-container-highest/40 flex items-center justify-center">
             <svg
-              className="w-5 h-5 text-primary"
+              className="w-4 h-4 text-primary/70"
               fill="none"
               viewBox="0 0 24 24"
-              strokeWidth={1.5}
+              strokeWidth={2}
               stroke="currentColor"
             >
               <path
@@ -312,44 +273,43 @@ export default function Timer({
             </svg>
           </div>
           <div>
-            <div className="text-[10px] uppercase tracking-widest text-on-surface/40 font-bold">
+            <div className="text-[9px] uppercase tracking-widest text-on-surface/30 font-semibold leading-none mb-1">
               Atmosphere
             </div>
-            <div className="text-sm font-semibold text-on-surface">
-              Brown Noise
+            <div className="text-xs font-medium text-on-surface/60 leading-none">
+              Lofi Meditation
             </div>
           </div>
         </div>
 
-        <div className="h-6 w-[1px] bg-white/10" />
+        <div className="h-4 w-[1px] bg-white/5" />
 
         <button
           onClick={toggleAudio}
-          className={`w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-90 ${
-            isAudioPlaying
-              ? "bg-primary text-on-primary-fixed"
-              : "bg-surface-container-highest text-on-surface/60"
-          }`}
+          className={`w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-95 ${isAudioPlaying
+              ? "bg-primary/80 text-on-primary-fixed"
+              : "bg-surface-container-highest/50 text-on-surface/40 hover:text-on-surface/80"
+            }`}
         >
           {isAudioPlaying ? (
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 ml-[1px]" fill="currentColor" viewBox="0 0 24 24">
               <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
             </svg>
           ) : (
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 ml-[2px]" fill="currentColor" viewBox="0 0 24 24">
               <path d="M8 5v14l11-7z" />
             </svg>
           )}
         </button>
 
-        <div className="h-6 w-[1px] bg-white/10 hidden md:block" />
+        <div className="h-4 w-[1px] bg-white/5 hidden md:block" />
 
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden md:flex items-center gap-2 opacity-50">
           <svg
-            className="w-4 h-4 text-on-surface/40"
+            className="w-3.5 h-3.5 text-on-surface/40"
             fill="none"
             viewBox="0 0 24 24"
-            strokeWidth={1.5}
+            strokeWidth={2}
             stroke="currentColor"
           >
             <path
@@ -358,21 +318,29 @@ export default function Timer({
               d="M19.114 5.636a9 9 0 0 1 0 12.728M16.463 8.288a5.25 5.25 0 0 1 0 7.424M6.75 8.25l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z"
             />
           </svg>
-          <div className="w-20 h-1 bg-surface-container-highest rounded-full overflow-hidden">
-            <div className="w-2/3 h-full bg-primary/60 rounded-full" />
-          </div>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value={volume}
+            onChange={(e) => setVolume(parseFloat(e.target.value))}
+            className="w-16 h-1 appearance-none rounded-full outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2 [&::-webkit-slider-thumb]:h-2 [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:rounded-full cursor-pointer transition-opacity opacity-70 hover:opacity-100"
+            style={{
+              background: `linear-gradient(to right, rgba(255,130,60,0.6) ${volume * 100}%, rgba(255,255,255,0.1) ${volume * 100}%)`,
+            }}
+          />
         </div>
       </div>
 
-      {/* End Session Button */}
+      {/* End Session Button — Ultra faint, pops on hover */}
       <div
-        className={`z-10 mt-10 md:mt-12 transition-all duration-700 delay-700 ${
-          mounted ? "opacity-100" : "opacity-0"
-        }`}
+        className={`z-10 mt-10 md:mt-12 transition-all duration-700 delay-700 ${mounted ? "opacity-100" : "opacity-0"
+          }`}
       >
         <button
           onClick={handleEndSession}
-          className="px-8 py-3 rounded-full text-sm font-medium text-on-surface/30 hover:text-on-surface/80 hover:bg-surface-container-low transition-all duration-300"
+          className="px-6 py-2 rounded-full text-[11px] uppercase tracking-widest font-medium text-on-surface/10 hover:text-on-surface/90 hover:bg-white/5 transition-all duration-500"
         >
           End Focus Session
         </button>
@@ -438,3 +406,4 @@ export default function Timer({
     </main>
   );
 }
+
