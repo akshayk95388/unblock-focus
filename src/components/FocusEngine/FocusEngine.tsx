@@ -11,13 +11,22 @@ export type FocusStage = "breathing" | "intent" | "timer" | "success";
 
 interface FocusEngineProps {
   onExit: () => void;
+  directMode?: {
+    intentText: string;
+    durationSeconds: number;
+    habitId?: string;
+  };
 }
 
-export default function FocusEngine({ onExit }: FocusEngineProps) {
-  const [stage, setStage] = useState<FocusStage>("breathing");
-  const [intentText, setIntentText] = useState("");
-  const [habitId, setHabitId] = useState<string | undefined>();
-  const [timerDuration, setTimerDuration] = useState(300);
+export default function FocusEngine({ onExit, directMode }: FocusEngineProps) {
+  const [stage, setStage] = useState<FocusStage>(
+    directMode ? "timer" : "breathing"
+  );
+  const [intentText, setIntentText] = useState(directMode?.intentText ?? "");
+  const [habitId, setHabitId] = useState<string | undefined>(directMode?.habitId);
+  const [timerDuration, setTimerDuration] = useState(
+    directMode?.durationSeconds ?? 300
+  );
   const [completedSeconds, setCompletedSeconds] = useState(0);
 
   const handleBreathingComplete = useCallback(() => {

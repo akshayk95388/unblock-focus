@@ -9,8 +9,11 @@ export default function StatCards() {
   const [completionRate, setCompletionRate] = useState(0);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setStreak(getStreak());
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTotalSessions(getSessions().length);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCompletionRate(getCompletionRate());
   }, []);
 

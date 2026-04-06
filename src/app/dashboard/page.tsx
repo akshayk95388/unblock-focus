@@ -5,18 +5,26 @@ import DashboardLayout from "@/components/Dashboard/DashboardLayout";
 import StatCards from "@/components/Dashboard/StatCards";
 import TodaySessions from "@/components/Dashboard/TodaySessions";
 import DailyGoalProgress from "@/components/Dashboard/DailyGoalProgress";
+import ActivityHeatmap from "@/components/Dashboard/ActivityHeatmap";
 import HabitManager from "@/components/Dashboard/HabitManager";
 import HabitsTab from "@/components/Dashboard/HabitsTab";
 import HistoryTab from "@/components/Dashboard/HistoryTab";
+import DeepWorkModal from "@/components/Dashboard/DeepWorkModal";
 import FocusEngine from "@/components/FocusEngine/FocusEngine";
 
 export default function DashboardPage() {
   const [currentTab, setCurrentTab] = useState("dashboard");
   const [showHabitManager, setShowHabitManager] = useState(false);
+  const [showDeepWorkModal, setShowDeepWorkModal] = useState(false);
   const [engineActive, setEngineActive] = useState(false);
+  const [directMode, setDirectMode] = useState<{
+    intentText: string;
+    durationSeconds: number;
+    habitId?: string;
+  } | undefined>();
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const handleStartSession = useCallback(() => {
+  const handleUnblockNow = useCallback(() => {
     // Initialize AudioContext
     try {
       const AudioCtx =
@@ -32,8 +40,22 @@ export default function DashboardPage() {
       console.warn("AudioContext init failed:", e);
     }
 
+    setDirectMode(undefined);
     setEngineActive(true);
   }, []);
+
+  const handleStartDeepWork = useCallback(
+    (intentText: string, durationMinutes: number, habitId?: string) => {
+      setShowDeepWorkModal(false);
+      setDirectMode({
+        intentText,
+        durationSeconds: durationMinutes * 60,
+        habitId,
+      });
+      setEngineActive(true);
+    },
+    []
+  );
 
   const handleExitEngine = useCallback(() => {
     setEngineActive(false);
@@ -41,14 +63,14 @@ export default function DashboardPage() {
   }, []);
 
   if (engineActive) {
-    return <FocusEngine onExit={handleExitEngine} />;
+    return <FocusEngine onExit={handleExitEngine} directMode={directMode} />;
   }
 
   return (
     <DashboardLayout
       activeTab={currentTab}
       onTabChange={setCurrentTab}
-      onStartSession={handleStartSession}
+      onAddHabit={() => setShowHabitManager(true)}
     >
       <div className="flex flex-col lg:flex-row min-h-[calc(100vh-4rem)]">
         {/* ===== Center Content ===== */}
@@ -66,16 +88,23 @@ export default function DashboardPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <button
-                  onClick={handleStartSession}
-                  className="glow-button px-8 py-4 rounded-xl text-on-primary-fixed font-bold transition-all hover:scale-[1.02] active:scale-95"
+                  onClick={handleUnblockNow}
+                  className="glow-button px-8 py-4 rounded-xl text-on-primary-fixed font-bold transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
                 >
-                  Start Focus Session
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 10.5V6.75a4.5 4.5 0 1 1 9 0v3.75M3.75 21.75h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H3.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                  </svg>
+                  Unblock Now
                 </button>
                 <button
-                  onClick={() => setShowHabitManager(true)}
-                  className="px-8 py-4 rounded-xl border border-outline-variant/30 text-on-surface font-medium hover:bg-surface-container-low transition-all active:scale-95"
+                  onClick={() => setShowDeepWorkModal(true)}
+                  className="px-8 py-4 rounded-xl bg-surface-container-highest/60 text-on-surface font-bold hover:bg-surface-container-highest transition-all active:scale-95 flex items-center justify-center gap-2"
                 >
-                  + Add Habit
+                  <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 18a3.75 3.75 0 0 0 .495-7.468 5.99 5.99 0 0 0-1.925 3.547 5.975 5.975 0 0 1-2.133-1.001A3.75 3.75 0 0 0 12 18Z" />
+                  </svg>
+                  Deep Work
                 </button>
               </div>
             </div>
@@ -83,6 +112,9 @@ export default function DashboardPage() {
 
           {/* Stats */}
           <StatCards />
+
+          {/* Activity Heatmap */}
+          <ActivityHeatmap />
 
           {/* Today's Sessions */}
           <TodaySessions />
@@ -137,6 +169,14 @@ export default function DashboardPage() {
         <HabitManager
           onClose={() => setShowHabitManager(false)}
           onCreated={() => setRefreshKey((k) => k + 1)}
+        />
+      )}
+
+      {/* Deep Work Modal */}
+      {showDeepWorkModal && (
+        <DeepWorkModal
+          onStart={handleStartDeepWork}
+          onClose={() => setShowDeepWorkModal(false)}
         />
       )}
     </DashboardLayout>

@@ -8,6 +8,7 @@ export default function TodaySessions() {
   const [sessions, setSessions] = useState<SessionRecord[]>([]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSessions(getTodaySessions().reverse()); // Most recent first
   }, []);
 

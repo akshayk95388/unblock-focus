@@ -7,19 +7,20 @@ interface DashboardLayoutProps {
   children: React.ReactNode;
   activeTab?: string;
   onTabChange?: (tabId: string) => void;
-  onStartSession?: () => void;
+    onAddHabit?: () => void;
 }
 
 export default function DashboardLayout({
   children,
   activeTab = "dashboard",
   onTabChange,
-  onStartSession,
+  onAddHabit,
 }: DashboardLayoutProps) {
   const [streak, setStreak] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setStreak(getStreak());
   }, []);
 
@@ -127,11 +128,14 @@ export default function DashboardLayout({
             <button
               onClick={() => {
                 setSidebarOpen(false);
-                onStartSession?.();
+                onAddHabit?.();
               }}
-              className="w-full glow-button text-on-primary-fixed font-bold py-3 rounded-xl text-sm transition-all active:opacity-80 active:scale-95"
+              className="w-full px-4 py-3 rounded-xl text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest/50 transition-all active:scale-95 flex items-center justify-center gap-2 border border-outline-variant/20"
             >
-              Start Session
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+              Add Habit
             </button>
           </div>
         </aside>

@@ -9,6 +9,7 @@ export default function HistoryTab() {
 
   useEffect(() => {
     // Reverse chron
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSessions(getSessions().sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()));
   }, []);
 
