@@ -20,7 +20,7 @@ export default function DashboardLayout({
 }: DashboardLayoutProps) {
   const [streak, setStreak] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [breathingMins, setBreathingMins] = useState(1);
+  const [breathingMins, setBreathingMins] = useState<number | "">(1);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -138,7 +138,16 @@ export default function DashboardLayout({
                   min="1"
                   max="10"
                   value={breathingMins}
-                  onChange={(e) => setBreathingMins(Math.max(1, Math.min(10, Number(e.target.value))))}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "") setBreathingMins("");
+                    else setBreathingMins(Number(val));
+                  }}
+                  onBlur={() => {
+                    const val = Number(breathingMins);
+                    if (!val || val < 1) setBreathingMins(1);
+                    else if (val > 10) setBreathingMins(10);
+                  }}
                   className="w-full bg-surface-container-highest border-none rounded-lg px-3 py-2 text-sm text-center focus:outline-none focus:ring-1 focus:ring-primary/50 text-on-surface tabular-nums"
                 />
                 <span className="text-xs text-on-surface-variant font-medium">min</span>
@@ -146,7 +155,7 @@ export default function DashboardLayout({
               <button
                 onClick={() => {
                   setSidebarOpen(false);
-                  onStartBreathing?.(breathingMins);
+                  onStartBreathing?.(Number(breathingMins) || 1);
                 }}
                 className="w-full px-4 py-2 rounded-lg bg-primary/20 text-primary text-sm font-bold hover:bg-primary/30 transition-all active:scale-95 flex items-center justify-center gap-2"
               >
