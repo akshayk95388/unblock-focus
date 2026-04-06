@@ -3,14 +3,14 @@
 import { useEffect, useState, useRef } from "react";
 
 interface BreathingProps {
-  onComplete: () => void;
+  onComplete: (durationSeconds: number) => void;
+  durationMinutes?: number;
 }
 
 type BreathPhase = "inhale" | "hold1" | "exhale" | "hold2";
 type SessionPhase = "ready" | "breathing";
 
 const PHASE_DURATION = 4000; // 4 seconds per phase
-const TOTAL_CYCLES = 4;
 const READY_SECONDS = 3;
 
 const PHASE_LABELS: Record<BreathPhase, string> = {
@@ -22,7 +22,8 @@ const PHASE_LABELS: Record<BreathPhase, string> = {
 
 const PHASE_ORDER: BreathPhase[] = ["inhale", "hold1", "exhale", "hold2"];
 
-export default function Breathing({ onComplete }: BreathingProps) {
+export default function Breathing({ onComplete, durationMinutes }: BreathingProps) {
+  const totalCycles = durationMinutes ? Math.ceil((durationMinutes * 60) / 16) : 4;
   const [sessionPhase, setSessionPhase] = useState<SessionPhase>("ready");
   const [readyCount, setReadyCount] = useState(READY_SECONDS);
   const [breathPhase, setBreathPhase] = useState<BreathPhase>("inhale");
@@ -137,11 +138,11 @@ export default function Breathing({ onComplete }: BreathingProps) {
     const tick = () => {
       const elapsed = Date.now() - breathingStartRef.current;
       const cycleTime = PHASE_DURATION * 4;
-      const totalTime = cycleTime * TOTAL_CYCLES;
+      const totalTime = cycleTime * totalCycles;
 
       if (elapsed >= totalTime) {
         cancelAnimationFrame(animFrameRef.current);
-        setTimeout(() => onCompleteRef.current(), 0);
+        setTimeout(() => onCompleteRef.current(Math.round(totalTime / 1000)), 0);
         return;
       }
 
@@ -171,7 +172,7 @@ export default function Breathing({ onComplete }: BreathingProps) {
     return () => cancelAnimationFrame(animFrameRef.current);
   }, [sessionPhase]);
 
-  const totalProgress = totalElapsed / (PHASE_DURATION * 4 * TOTAL_CYCLES);
+  const totalProgress = totalElapsed / (PHASE_DURATION * 4 * totalCycles);
 
   // SVG config — matches Timer's viewBox="0 0 100 100" approach
   const svgCenter = 50;
@@ -292,7 +293,7 @@ export default function Breathing({ onComplete }: BreathingProps) {
       {/* Skip button */}
       <div className="absolute bottom-16 z-10">
         <button
-          onClick={onComplete}
+          onClick={() => onComplete(Math.round(totalElapsed / 1000))}
           className="px-6 py-2 rounded-full text-[10px] tracking-[0.2em] uppercase text-outline hover:text-primary transition-all duration-500 ghost-border hover:border-primary/20 backdrop-blur-sm"
         >
           Skip

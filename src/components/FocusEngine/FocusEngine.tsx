@@ -29,7 +29,7 @@ export default function FocusEngine({ onExit, directMode }: FocusEngineProps) {
   );
   const [completedSeconds, setCompletedSeconds] = useState(0);
 
-  const handleBreathingComplete = useCallback(() => {
+  const handleBreathingComplete = useCallback((_sec: number) => {
     setStage("intent");
   }, []);
 

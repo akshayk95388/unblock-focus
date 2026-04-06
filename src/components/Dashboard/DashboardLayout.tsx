@@ -7,17 +7,20 @@ interface DashboardLayoutProps {
   children: React.ReactNode;
   activeTab?: string;
   onTabChange?: (tabId: string) => void;
-    onAddHabit?: () => void;
+  onStartBreathing?: (minutes: number) => void;
+  onAddHabit?: () => void;
 }
 
 export default function DashboardLayout({
   children,
   activeTab = "dashboard",
   onTabChange,
+  onStartBreathing,
   onAddHabit,
 }: DashboardLayoutProps) {
   const [streak, setStreak] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [breathingMins, setBreathingMins] = useState(1);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -124,7 +127,38 @@ export default function DashboardLayout({
             ))}
           </nav>
 
-          <div className="mt-auto px-4">
+          <div className="mt-8 px-4 pt-6 border-t border-outline-variant/10">
+            <h3 className="text-[10px] text-primary font-bold uppercase mb-4 tracking-wider">
+              Breathing Exercise
+            </h3>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={breathingMins}
+                  onChange={(e) => setBreathingMins(Math.max(1, Math.min(10, Number(e.target.value))))}
+                  className="w-full bg-surface-container-highest border-none rounded-lg px-3 py-2 text-sm text-center focus:outline-none focus:ring-1 focus:ring-primary/50 text-on-surface tabular-nums"
+                />
+                <span className="text-xs text-on-surface-variant font-medium">min</span>
+              </div>
+              <button
+                onClick={() => {
+                  setSidebarOpen(false);
+                  onStartBreathing?.(breathingMins);
+                }}
+                className="w-full px-4 py-2 rounded-lg bg-primary/20 text-primary text-sm font-bold hover:bg-primary/30 transition-all active:scale-95 flex items-center justify-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6v6.243l4.5 2.678" />
+                </svg>
+                Breathe
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-6 px-4">
             <button
               onClick={() => {
                 setSidebarOpen(false);

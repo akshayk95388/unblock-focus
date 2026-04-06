@@ -11,6 +11,9 @@ import HabitsTab from "@/components/Dashboard/HabitsTab";
 import HistoryTab from "@/components/Dashboard/HistoryTab";
 import DeepWorkModal from "@/components/Dashboard/DeepWorkModal";
 import FocusEngine from "@/components/FocusEngine/FocusEngine";
+import Breathing from "@/components/FocusEngine/Breathing";
+import { saveSession } from "@/lib/sessions";
+import { getHabits, addHabit } from "@/lib/habits";
 
 export default function DashboardPage() {
   const [currentTab, setCurrentTab] = useState("dashboard");
@@ -23,6 +26,8 @@ export default function DashboardPage() {
     habitId?: string;
   } | undefined>();
   const [refreshKey, setRefreshKey] = useState(0);
+  const [standaloneBreathing, setStandaloneBreathing] = useState<{ durationMinutes: number }>();
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const handleUnblockNow = useCallback(() => {
     // Initialize AudioContext
@@ -62,14 +67,46 @@ export default function DashboardPage() {
     setRefreshKey((k) => k + 1); // Force refresh dashboard data
   }, []);
 
+  const handleStartBreathing = useCallback((minutes: number) => {
+    try {
+      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const ctx = new AudioCtx();
+      if (ctx.state === "suspended") ctx.resume();
+      (window as unknown as { __unblockAudioCtx: AudioContext }).__unblockAudioCtx = ctx;
+    } catch (e) {
+      console.warn("Audio context failed:", e);
+    }
+    setStandaloneBreathing({ durationMinutes: minutes });
+  }, []);
+
+  const handleBreathingComplete = useCallback((durationSeconds: number) => {
+    setStandaloneBreathing(undefined);
+    if (durationSeconds > 0) {
+      let habits = getHabits();
+      let breathingHabit = habits.find(h => h.name.toLowerCase().includes("breath"));
+      
+      const resolvedHabit = breathingHabit || addHabit("Breathing Exercise", "🫁", "primary", 15);
+      
+      saveSession("Breathing", durationSeconds, resolvedHabit.id, false);
+      setSuccessMessage(`Breathing complete: ${Math.round(durationSeconds / 60)} minutes recorded.`);
+      setRefreshKey(k => k + 1);
+      setTimeout(() => setSuccessMessage(null), 4000);
+    }
+  }, []);
+
   if (engineActive) {
     return <FocusEngine onExit={handleExitEngine} directMode={directMode} />;
+  }
+
+  if (standaloneBreathing) {
+    return <Breathing durationMinutes={standaloneBreathing.durationMinutes} onComplete={handleBreathingComplete} />;
   }
 
   return (
     <DashboardLayout
       activeTab={currentTab}
       onTabChange={setCurrentTab}
+      onStartBreathing={handleStartBreathing}
       onAddHabit={() => setShowHabitManager(true)}
     >
       <div className="flex flex-col lg:flex-row min-h-[calc(100vh-4rem)]">
