@@ -159,11 +159,8 @@ export default function DashboardLayout({
                   setSidebarOpen(false);
                   onStartBreathing?.(Number(breathingMins) || 1);
                 }}
-                className="w-full px-4 py-2 rounded-lg bg-primary/20 text-primary text-sm font-bold hover:bg-primary/30 transition-all active:scale-95 flex items-center justify-center gap-2"
+                className="w-full mt-2 bg-primary/20 hover:bg-primary/30 text-primary-container font-medium rounded-xl py-2.5 transition-colors flex items-center justify-center text-sm"
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6v6.243l4.5 2.678" />
-                </svg>
                 Breathe
               </button>
             </div>
