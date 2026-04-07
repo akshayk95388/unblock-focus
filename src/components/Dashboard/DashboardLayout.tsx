@@ -2,6 +2,7 @@
 
 import { useState, useEffect }  from "react";
 import { getStreak } from "@/lib/sessions";
+import TechniqueSelector from "@/components/FocusEngine/TechniqueSelector";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -132,6 +133,7 @@ export default function DashboardLayout({
               Breathing Exercise
             </h3>
             <div className="flex flex-col gap-3">
+              <TechniqueSelector className="w-full bg-surface-container-highest border-none rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50 text-on-surface appearance-none cursor-pointer" />
               <div className="flex items-center gap-2">
                 <input
                   type="number"
