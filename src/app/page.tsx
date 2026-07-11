@@ -1,8 +1,14 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
+import { track } from "@/lib/mixpanel";
 
 export default function Home() {
+  useEffect(() => {
+    track("home_page_viewed");
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* ===== Header ===== */}

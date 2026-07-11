@@ -11,6 +11,7 @@ import Breathing from "@/components/FocusEngine/Breathing";
 import CustomSelect from "@/components/ui/CustomSelect";
 import { saveSession } from "@/lib/sessions";
 import { getHabits, addHabit } from "@/lib/habits";
+import { track } from "@/lib/mixpanel";
 
 export default function DashboardPage() {
   const [currentTab, setCurrentTab] = useState("dashboard");
@@ -43,6 +44,10 @@ export default function DashboardPage() {
   const isZenActive = (isBreathingActive || isMeditationZen) && !manualZenDisabled;
 
   useEffect(() => {
+    track("focus_page_viewed");
+  }, []);
+
+  useEffect(() => {
     // Reset manual Zen toggle on session/tab changes to start in normal mode
     setManualZenDisabled(true);
   }, [currentTab, standaloneBreathing, isMeditationZen]);
@@ -65,13 +70,18 @@ export default function DashboardPage() {
 
   const handleStartReset = useCallback(() => {
     if (!heroStressor.trim()) return;
+    track("guided_session_started", {
+      stressor_provided: true,
+      duration_mins: durationMins,
+    });
     setPendingStressor(heroStressor.trim());
     setDirectFocusMode(false);
     setCurrentTab("meditation");
     setHeroStressor("");
-  }, [heroStressor]);
+  }, [heroStressor, durationMins]);
 
   const handleStartFocusDirectly = useCallback(() => {
+    track("focus_session_started");
     setPendingStressor("");
     setDirectFocusMode(true);
     setCurrentTab("meditation");
@@ -85,6 +95,7 @@ export default function DashboardPage() {
   }, []);
 
   const handleStartBreathing = useCallback((minutes: number) => {
+    track("breathing_session_started", { duration_mins: minutes });
     try {
       const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       const ctx = new AudioCtx();
@@ -105,6 +116,11 @@ export default function DashboardPage() {
       const resolvedHabit = breathingHabit || addHabit("Breathing Exercise", "🫁", "primary", 15);
 
       saveSession("Breathing", durationSeconds, resolvedHabit.id, false);
+      track("breathing_session_completed", {
+        duration_mins: Math.round(durationSeconds / 60),
+        duration_seconds: durationSeconds,
+        goal_name: resolvedHabit.name,
+      });
       setSuccessMessage(`Breathing complete: ${Math.round(durationSeconds / 60)} minutes recorded.`);
       setRefreshKey((k) => k + 1);
       setTimeout(() => setSuccessMessage(null), 4000);

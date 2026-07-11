@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { getHabits, type Habit } from "@/lib/habits";
 import { saveSession } from "@/lib/sessions";
+import { track } from "@/lib/mixpanel";
 import BreathingRing from "@/components/FocusEngine/BreathingRing";
 import Confetti from "@/components/FocusEngine/Confetti";
 import CustomSelect from "@/components/ui/CustomSelect";
@@ -524,6 +525,13 @@ export default function MeditationTab({
 
     const sessionName = resetDone ? `Guided: ${title}` : `Focus: ${workTask}`;
     saveSession(sessionName, totalSeconds, selectedHabitId || undefined, false);
+    track(resetDone ? "guided_session_completed" : "focus_session_completed", {
+      duration_mins: Math.round(totalSeconds / 60),
+      duration_seconds: totalSeconds,
+      ...(selectedHabitId
+        ? { goal_name: habits.find((h) => h.id === selectedHabitId)?.name }
+        : {}),
+    });
     setSessionLogged(true);
   };
 
@@ -1124,6 +1132,9 @@ export default function MeditationTab({
                               selectedHabitId || undefined,
                               true
                             );
+                            track(resetDone ? "guided_session_aborted" : "focus_session_aborted", {
+                              duration_seconds: resetTime + elapsed,
+                            });
                           }
                           handleResetAll();
                         }}
