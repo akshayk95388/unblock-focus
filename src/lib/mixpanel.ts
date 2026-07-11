@@ -10,6 +10,8 @@ export function initMixpanel(): void {
     track_pageview: false,
     persistence: "localStorage",
     record_sessions_percent: 100,
+    record_mask_text_selector: "",   // show all text
+    record_mask_all_inputs: true,    // hide input fields only
   });
   initialized = true;
 }
