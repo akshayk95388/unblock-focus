@@ -29,11 +29,11 @@ export default function HabitManager({ onClose, onCreated }: HabitManagerProps) 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 backdrop-blur-xl animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-sm animate-in fade-in duration-300">
       <div className="max-w-md w-full mx-6 glass-panel rounded-2xl p-8 border border-white/5">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-xl font-bold tracking-tight">New Habit</h2>
+          <h2 className="text-xl font-bold tracking-tight">New Goal</h2>
           <button
             onClick={onClose}
             className="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors"
@@ -132,7 +132,7 @@ export default function HabitManager({ onClose, onCreated }: HabitManagerProps) 
           disabled={!name.trim()}
           className="w-full glow-button text-on-primary-fixed font-bold py-4 rounded-xl text-sm transition-all active:opacity-80 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
         >
-          Create Habit
+          Create Goal
         </button>
       </div>
     </div>

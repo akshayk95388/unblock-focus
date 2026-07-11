@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { getSessions, type SessionRecord } from "@/lib/sessions";
 import { getHabitById } from "@/lib/habits";
+import StatCards from "@/components/Dashboard/StatCards";
+import ActivityHeatmap from "@/components/Dashboard/ActivityHeatmap";
 
 export default function HistoryTab() {
   const [sessions, setSessions] = useState<SessionRecord[]>([]);
@@ -23,7 +25,7 @@ export default function HistoryTab() {
   }, {} as Record<string, SessionRecord[]>);
 
   return (
-    <div className="flex flex-col flex-1 p-6 md:p-12 space-y-10">
+    <div className="flex flex-col flex-1 min-w-0 p-6 md:px-6 md:py-12 space-y-10">
       <div>
         <h2 className="text-3xl font-bold tracking-tight mb-2">History</h2>
         <p className="text-on-surface-variant text-sm">
@@ -31,10 +33,16 @@ export default function HistoryTab() {
         </p>
       </div>
 
+      {/* Summary stats */}
+      <StatCards />
+
+      {/* Activity calendar */}
+      <ActivityHeatmap />
+
       {sessions.length === 0 ? (
         <div className="bg-surface-container-low p-12 rounded-2xl text-center">
           <p className="text-on-surface-variant text-lg">
-            Your history is empty. Start your first focus block.
+            Your history is empty. Start your first focus session.
           </p>
         </div>
       ) : (
@@ -88,7 +96,7 @@ export default function HistoryTab() {
                         <div className="flex items-center gap-3">
                           {session.aborted && (
                             <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tighter bg-error/10 text-error border border-error/10">
-                              Aborted
+                              Ended early
                             </span>
                           )}
                           <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tighter bg-primary-container/10 text-primary border border-primary/10">

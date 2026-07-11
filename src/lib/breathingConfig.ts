@@ -19,7 +19,7 @@ export interface BreathingSpeed {
 export const BREATHING_TECHNIQUES: Record<string, BreathingSpeed> = {
   box: {
     id: "box",
-    name: "Box",
+    name: "Box Breathing",
     phases: [
       { type: "inhale", durationSeconds: 4, instruction: "Inhale", targetAngle: 180, isExpanded: true },
       { type: "hold", durationSeconds: 4, instruction: "Hold", targetAngle: 180, isExpanded: true },
@@ -29,7 +29,7 @@ export const BREATHING_TECHNIQUES: Record<string, BreathingSpeed> = {
   },
   physiological_sigh: {
     id: "physiological_sigh",
-    name: "Physiological Sigh",
+    name: "Double Breath",
     phases: [
       { type: "inhale", durationSeconds: 3, instruction: "Deep Inhale", targetAngle: 150, isExpanded: true },
       { type: "quick-inhale", durationSeconds: 1, instruction: "Quick Inhale", pitch: "high", targetAngle: 180, isExpanded: true },
@@ -38,7 +38,7 @@ export const BREATHING_TECHNIQUES: Record<string, BreathingSpeed> = {
   },
   relaxing_478: {
     id: "relaxing_478",
-    name: "4-7-8 Relax",
+    name: "4-7-8 Calm",
     phases: [
       { type: "inhale", durationSeconds: 4, instruction: "Inhale", targetAngle: 180, isExpanded: true },
       { type: "hold", durationSeconds: 7, instruction: "Hold", targetAngle: 180, isExpanded: true },
@@ -59,7 +59,7 @@ export const BREATHING_TECHNIQUES: Record<string, BreathingSpeed> = {
   },
   wim_hof: {
     id: "wim_hof",
-    name: "Wim Hof",
+    name: "Power Breath (advanced)",
     phases: [
       ...Array.from({ length: 30 }).flatMap((_, i) => [
         { type: "inhale" as const, durationSeconds: 1.5, instruction: "Inhale", targetAngle: 180, isExpanded: true },

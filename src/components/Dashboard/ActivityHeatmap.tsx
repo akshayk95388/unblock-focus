@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { getSessions, getSessionsByHabit } from "@/lib/sessions";
 import { getHabits, type Habit } from "@/lib/habits";
 
@@ -147,8 +148,8 @@ export default function ActivityHeatmap({ year = new Date().getFullYear() }: Act
 
   const dayLabels = ["", "Mon", "", "Wed", "", "Fri", ""];
 
-  const cellSize = 16;
-  const cellGap = 4;
+  const cellSize = 13;
+  const cellGap = 2;
   const colWidth = cellSize + cellGap;
 
   if (!mounted) {
@@ -208,14 +209,13 @@ export default function ActivityHeatmap({ year = new Date().getFullYear() }: Act
         </div>
       )}
 
-      <div className="bg-surface-container-low rounded-xl p-6 overflow-x-auto relative heatmap-scroll" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-        <style dangerouslySetInnerHTML={{ __html: `.heatmap-scroll::-webkit-scrollbar { display: none; }` }} />
+      <div className="bg-surface-container-low rounded-xl p-4 md:p-5 overflow-x-auto relative custom-scrollbar">
         {/* Month labels */}
-        <div className="flex mb-3" style={{ paddingLeft: "42px" }}>
+        <div className="flex mb-3" style={{ paddingLeft: "46px" }}>
           {monthLabels.map((m, i) => (
             <span
               key={`${m.label}-${i}`}
-              className="text-[11px] text-on-surface-variant/60 font-medium absolute-ish"
+              className="text-xs text-on-surface-variant/60 font-medium absolute-ish"
               style={{
                 width: i < monthLabels.length - 1
                   ? `${(monthLabels[i + 1].col - m.col) * colWidth}px`
@@ -233,7 +233,7 @@ export default function ActivityHeatmap({ year = new Date().getFullYear() }: Act
           <div className="flex flex-col mr-2 shrink-0" style={{ gap: `${cellGap}px`, width: "36px" }}>
             {dayLabels.map((label, i) => (
               <div key={i} className="flex items-center justify-start pl-1" style={{ height: `${cellSize}px` }}>
-                <span className="text-[11px] text-on-surface-variant/60 font-medium leading-none">
+                <span className="text-xs text-on-surface-variant/60 font-medium leading-none">
                   {label}
                 </span>
               </div>
@@ -275,7 +275,7 @@ export default function ActivityHeatmap({ year = new Date().getFullYear() }: Act
                         });
                       }}
                       onMouseLeave={() => setTooltip(prev => ({ ...prev, visible: false }))}
-                      className={`rounded-[3px] transition-colors cursor-default ${
+                      className={`rounded-[2px] transition-colors cursor-default ${
                         day.level === -1
                           ? "bg-transparent"
                           : levelColors[day.level]
@@ -289,21 +289,21 @@ export default function ActivityHeatmap({ year = new Date().getFullYear() }: Act
           </div>
 
         {/* Legend */}
-        <div className="flex items-center justify-end gap-1 mt-3">
-          <span className="text-[8px] text-on-surface-variant/40 font-medium mr-1">Less</span>
+        <div className="flex items-center justify-end gap-1.5 mt-3">
+          <span className="text-xs text-on-surface-variant/60 font-medium mr-1">Less</span>
           {levelColors.map((color, i) => (
             <div
               key={i}
               className={`rounded-[2px] ${color}`}
-              style={{ width: "10px", height: "10px" }}
+              style={{ width: "13px", height: "13px" }}
             />
           ))}
-          <span className="text-[8px] text-on-surface-variant/40 font-medium ml-1">More</span>
+          <span className="text-xs text-on-surface-variant/60 font-medium ml-1">More</span>
         </div>
       </div>
 
       {/* Custom Tooltip */}
-      {tooltip.visible && (
+      {tooltip.visible && createPortal(
         <div 
           className={`fixed z-[9999] px-3 py-2 text-[11px] font-medium text-surface bg-on-surface rounded-lg shadow-xl pointer-events-none transform -translate-y-full whitespace-nowrap animate-in fade-in slide-in-from-bottom-2 duration-150 ${
             tooltip.align === "right" ? "-translate-x-full" : "-translate-x-1/2"
@@ -320,7 +320,8 @@ export default function ActivityHeatmap({ year = new Date().getFullYear() }: Act
               tooltip.align === "right" ? "right-4" : "left-1/2 -translate-x-1/2"
             }`}
           />
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

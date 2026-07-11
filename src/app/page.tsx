@@ -16,7 +16,7 @@ export default function Home() {
               href="#protocol"
               className="text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors duration-300"
             >
-              Protocol
+              How it works
             </a>
             <a
               href="#features"
@@ -27,10 +27,10 @@ export default function Home() {
           </nav>
           <div className="flex items-center gap-3">
             <Link
-              href="/dashboard"
+              href="/focus"
               className="glow-button px-5 py-2 rounded-xl text-sm font-bold"
             >
-              Start Now
+              Start Guided Session
             </Link>
           </div>
         </div>
@@ -42,54 +42,43 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Left: Copy */}
             <div>
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-surface-container-low ghost-border mb-8">
-                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-on-surface-variant">
-                  System Active: Sanctuary Mode
-                </span>
-              </div>
-
               <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-on-surface leading-[1.05] mb-6">
-                Unblock
+                Break the loop.
                 <br />
-                <span className="text-primary-container">My Focus</span>
+                <span className="text-primary-container">Get to work.</span>
               </h1>
 
               <p className="text-on-surface-variant text-lg md:text-xl max-w-lg leading-relaxed mb-10">
-                Break the doomscrolling loop and start your deep work in 60
-                seconds. Our intervention protocol rewires your immediate
-                impulse into sustained flow.
+                Can&apos;t start? Tell us what&apos;s blocking you. We&apos;ll
+                build a personalized guided session to clear your head — then
+                get you into deep work.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 mb-12">
                 <Link
-                  href="/dashboard"
+                  href="/focus"
                   className="glow-button px-8 py-4 rounded-xl text-base font-bold flex items-center justify-center shrink-0"
                 >
-                  Unblock My Focus
+                  Start Guided Session
                 </Link>
                 <a
                   href="#protocol"
                   className="px-8 py-4 rounded-xl text-base font-medium text-on-surface ghost-border hover:bg-surface-container-low transition-all duration-300 text-center"
                 >
-                  Why it works
+                  How it works
                 </a>
               </div>
 
-              {/* Social Proof Stats */}
-              <div className="flex gap-10">
-                <div>
-                  <p className="text-2xl font-bold text-on-surface">12k+</p>
-                  <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-on-surface-variant">
-                    Active Flows
-                  </p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-on-surface">98%</p>
-                  <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-on-surface-variant">
-                    Recovery Rate
-                  </p>
-                </div>
+              {/* Built for badges */}
+              <div className="flex flex-wrap gap-3">
+                {["Founders", "Engineers", "Students"].map((who) => (
+                  <span
+                    key={who}
+                    className="text-[11px] font-bold uppercase tracking-[0.15em] text-on-surface-variant px-3 py-1 rounded-full bg-surface-container-low ghost-border"
+                  >
+                    {who}
+                  </span>
+                ))}
               </div>
             </div>
 
@@ -102,67 +91,46 @@ export default function Home() {
                   <span className="w-3 h-3 rounded-full bg-secondary" />
                   <span className="w-3 h-3 rounded-full bg-tertiary" />
                   <span className="ml-auto text-[10px] font-bold uppercase tracking-[0.15em] text-on-surface-variant">
-                    Session_01
+                    Guided Session
                   </span>
                 </div>
 
-                {/* Breathing Circle Preview */}
-                <div className="flex flex-col items-center justify-center py-12">
-                  <div className="relative w-48 h-48 flex items-center justify-center">
-                    {/* Outer ring */}
-                    <svg
-                      className="absolute inset-0 w-full h-full"
-                      viewBox="0 0 200 200"
-                    >
-                      <circle
-                        cx="100"
-                        cy="100"
-                        r="90"
-                        fill="none"
-                        stroke="#353436"
-                        strokeWidth="3"
-                      />
-                      <circle
-                        cx="100"
-                        cy="100"
-                        r="90"
-                        fill="none"
-                        stroke="url(#gradient)"
-                        strokeWidth="3"
-                        strokeDasharray={`${2 * Math.PI * 90 * 0.75} ${2 * Math.PI * 90 * 0.25}`}
-                        strokeLinecap="round"
-                        transform="rotate(-90 100 100)"
-                      />
-                      <defs>
-                        <linearGradient
-                          id="gradient"
-                          x1="0%"
-                          y1="0%"
-                          x2="100%"
-                          y2="100%"
-                        >
-                          <stop offset="0%" stopColor="#ffb692" />
-                          <stop offset="100%" stopColor="#ff823c" />
-                        </linearGradient>
-                      </defs>
-                    </svg>
-
-                    {/* Center text */}
-                    <div className="text-center z-10">
-                      <p className="text-5xl font-light tracking-tighter text-on-surface font-mono">
-                        60
-                      </p>
-                      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary mt-1">
-                        Seconds to Flow
-                      </p>
+                {/* Flow steps preview */}
+                <div className="space-y-4 py-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">1</div>
+                    <div>
+                      <p className="text-xs font-bold text-on-surface">Tell us what&apos;s blocking you</p>
+                      <p className="text-[10px] text-on-surface-variant">&quot;Pitch deck due tomorrow&quot;</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">2</div>
+                    <div>
+                      <p className="text-xs font-bold text-on-surface">We build your session</p>
+                      <p className="text-[10px] text-on-surface-variant">Breathing + calming exercises</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">3</div>
+                    <div>
+                      <p className="text-xs font-bold text-on-surface">Listen and reset</p>
+                      <p className="text-[10px] text-on-surface-variant">2-10 min guided audio</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-xs font-bold text-green-400">✓</div>
+                    <div>
+                      <p className="text-xs font-bold text-on-surface">Start your deep work</p>
+                      <p className="text-[10px] text-on-surface-variant">Focus session with a stay-focused guard</p>
                     </div>
                   </div>
                 </div>
 
                 {/* Progress Bar */}
                 <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.12em] text-on-surface-variant mt-4">
-                  <span>Breathing Protocol</span>
-                  <span>75% Complete</span>
+                  <span>Personalized Session</span>
+                  <span>Built For You</span>
                 </div>
                 <div className="h-1 w-full bg-surface-container-highest rounded-full mt-2 overflow-hidden">
                   <div className="h-full bg-primary-container rounded-full w-3/4" />
@@ -178,7 +146,7 @@ export default function Home() {
           className="py-20 md:py-28 px-6 md:px-12 max-w-7xl mx-auto"
         >
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-on-surface mb-14">
-            The Deep Work Protocol
+            How it works
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -200,12 +168,12 @@ export default function Home() {
                 </svg>
               </div>
               <h3 className="text-lg font-bold text-on-surface mb-3">
-                The 60s Breathing Intervention
+                Personalized Guided Session
               </h3>
               <p className="text-on-surface-variant text-sm leading-relaxed">
-                60 seconds of guided breathing to lower your heart rate and
-                reclaim your prefrontal cortex. This is the physiological reset
-                that breaks the dopamine loop.
+                Tell the app what&apos;s blocking you. We build a 2-10 minute
+                guided session — with breathing and calming exercises tailored to
+                your exact situation.
               </p>
             </div>
 
@@ -227,11 +195,12 @@ export default function Home() {
                 </svg>
               </div>
               <h3 className="text-lg font-bold text-on-surface mb-3">
-                5-Min Jumpstart
+                Timed Focus Session
               </h3>
               <p className="text-on-surface-variant text-sm leading-relaxed">
-                Can&apos;t commit to an hour? Start with a non-negotiable
-                5-minute micro-sprint. Momentum is the antidote to paralysis.
+                After your guided session, start a timed focus session. When your
+                brain tries to make you quit, a stay-focused guard steps in and
+                keeps you on track.
               </p>
             </div>
           </div>
@@ -261,11 +230,12 @@ export default function Home() {
                 </svg>
               </div>
               <h3 className="text-lg font-bold text-on-surface mb-3">
-                Neural Soundscapes
+                Built For Your Situation
               </h3>
               <p className="text-on-surface-variant text-sm leading-relaxed">
-                Ambient Lo-fi and Brown Noise engineered to lock your brain into
-                Theta state during focus sessions.
+                Not a generic meditation. Every session is built specifically
+                for what&apos;s blocking you — deadlines, burnout, anxiety, or
+                feeling like a fraud.
               </p>
             </div>
 
@@ -292,11 +262,11 @@ export default function Home() {
                 </svg>
               </div>
               <h3 className="text-lg font-bold text-on-surface mb-3">
-                Focus Streaks
+                Day Streaks
               </h3>
               <p className="text-on-surface-variant text-sm leading-relaxed">
                 Track your consistency. Build momentum day after day with visual
-                streak tracking and shareable achievements.
+                streak tracking.
               </p>
             </div>
 
@@ -318,10 +288,10 @@ export default function Home() {
                 </svg>
               </div>
               <h3 className="text-lg font-bold text-on-surface mb-3">
-                The Quit Trap
+                Stay-Focused Guard
               </h3>
               <p className="text-on-surface-variant text-sm leading-relaxed">
-                Your brain will try to trick you. Our intervention stops you
+                Your brain will try to trick you. A well-timed nudge stops you
                 from quitting when motivation dips in the first 5 minutes.
               </p>
             </div>
@@ -336,20 +306,20 @@ export default function Home() {
 
             <div className="relative z-10">
               <h2 className="text-4xl md:text-5xl font-bold tracking-tighter text-on-surface mb-2 leading-tight">
-                Ready to reclaim
+                Ready to
               </h2>
               <h2 className="text-4xl md:text-5xl font-bold tracking-tighter text-primary-container mb-8 leading-tight">
-                your mind?
+                get unstuck?
               </h2>
               <p className="text-on-surface-variant text-lg mb-10 max-w-md mx-auto leading-relaxed">
-                The loop ends here. No complicated setup, just immediate
-                clarity.
+                Tell us what&apos;s blocking you, clear your head with a short
+                guided session, then start a focus session. No complicated setup.
               </p>
               <Link
-                href="/dashboard"
+                href="/focus"
                 className="glow-button px-10 py-4 rounded-xl text-base font-bold mb-4 inline-flex items-center justify-center"
               >
-                Unblock My Focus
+                Start Guided Session
               </Link>
               <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">
                 No account required to start.
@@ -375,7 +345,7 @@ export default function Home() {
             href="#"
             className="text-[11px] font-bold uppercase tracking-[0.15em] text-on-surface-variant hover:text-on-surface transition-colors"
           >
-            Protocol
+            How it works
           </a>
           <a
             href="#"
@@ -385,7 +355,7 @@ export default function Home() {
           </a>
         </nav>
         <span className="text-[10px] text-on-surface-variant/50">
-          © 2026 Sanctuary Systems Inc.
+          © 2026 Unblock
         </span>
       </footer>
     </div>

@@ -9,22 +9,22 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Unblock — Break the Loop. Start Deep Work in 60 Seconds.",
+  title: "Unblock — Guided Session + Focus Session for Deep Work",
   description:
-    "Stop doomscrolling. Unblock uses a 60-second breathing intervention and a 5-minute focus challenge to rewire your impulse into sustained deep work. No account required.",
+    "Can't start? Tell Unblock what's blocking you. Get a personalized guided session to clear your head, then a distraction-proof focus session to get your deep work done. No account required.",
   openGraph: {
-    title: "Unblock — Break the Loop. Start Deep Work in 60 Seconds.",
+    title: "Unblock — Guided Session + Focus Session for Deep Work",
     description:
-      "Stop doomscrolling. Unblock uses a 60-second breathing intervention and a 5-minute focus challenge to rewire your impulse into sustained deep work.",
+      "Tell Unblock what's blocking you. Get a personalized guided session to clear your head, then a distraction-proof focus session to get your deep work done.",
     siteName: "Unblock Focus",
     type: "website",
     url: "https://unblockfocus.com",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Unblock — Break the Loop. Start Deep Work in 60 Seconds.",
+    title: "Unblock — Guided Session + Focus Session for Deep Work",
     description:
-      "Stop doomscrolling. Unblock uses a 60-second breathing intervention and a 5-minute focus challenge to rewire your impulse into sustained deep work.",
+      "Tell Unblock what's blocking you. Get a personalized guided session to clear your head, then a distraction-proof focus session to get your deep work done.",
   },
 };
 

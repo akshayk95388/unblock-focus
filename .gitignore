@@ -39,3 +39,20 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# editor
+.vscode/
+
+# test artifacts
+test_cli_meditation.mp3
+
+# ai agent planning artifacts
+implementation_plan.md
+
+# python
+venv
+__pycache__/
+*.py[cod]
+backend/media/
+backend/meditation.db
+backend/.pytest_cache/

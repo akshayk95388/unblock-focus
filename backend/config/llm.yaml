@@ -1,0 +1,25 @@
+# config/llm.yaml — edit to switch models. No code changes needed.
+
+classifier:
+  provider: openai
+  model: gpt-4o-mini
+  temperature: 0.1
+
+script_generator:
+  provider: openai
+  model: gpt-4o-mini
+  temperature: 0.7
+
+tts:
+  primary: elevenlabs
+  elevenlabs:
+    model: eleven_multilingual_v2
+    output_format: mp3_44100_192
+  fallback_chain:
+    - edge_tts
+    - gtts
+  retry_attempts: 3
+  retry_delay_s: 2
+
+cache:
+  tts_ttl_days: 30

@@ -1,27 +1,25 @@
 "use client";
 
-import { useState, useEffect }  from "react";
+import { useState, useEffect } from "react";
 import { getStreak } from "@/lib/sessions";
-import TechniqueSelector from "@/components/FocusEngine/TechniqueSelector";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
   activeTab?: string;
   onTabChange?: (tabId: string) => void;
-  onStartBreathing?: (minutes: number) => void;
   onAddHabit?: () => void;
+  zenMode?: boolean;
 }
 
 export default function DashboardLayout({
   children,
   activeTab = "dashboard",
   onTabChange,
-  onStartBreathing,
   onAddHabit,
+  zenMode = false,
 }: DashboardLayoutProps) {
   const [streak, setStreak] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [breathingMins, setBreathingMins] = useState<number | "">(1);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -29,19 +27,23 @@ export default function DashboardLayout({
   }, []);
 
   const navItems = [
-    { id: "dashboard", label: "Dashboard", icon: "grid" },
-    { id: "habits", label: "Habits", icon: "check-circle" },
+    { id: "dashboard", label: "Home", icon: "home" },
+    { id: "goals", label: "Goals", icon: "check-circle" },
     { id: "history", label: "History", icon: "clock" },
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-on-surface">
-      {/* ===== Top Nav ===== */}
-      <header className="fixed top-0 left-0 right-0 h-16 bg-surface-container-low z-30 flex justify-between items-center px-6 md:px-12">
+    <div className="min-h-screen flex flex-col md:flex-row bg-background text-on-surface">
+      {/* ===== Top Nav (Mobile Only) ===== */}
+      <header
+        className={`fixed top-0 left-0 right-0 h-16 bg-surface-container-low z-30 flex justify-between items-center px-6 md:hidden transition-all duration-500 ease-in-out ${
+          zenMode ? "-translate-y-full opacity-0 pointer-events-none" : "translate-y-0 opacity-100"
+        }`}
+      >
         <div className="flex items-center gap-4">
           {/* Mobile hamburger */}
           <button
-            className="md:hidden text-on-surface-variant"
+            className="text-on-surface-variant"
             onClick={() => setSidebarOpen(!sidebarOpen)}
           >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -53,12 +55,12 @@ export default function DashboardLayout({
           </span>
         </div>
 
-        <div className="flex items-center gap-4 md:gap-6">
+        <div className="flex items-center gap-4">
           {streak > 0 && (
             <div className="flex items-center gap-2 px-3 py-1 bg-surface-container-high rounded-full">
               <span className="text-primary-container text-sm">🔥</span>
               <span className="text-xs font-bold text-on-surface">
-                {streak} Day Streak
+                {streak}-Day Streak
               </span>
             </div>
           )}
@@ -70,32 +72,37 @@ export default function DashboardLayout({
         </div>
       </header>
 
-      <div className="flex flex-1 mt-16">
-        {/* ===== Sidebar ===== */}
-        {/* Mobile overlay */}
-        {sidebarOpen && (
-          <div
-            className="fixed inset-0 z-20 bg-black/50 md:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
+      {/* ===== Sidebar (Full height on desktop) ===== */}
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-20 bg-black/50 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
-        <aside
-          className={`fixed md:sticky top-16 left-0 h-[calc(100vh-4rem)] w-64 bg-surface-container-low flex flex-col gap-6 py-8 px-4 z-20 transition-transform duration-300 ${
-            sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-          }`}
-        >
-          <div className="mb-4 px-4">
-            <h2 className="text-on-surface font-bold text-lg tracking-tight">
-              Deep Focus
-            </h2>
-            <p className="text-on-surface-variant text-xs font-medium opacity-70">
-              Your sanctuary
-            </p>
-          </div>
+      <aside
+        className={`fixed md:sticky top-0 left-0 h-screen bg-surface-container-low flex flex-col z-20 overflow-hidden transition-all duration-500 ease-in-out border-outline-variant/5 ${
+          zenMode
+            ? "-translate-x-full opacity-0 pointer-events-none w-0 !p-0 border-none"
+            : sidebarOpen
+            ? "w-64 translate-x-0 py-8 px-4 border-r"
+            : "w-64 -translate-x-full md:translate-x-0 py-8 px-4 border-r"
+        }`}
+      >
+        <div className="mb-4 px-4">
+          <h2 className="text-xl font-bold tracking-tighter text-primary-container">
+            Unblock
+          </h2>
+          <p className="text-on-surface-variant text-xs font-medium opacity-70 mt-1">
+            Clear your head. Get to work.
+          </p>
+        </div>
 
-          <nav className="flex flex-col gap-2">
-            {navItems.map((item) => (
+        <nav className="flex flex-col gap-2">
+          {navItems.map((item) => {
+            const isActive = activeTab === item.id || (item.id === "dashboard" && activeTab === "meditation");
+            return (
               <button
                 key={item.id}
                 onClick={() => {
@@ -103,90 +110,108 @@ export default function DashboardLayout({
                   onTabChange?.(item.id);
                 }}
                 className={`flex items-center w-full text-left gap-3 rounded-xl px-4 py-3 transition-all active:scale-[0.98] ${
-                  activeTab === item.id
+                  isActive
                     ? "text-on-surface bg-surface-container-highest"
                     : "text-on-surface-variant hover:bg-surface-container-highest/50 hover:text-on-surface"
                 }`}
               >
-                {item.icon === "grid" && (
-                  <svg className={`w-5 h-5 ${activeTab === item.id ? "text-primary-container" : ""}`} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25a2.25 2.25 0 0 1-2.25-2.25v-2.25Z" />
+                {item.icon === "home" && (
+                  <svg className={`w-5 h-5 ${isActive ? "text-primary-container" : ""}`} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
                   </svg>
                 )}
                 {item.icon === "check-circle" && (
-                  <svg className={`w-5 h-5 ${activeTab === item.id ? "text-primary-container" : ""}`} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                  <svg className={`w-5 h-5 ${isActive ? "text-primary-container" : ""}`} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                   </svg>
                 )}
                 {item.icon === "clock" && (
-                  <svg className={`w-5 h-5 ${activeTab === item.id ? "text-primary-container" : ""}`} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                  <svg className={`w-5 h-5 ${isActive ? "text-primary-container" : ""}`} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                   </svg>
                 )}
                 <span className="text-sm font-medium">{item.label}</span>
               </button>
-            ))}
-          </nav>
+            );
+          })}
+        </nav>
 
-          <div className="mt-8 px-4 pt-6 border-t border-outline-variant/10">
-            <h3 className="text-[10px] text-primary font-bold uppercase mb-4 tracking-wider">
-              Breathing Exercise
-            </h3>
-            <div className="flex flex-col gap-3">
-              <TechniqueSelector className="w-full bg-surface-container-highest border-none rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50 text-on-surface appearance-none cursor-pointer" />
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={breathingMins}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val === "") setBreathingMins("");
-                    else setBreathingMins(Number(val));
-                  }}
-                  onBlur={() => {
-                    const val = Number(breathingMins);
-                    if (!val || val < 1) setBreathingMins(1);
-                    else if (val > 10) setBreathingMins(10);
-                  }}
-                  className="w-full bg-surface-container-highest border-none rounded-lg px-3 py-2 text-sm text-center focus:outline-none focus:ring-1 focus:ring-primary/50 text-on-surface tabular-nums"
-                />
-                <span className="text-xs text-on-surface-variant font-medium">min</span>
-              </div>
-              <button
-                onClick={() => {
-                  setSidebarOpen(false);
-                  onStartBreathing?.(Number(breathingMins) || 1);
-                }}
-                className="w-full mt-2 bg-primary/20 hover:bg-primary/30 text-primary-container font-medium rounded-xl py-2.5 transition-colors flex items-center justify-center text-sm"
-              >
-                Breathe
-              </button>
-            </div>
+        {/* Quick Relief Section */}
+        <div className="mt-auto pt-6">
+          <div className="px-4 mb-3">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-primary-container">
+              Quick Relief
+            </p>
+            <p className="text-[11px] text-on-surface-variant opacity-60 mt-0.5">
+              Instant calm. Works offline.
+            </p>
           </div>
-
-          <div className="mt-6 px-4">
-            <button
-              onClick={() => {
-                setSidebarOpen(false);
-                onAddHabit?.();
-              }}
-              className="w-full px-4 py-3 rounded-xl text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest/50 transition-all active:scale-95 flex items-center justify-center gap-2 border border-outline-variant/20"
+          <button
+            onClick={() => {
+              setSidebarOpen(false);
+              onTabChange?.("breathing");
+            }}
+            className={`flex items-center w-full text-left gap-3 rounded-xl px-4 py-3 transition-all active:scale-[0.98] border border-outline-variant/10 ${
+              activeTab === "breathing"
+                ? "text-on-surface bg-surface-container-highest"
+                : "text-on-surface-variant hover:bg-surface-container-highest/50 hover:text-on-surface"
+            }`}
+          >
+            <svg
+              className={`w-5 h-5 ${activeTab === "breathing" ? "text-primary-container" : ""}`}
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-              </svg>
-              Add Habit
-            </button>
-          </div>
-        </aside>
+              <circle cx="12" cy="12" r="9" />
+              <circle
+                cx="12"
+                cy="12"
+                r="5"
+                className="animate-pulse origin-center"
+                style={{ animationDuration: "4s" }}
+              />
+            </svg>
+            <span className="text-sm font-medium">Breathing Exercise</span>
+          </button>
+        </div>
 
-        {/* ===== Main Content ===== */}
-        <main className="flex-1 overflow-y-auto">
-          {children}
-        </main>
-      </div>
+        {/* Desktop Footer (Streak + Profile) */}
+        <div className="pt-6 border-t border-outline-variant/10 flex flex-col gap-4">
+          {/* User profile + Streak footer row */}
+          <div className="flex items-center justify-between px-2 pt-2">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center border border-outline-variant/10">
+                <svg className="w-4 h-4 text-on-surface-variant" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                </svg>
+              </div>
+              <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">
+                Account
+              </span>
+            </div>
+
+            {streak > 0 && (
+              <div className="flex items-center gap-1 px-2.5 py-1 bg-surface-container-high rounded-full border border-outline-variant/5">
+                <span className="text-xs">🔥</span>
+                <span className="text-[10px] font-bold text-on-surface font-mono">
+                  {streak}d
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      </aside>
+
+      {/* ===== Main Content ===== */}
+      <main
+        className={`flex-1 overflow-y-auto transition-all duration-500 ease-in-out ${
+          zenMode ? "pt-0" : "pt-16 md:pt-0"
+        }`}
+      >
+        {children}
+      </main>
     </div>
   );
 }

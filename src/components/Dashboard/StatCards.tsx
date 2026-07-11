@@ -19,7 +19,7 @@ export default function StatCards() {
 
   const cards = [
     {
-      label: "Focus Streak",
+      label: "Day Streak",
       value: streak,
       suffix: " Days",
       extra: (
@@ -51,7 +51,7 @@ export default function StatCards() {
       ),
     },
     {
-      label: "Completion Rate",
+      label: "Finish Rate",
       value: completionRate,
       suffix: "%",
       extra: (
