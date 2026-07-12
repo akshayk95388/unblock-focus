@@ -17,6 +17,13 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
+@router.get("/api/status-ping")
+async def status_ping():
+    """Simple ping route to verify automated deployments."""
+    return {"ping": "pong", "deployment": "automatic-github-actions-v1"}
+
+
+
 @router.get("/api/audio-url")
 async def get_audio_url(key: str):
     """Generate a temporary presigned URL for a given S3 storage key."""
