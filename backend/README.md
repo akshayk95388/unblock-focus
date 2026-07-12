@@ -69,3 +69,76 @@ backend/
 ├── tests/           # Tests organized by phase
 └── scripts/         # CLI tools
 ```
+
+## Deployment & VPS Architecture
+
+This project is deployed on a Hostinger VPS and configured with an automated Git pipeline (CI/CD) and Nginx reverse proxy.
+
+### 1. Architecture Flow
+```text
+Client Request (HTTPS) 
+  → Nginx (Reverse Proxy + SSL on unblock-api.axonic.cloud)
+  → Docker Container (FastAPI App on port 8001)
+  → Redis Container (Docker Bridge Network)
+  → AWS S3 (Audio Storage) & SQLite (Database Volume)
+```
+
+### 2. VPS Access & Operations
+* **SSH to VPS**:
+  ```bash
+  ssh deploy@srv1391251.hstgr.cloud
+  ```
+  *(Uses the authorized SSH key `id_ed25519` on your local Mac.)*
+
+* **Checking Application Status**:
+  ```bash
+  docker ps
+  ```
+* **View Server Logs**:
+  ```bash
+  docker compose -f /opt/apps/unblock-focus/backend/deploy/docker-compose.yml logs -f
+  ```
+* **Manually Restart Backend**:
+  ```bash
+  /opt/apps/unblock-focus/backend/start.sh
+  ```
+
+### 3. Docker Compose Setup
+The backend runs inside a Docker container with an internal bridge network to Redis. 
+* **Port Mapping**: The backend container binds internally to port `8000` but maps to host port `8001` (`127.0.0.1:8001:8000`) to avoid conflicts with other apps (like `feather-ai-backend` on port `8000`).
+* **Volume Mapping**: Database (`/app/data`) and media (`/app/media`) are mapped to persistent Docker volumes.
+
+### 4. Nginx & Domain Routing
+Nginx manages SSL and routes traffic to the container.
+* **Config File Location on VPS**: `/etc/nginx/sites-available/axonic`
+* **Subdomain configuration block**:
+  ```nginx
+  server {
+      listen 443 ssl http2;
+      server_name unblock-api.axonic.cloud;
+      
+      # SSL Certs paths (managed by Certbot)
+      ssl_certificate /etc/letsencrypt/live/unblock-api.axonic.cloud/fullchain.pem;
+      ssl_certificate_key /etc/letsencrypt/live/unblock-api.axonic.cloud/privkey.pem;
+
+      location / {
+          proxy_pass http://127.0.0.1:8001;
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          
+          # SSE Buffering Off (Critical for real-time progress updates)
+          proxy_http_version 1.1;
+          proxy_set_header Connection "";
+          proxy_buffering off;
+          proxy_cache off;
+          chunked_transfer_encoding off;
+      }
+  }
+  ```
+
+### 5. Automatic GitHub Actions Pipeline
+Defined in `.github/workflows/deploy-backend.yml`. 
+1. **Trigger**: When changes are pushed to `main` under the `backend/` directory.
+2. **Action**: Connects to VPS via SSH using GitHub secrets (`VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`).
+3. **Execution**: Navigates to `/opt/apps/unblock-focus`, runs `git pull`, and executes `backend/start.sh` to rebuild the Docker image and restart the containers.
+
