@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+
 const nextConfig: NextConfig = {
   async redirects() {
     return [
@@ -14,27 +16,27 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/generate",
-        destination: "http://localhost:8000/api/generate",
+        destination: `${backendUrl}/api/generate`,
       },
       {
         source: "/api/generate/stream/:path*",
-        destination: "http://localhost:8000/api/generate/stream/:path*",
+        destination: `${backendUrl}/api/generate/stream/:path*`,
       },
       {
         source: "/api/status/:path*",
-        destination: "http://localhost:8000/api/status/:path*",
+        destination: `${backendUrl}/api/status/:path*`,
       },
       {
         source: "/api/audio-url",
-        destination: "http://localhost:8000/api/audio-url",
+        destination: `${backendUrl}/api/audio-url`,
       },
       {
         source: "/api/history",
-        destination: "http://localhost:8000/api/history",
+        destination: `${backendUrl}/api/history`,
       },
       {
         source: "/media/:path*",
-        destination: "http://localhost:8000/media/:path*",
+        destination: `${backendUrl}/media/:path*`,
       },
     ];
   },
