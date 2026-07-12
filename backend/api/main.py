@@ -3,12 +3,13 @@ import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
 from db.session import init_db
 from api.routes import generate, status, history
+from api.auth import verify_api_key
 
 # Configure logging
 logging.basicConfig(
@@ -56,9 +57,9 @@ media_dir.mkdir(parents=True, exist_ok=True)
 app.mount("/media", StaticFiles(directory=str(media_dir)), name="media")
 
 # Register routes
-app.include_router(generate.router)
-app.include_router(status.router)
-app.include_router(history.router)
+app.include_router(generate.router, dependencies=[Depends(verify_api_key)])
+app.include_router(status.router, dependencies=[Depends(verify_api_key)])
+app.include_router(history.router, dependencies=[Depends(verify_api_key)])
 
 
 @app.get("/api/health")

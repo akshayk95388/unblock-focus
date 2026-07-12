@@ -15,26 +15,6 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
-        source: "/api/generate",
-        destination: `${backendUrl}/api/generate`,
-      },
-      {
-        source: "/api/generate/stream/:path*",
-        destination: `${backendUrl}/api/generate/stream/:path*`,
-      },
-      {
-        source: "/api/status/:path*",
-        destination: `${backendUrl}/api/status/:path*`,
-      },
-      {
-        source: "/api/audio-url",
-        destination: `${backendUrl}/api/audio-url`,
-      },
-      {
-        source: "/api/history",
-        destination: `${backendUrl}/api/history`,
-      },
-      {
         source: "/media/:path*",
         destination: `${backendUrl}/media/:path*`,
       },
