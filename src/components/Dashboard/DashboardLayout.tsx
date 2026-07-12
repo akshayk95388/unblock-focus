@@ -22,6 +22,7 @@ export default function DashboardLayout({
 }: DashboardLayoutProps) {
   const [streak, setStreak] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
   const router = useRouter();
 
@@ -187,26 +188,55 @@ export default function DashboardLayout({
         </div>
 
         {/* Desktop Footer (Streak + Profile) */}
-        <div className="pt-6 border-t border-outline-variant/10 flex flex-col gap-4">
-          {/* User profile + Streak footer row */}
-          <div className="flex items-center justify-between px-2 pt-2">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center border border-outline-variant/10 text-xs font-bold text-on-surface-variant uppercase overflow-hidden">
-                {user?.user_metadata?.avatar_url ? (
-                  <img src={user.user_metadata.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
-                ) : (
-                  user?.email?.charAt(0) || "U"
-                )}
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider truncate max-w-[120px]">
-                  {user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Account"}
-                </span>
-              </div>
+        <div className="pt-6 border-t border-outline-variant/10 relative">
+          {/* Profile Dropdown Menu */}
+          {profileMenuOpen && (
+            <div className="absolute bottom-16 left-2 right-2 bg-surface-container-high border border-outline-variant/10 rounded-2xl p-2 shadow-lg z-50 flex flex-col gap-1">
+              <button
+                onClick={async () => {
+                  await signOut();
+                  router.push("/");
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-on-surface-variant/70 hover:text-on-surface hover:bg-surface-container-highest/50 rounded-xl transition-all text-xs font-semibold"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+                </svg>
+                Sign out
+              </button>
             </div>
+          )}
+
+          {/* Interactive Profile Selector */}
+          <div className="flex items-center justify-between px-2 pt-2">
+            <button
+              onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+              className="flex-1 flex items-center justify-between p-2 hover:bg-surface-container-high rounded-xl transition-all border border-transparent hover:border-outline-variant/5 text-left min-w-0"
+            >
+              <div className="flex items-center gap-2 truncate">
+                <div className="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center border border-outline-variant/10 text-xs font-bold text-on-surface-variant uppercase overflow-hidden shrink-0">
+                  {user?.user_metadata?.avatar_url ? (
+                    <img src={user.user_metadata.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
+                  ) : (
+                    user?.email?.charAt(0) || "U"
+                  )}
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider truncate max-w-[110px]">
+                    {user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Account"}
+                  </span>
+                  <span className="text-[9px] text-on-surface-variant/50 truncate max-w-[110px]">
+                    Manage session
+                  </span>
+                </div>
+              </div>
+              <svg className={`w-3 h-3 text-on-surface-variant/60 transition-transform ${profileMenuOpen ? 'rotate-180' : ''} shrink-0 ml-2`} fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+              </svg>
+            </button>
 
             {streak > 0 && (
-              <div className="flex items-center gap-1 px-2.5 py-1 bg-surface-container-high rounded-full border border-outline-variant/5">
+              <div className="flex items-center gap-1 px-2.5 py-1 bg-surface-container-high rounded-full border border-outline-variant/5 ml-2 shrink-0">
                 <span className="text-xs">🔥</span>
                 <span className="text-[10px] font-bold text-on-surface font-mono">
                   {streak}d
@@ -214,20 +244,6 @@ export default function DashboardLayout({
               </div>
             )}
           </div>
-
-          {/* Sign out button */}
-          <button
-            onClick={async () => {
-              await signOut();
-              router.push("/");
-            }}
-            className="flex items-center gap-2 px-4 py-2 text-on-surface-variant/60 hover:text-on-surface-variant hover:bg-surface-container-highest/50 rounded-xl transition-all text-xs font-medium"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
-            </svg>
-            Sign out
-          </button>
         </div>
       </aside>
 
