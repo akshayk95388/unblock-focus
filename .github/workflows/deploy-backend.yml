@@ -1,0 +1,31 @@
+name: Deploy Backend to VPS
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            # Navigate to the unblock-focus repo on the VPS
+            cd /opt/apps/unblock-focus
+            
+            # Pull latest changes
+            git pull
+            
+            # Navigate to backend directory and start containers
+            cd backend
+            chmod +x start.sh
+            ./start.sh
