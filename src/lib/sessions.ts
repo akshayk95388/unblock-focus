@@ -2,6 +2,12 @@
 
 import { createClient } from "@/lib/supabase/client";
 
+export interface SubtitleEntry {
+  text: string;
+  start_ms: number;
+  end_ms: number;
+}
+
 export interface SessionRecord {
   id: string;
   user_id: string;
@@ -11,6 +17,9 @@ export interface SessionRecord {
   completed_at: string; // ISO date
   aborted: boolean;
   session_type: string; // 'guided', 'focus', 'breathing'
+  audio_url?: string | null;
+  subtitles?: SubtitleEntry[] | null;
+  is_favorite: boolean;
 }
 
 // Save a completed session
@@ -19,34 +28,122 @@ export async function saveSession(
   durationSeconds: number,
   habitId?: string,
   aborted: boolean = false,
-  sessionType: string = "focus"
+  sessionType: string = "focus",
+  audioUrl?: string | null,
+  subtitles?: SubtitleEntry[] | null
 ): Promise<SessionRecord | null> {
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) return null;
+  if (!user) {
+    console.error("saveSession: No authenticated user, cannot save");
+    return null;
+  }
+
+  // Strip query params from presigned URLs — store the clean static S3 URL
+  let staticAudioUrl: string | null = null;
+  if (audioUrl) {
+    try {
+      const parsed = new URL(audioUrl);
+      staticAudioUrl = parsed.origin + parsed.pathname;
+    } catch {
+      staticAudioUrl = audioUrl.split("?")[0];
+    }
+  }
+
+  const roundedDuration = Math.round(durationSeconds);
+
+  const payload = {
+    user_id: user.id,
+    intent,
+    habit_id: habitId || null,
+    duration_seconds: roundedDuration,
+    aborted,
+    session_type: sessionType,
+    audio_url: staticAudioUrl,
+    subtitles: subtitles || null,
+  };
+
+  console.log("saveSession: Inserting session", { intent, sessionType, durationSeconds: roundedDuration, hasAudio: !!staticAudioUrl });
 
   const { data, error } = await supabase
     .from("sessions")
-    .insert({
-      user_id: user.id,
-      intent,
-      habit_id: habitId || null,
-      duration_seconds: durationSeconds,
-      aborted,
-      session_type: sessionType,
-    })
+    .insert(payload)
     .select()
     .single();
 
   if (error) {
-    console.error("Error saving session:", error);
-    return null;
+    console.error("saveSession: Error:", error.message, "| code:", error.code, "| details:", error.details, "| hint:", error.hint);
+
+    // Fallback: if insert failed (e.g. PostgREST schema cache stale for new columns),
+    // retry without audio fields so the session is at least recorded
+    console.warn("saveSession: Retrying without audio fields...");
+    const { data: fallbackData, error: fallbackError } = await supabase
+      .from("sessions")
+      .insert({
+        user_id: user.id,
+        intent,
+        habit_id: habitId || null,
+        duration_seconds: roundedDuration,
+        aborted,
+        session_type: sessionType,
+      })
+      .select()
+      .single();
+
+    if (fallbackError) {
+      console.error("saveSession: Fallback also failed:", fallbackError.message, "| code:", fallbackError.code);
+      return null;
+    }
+
+    console.log("saveSession: Fallback saved (without audio)", fallbackData.id);
+    return fallbackData as SessionRecord;
   }
 
+  console.log("saveSession: Session saved successfully", data.id);
   return data as SessionRecord;
+}
+
+// Toggle favorite status on a session
+export async function toggleFavorite(
+  sessionId: string,
+  isFavorite: boolean
+): Promise<boolean> {
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from("sessions")
+    .update({ is_favorite: isFavorite })
+    .eq("id", sessionId);
+
+  if (error) {
+    console.error("Error toggling favorite:", error);
+    return false;
+  }
+
+  return true;
+}
+
+// Get favorite guided sessions for replay
+export async function getFavoriteSessions(): Promise<SessionRecord[]> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from("sessions")
+    .select("*")
+    .eq("is_favorite", true)
+    .eq("session_type", "guided")
+    .not("audio_url", "is", null)
+    .order("completed_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching favorite sessions:", error);
+    return [];
+  }
+
+  return (data ?? []) as SessionRecord[];
 }
 
 // Get all sessions (reverse chronological)

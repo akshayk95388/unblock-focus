@@ -25,6 +25,10 @@ const nextConfig: NextConfig = {
         destination: "http://localhost:8000/api/status/:path*",
       },
       {
+        source: "/api/audio-url",
+        destination: "http://localhost:8000/api/audio-url",
+      },
+      {
         source: "/api/history",
         destination: "http://localhost:8000/api/history",
       },

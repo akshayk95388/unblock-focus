@@ -7,7 +7,7 @@ from typing import List
 from engine.state import MeditationEngineState
 from engine.models.events import SpeechEvent
 from engine.models.job import SubtitleEntry
-from storage.local_backend import LocalStorageBackend
+from storage.factory import get_storage_backend
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +45,7 @@ async def storage_notify_node(state: MeditationEngineState) -> dict:
     mastered_path = state["mastered_path"]
 
     # Store the file
-    storage = LocalStorageBackend()
+    storage = get_storage_backend()
     storage_key = f"{job_id}/meditation.mp3"
     storage_url = await storage.store(mastered_path, storage_key)
 

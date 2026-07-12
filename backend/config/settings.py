@@ -22,6 +22,12 @@ class Settings(BaseSettings):
     media_dir: str = Field(default="./media", alias="MEDIA_DIR")
     assets_dir: str = Field(default="./assets", alias="ASSETS_DIR")
 
+    # AWS S3
+    aws_access_key_id: str = Field(default="", alias="AWS_ACCESS_KEY_ID")
+    aws_secret_access_key: str = Field(default="", alias="AWS_SECRET_ACCESS_KEY")
+    aws_region: str = Field(default="us-east-1", alias="AWS_REGION")
+    aws_bucket_name: str = Field(default="", alias="AWS_S3_BUCKET")
+
     # Database
     database_url: str = Field(
         default="sqlite+aiosqlite:///./meditation.db",

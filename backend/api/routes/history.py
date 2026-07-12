@@ -16,7 +16,12 @@ async def get_history(
     offset: int = Query(default=0, ge=0),
     db: AsyncSession = Depends(get_db),
 ):
-    """Get meditation generation history."""
+    """Get meditation generation history.
+
+    Note: audio_url is the raw S3 storage URL (not playable directly).
+    Clients must call GET /api/audio-url?key=... to get a temporary
+    presigned URL when the user actually wants to play a session.
+    """
     # Count total
     count_result = await db.execute(select(func.count(MeditationJob.id)))
     total = count_result.scalar()

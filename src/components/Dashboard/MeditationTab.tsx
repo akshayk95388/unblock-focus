@@ -2,13 +2,21 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { getHabits, type Habit } from "@/lib/habits";
-import { saveSession } from "@/lib/sessions";
+import { saveSession, toggleFavorite, type SubtitleEntry } from "@/lib/sessions";
 import { track } from "@/lib/mixpanel";
 import BreathingRing from "@/components/FocusEngine/BreathingRing";
 import Confetti from "@/components/FocusEngine/Confetti";
 import CustomSelect from "@/components/ui/CustomSelect";
 
-interface SubtitleEntry {
+export interface ReplayConfig {
+  audioUrl: string;
+  title: string;
+  subtitles: SubtitleEntry[];
+  duration: number;
+  returnTab: string;
+}
+
+interface MeditationSubtitleEntry {
   text: string;
   start_ms: number;
   end_ms: number;
@@ -24,6 +32,8 @@ interface MeditationTabProps {
   onZenModeChange?: (active: boolean) => void;
   zenActive?: boolean;
   onToggleZen?: () => void;
+  replayConfig?: ReplayConfig | null;
+  onClearReplay?: () => void;
 }
 
 // ===== Breathing Guide shown during AI generation =====
@@ -126,6 +136,8 @@ export default function MeditationTab({
   onZenModeChange,
   zenActive = false,
   onToggleZen,
+  replayConfig,
+  onClearReplay,
 }: MeditationTabProps) {
   // Input settings
   const [stressor, setStressor] = useState(initialStressor);
@@ -154,22 +166,29 @@ export default function MeditationTab({
   const [habits, setHabits] = useState<Habit[]>([]);
   const [status, setStatus] = useState<
     "idle" | "generating" | "playing" | "post_reset" | "focus_timer" | "session_complete" | "failed"
-  >(directFocusMode ? "post_reset" : initialStressor.trim() ? "generating" : "idle");
+  >(replayConfig ? "playing" : directFocusMode ? "post_reset" : initialStressor.trim() ? "generating" : "idle");
   const [jobId, setJobId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Buffered audio ready flag — lets breathing finish its cycle before transitioning
-  const [audioReady, setAudioReady] = useState(false);
+  const [audioReady, setAudioReady] = useState(replayConfig ? true : false);
 
   // Progress state
   const [stage, setStage] = useState("");
   const [percent, setPercent] = useState(0);
 
   // Audio / Subtitle state
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [title, setTitle] = useState("Guided Session");
-  const [subtitles, setSubtitles] = useState<SubtitleEntry[]>([]);
-  const [actualDuration, setActualDuration] = useState(0);
+  const [audioUrl, setAudioUrl] = useState<string | null>(replayConfig ? replayConfig.audioUrl : null);
+  const [title, setTitle] = useState(replayConfig ? replayConfig.title : "Guided Session");
+  const [subtitles, setSubtitles] = useState<MeditationSubtitleEntry[]>(
+    replayConfig ? (replayConfig.subtitles as MeditationSubtitleEntry[]) : []
+  );
+  const [actualDuration, setActualDuration] = useState(replayConfig ? replayConfig.duration : 0);
+
+  // Replay mode
+  const [isReplay, setIsReplay] = useState(replayConfig ? true : false);
+  const [savedSessionId, setSavedSessionId] = useState<string | null>(null);
+  const [isFavorited, setIsFavorited] = useState(false);
 
   // Audio Player State
   const [isPlaying, setIsPlaying] = useState(false);
@@ -186,7 +205,7 @@ export default function MeditationTab({
   const [showQuitTrap, setShowQuitTrap] = useState(false);
 
   // Track whether a reset was done (for session logging)
-  const [resetDone, setResetDone] = useState(false);
+  const [resetDone, setResetDone] = useState(replayConfig ? true : false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
@@ -435,8 +454,13 @@ export default function MeditationTab({
 
     const handleEnded = () => {
       setIsPlaying(false);
-      // Auto-transition to post-reset choice screen
-      setStatus("post_reset");
+      if (isReplay) {
+        // Replays skip the post-reset focus timer screen
+        setStatus("session_complete");
+      } else {
+        // Auto-transition to post-reset choice screen
+        setStatus("post_reset");
+      }
     };
 
     audio.addEventListener("timeupdate", handleTimeUpdate);
@@ -446,7 +470,7 @@ export default function MeditationTab({
       audio.removeEventListener("timeupdate", handleTimeUpdate);
       audio.removeEventListener("ended", handleEnded);
     };
-  }, [status, subtitles]);
+  }, [status, subtitles, isReplay]);
 
   // Sync volume change
   useEffect(() => {
@@ -513,6 +537,12 @@ export default function MeditationTab({
   // Record session to history & streaks
   const handleLogSession = async () => {
     if (sessionLogged) return;
+    // Replays don't create new session records
+    if (isReplay) {
+      setSessionLogged(true);
+      return;
+    }
+
     let totalSeconds = 0;
 
     // Count reset time if reset was done
@@ -528,7 +558,18 @@ export default function MeditationTab({
 
     const sessionName = resetDone ? `Guided: ${title}` : `Focus: ${workTask}`;
     const sessionType = resetDone ? "guided" : "focus";
-    await saveSession(sessionName, totalSeconds, selectedHabitId || undefined, false, sessionType);
+    const saved = await saveSession(
+      sessionName,
+      totalSeconds,
+      selectedHabitId || undefined,
+      false,
+      sessionType,
+      resetDone ? audioUrl : null,
+      resetDone ? (subtitles as SubtitleEntry[]) : null
+    );
+    if (saved) {
+      setSavedSessionId(saved.id);
+    }
     track(resetDone ? "guided_session_completed" : "focus_session_completed", {
       duration_mins: Math.round(totalSeconds / 60),
       duration_seconds: totalSeconds,
@@ -620,6 +661,10 @@ export default function MeditationTab({
     setSubtitles([]);
     setResetDone(false);
     setFocusTimerUsed(false);
+    setIsReplay(false);
+    setSavedSessionId(null);
+    setIsFavorited(false);
+    onClearReplay?.();
     onSessionComplete?.();
   };
 
@@ -695,23 +740,32 @@ export default function MeditationTab({
 
             <div className="w-full flex items-center justify-between border-b border-outline-variant/10 pb-4 z-10">
               <div className="flex items-center gap-3">
-                <span className="text-xs px-2 py-0.5 rounded bg-primary/20 text-primary font-bold uppercase tracking-wider">
-                  Active Session
+                <span className={`text-xs px-2 py-0.5 rounded font-bold uppercase tracking-wider ${isReplay ? "bg-tertiary/20 text-tertiary" : "bg-primary/20 text-primary"}`}>
+                  {isReplay ? "Replaying" : "Active Session"}
                 </span>
                 <h3 className="text-sm font-bold text-on-surface">{title}</h3>
               </div>
-              <button
-                onClick={() => {
-                  if (audioRef.current) {
-                    audioRef.current.pause();
-                  }
-                  setIsPlaying(false);
-                  setStatus("post_reset");
-                }}
-                className="text-xs font-bold text-on-surface-variant hover:text-on-surface transition-colors"
-              >
-                I&apos;m ready to work →
-              </button>
+              {isReplay ? (
+                <button
+                  onClick={handleResetAll}
+                  className="text-xs font-bold text-on-surface-variant hover:text-on-surface transition-colors"
+                >
+                  ← Exit Replay
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    if (audioRef.current) {
+                      audioRef.current.pause();
+                    }
+                    setIsPlaying(false);
+                    setStatus("post_reset");
+                  }}
+                  className="text-xs font-bold text-on-surface-variant hover:text-on-surface transition-colors"
+                >
+                  I&apos;m ready to work →
+                </button>
+              )}
             </div>
 
             {/* Subtitle / Breathing Ring Area */}
@@ -1165,27 +1219,48 @@ export default function MeditationTab({
               totalMinutes += Math.round((focusDuration * 60 - focusSecondsLeft) / 60);
             }
 
-            const description = resetDone && focusTimerUsed
-              ? `${Math.round((actualDuration || durationMins * 60) / 60)} min guided session + ${Math.round((focusDuration * 60 - focusSecondsLeft) / 60)} min focus session`
-              : resetDone
-                ? `${totalMinutes} min guided session`
-                : `${totalMinutes} min focus session`;
+            const description = isReplay
+              ? "Replay finished"
+              : resetDone && focusTimerUsed
+                ? `${Math.round((actualDuration || durationMins * 60) / 60)} min guided session + ${Math.round((focusDuration * 60 - focusSecondsLeft) / 60)} min focus session`
+                : resetDone
+                  ? `${totalMinutes} min guided session`
+                  : `${totalMinutes} min focus session`;
 
             return (
               <div className="flex flex-col items-center justify-center min-h-[500px] text-center space-y-8">
-                <Confetti />
+                {!isReplay && <Confetti />}
                 <div className="w-20 h-20 rounded-full bg-green-500/10 flex items-center justify-center">
                   <svg className="w-10 h-10 text-green-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                   </svg>
                 </div>
                 <div className="space-y-2">
-                  <h2 className="text-3xl font-bold tracking-tight text-on-surface">Session Complete</h2>
-                  <p className="text-on-surface-variant text-sm">{description}. Nice.</p>
+                  <h2 className="text-3xl font-bold tracking-tight text-on-surface">
+                    {isReplay ? "Replay Complete" : "Session Complete"}
+                  </h2>
+                  <p className="text-on-surface-variant text-sm">{description}{isReplay ? "" : ". Nice."}</p>
                 </div>
-                <div className="flex gap-4">
+                <div className="flex items-center gap-4">
+                  {/* Save to Favorites — only for new guided sessions with audio */}
+                  {!isReplay && resetDone && audioUrl && savedSessionId && (
+                    <button
+                      onClick={async () => {
+                        const newState = !isFavorited;
+                        setIsFavorited(newState);
+                        await toggleFavorite(savedSessionId, newState);
+                      }}
+                      className={`px-6 py-4 rounded-xl text-sm font-bold border transition-all ${
+                        isFavorited
+                          ? "bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/15"
+                          : "bg-surface-container-highest border-outline-variant/15 text-on-surface-variant hover:bg-surface-container-highest/80"
+                      }`}
+                    >
+                      {isFavorited ? "❤️ Saved to Favorites" : "🤍 Save to Favorites"}
+                    </button>
+                  )}
                   <button onClick={handleResetAll} className="glow-button px-8 py-4 rounded-xl text-sm font-bold">
-                    Back to Dashboard
+                    {isReplay ? "Back" : "Back to Dashboard"}
                   </button>
                 </div>
               </div>

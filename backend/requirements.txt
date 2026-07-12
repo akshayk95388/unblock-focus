@@ -25,6 +25,9 @@ numpy==1.26.4
 # Cache + Redis
 redis==5.0.8
 
+# Storage
+boto3==1.35.0
+
 # Database
 sqlalchemy==2.0.35
 aiosqlite==0.20.0

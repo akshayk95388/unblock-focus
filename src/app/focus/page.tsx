@@ -6,10 +6,10 @@ import DailyGoalProgress from "@/components/Dashboard/DailyGoalProgress";
 import HabitManager from "@/components/Dashboard/HabitManager";
 import HabitsTab from "@/components/Dashboard/HabitsTab";
 import HistoryTab from "@/components/Dashboard/HistoryTab";
-import MeditationTab from "@/components/Dashboard/MeditationTab";
+import MeditationTab, { type ReplayConfig } from "@/components/Dashboard/MeditationTab";
 import Breathing from "@/components/FocusEngine/Breathing";
 import CustomSelect from "@/components/ui/CustomSelect";
-import { saveSession } from "@/lib/sessions";
+import { saveSession, type SessionRecord } from "@/lib/sessions";
 import { getHabits, addHabit } from "@/lib/habits";
 import { track } from "@/lib/mixpanel";
 
@@ -34,6 +34,9 @@ export default function DashboardPage() {
   // Inline stressor input on dashboard hero
   const [heroStressor, setHeroStressor] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Replay state — for replaying past guided sessions
+  const [pendingReplay, setPendingReplay] = useState<ReplayConfig | null>(null);
 
   // Quick Breathing Tab settings
   const [breathingTech, setBreathingTech] = useState("box");
@@ -91,7 +94,41 @@ export default function DashboardPage() {
     setRefreshKey((k) => k + 1);
     setPendingStressor("");
     setDirectFocusMode(false);
-    setCurrentTab("dashboard");
+    // If replaying, return to the tab they came from
+    if (pendingReplay) {
+      setCurrentTab(pendingReplay.returnTab);
+      setPendingReplay(null);
+    } else {
+      setCurrentTab("dashboard");
+    }
+  }, [pendingReplay]);
+
+  const handleReplaySession = useCallback(async (session: SessionRecord, fromTab: string) => {
+    if (!session.audio_url) return;
+
+    let playableUrl = session.audio_url;
+    if (playableUrl.includes("s3.amazonaws.com") || playableUrl.includes(".s3.")) {
+      try {
+        const urlObj = new URL(playableUrl);
+        const key = urlObj.pathname.startsWith("/") ? urlObj.pathname.slice(1) : urlObj.pathname;
+        const res = await fetch(`/api/audio-url?key=${encodeURIComponent(key)}`);
+        if (res.ok) {
+          const data = await res.json();
+          playableUrl = data.url;
+        }
+      } catch (e) {
+        console.error("Error fetching presigned S3 URL:", e);
+      }
+    }
+
+    setPendingReplay({
+      audioUrl: playableUrl,
+      title: session.intent,
+      subtitles: session.subtitles || [],
+      duration: session.duration_seconds,
+      returnTab: fromTab,
+    });
+    setCurrentTab("meditation");
   }, []);
 
   const handleStartBreathing = useCallback((minutes: number) => {
@@ -295,6 +332,8 @@ export default function DashboardPage() {
             onZenModeChange={setIsMeditationZen}
             zenActive={isZenActive}
             onToggleZen={() => setManualZenDisabled((prev) => !prev)}
+            replayConfig={pendingReplay}
+            onClearReplay={() => setPendingReplay(null)}
           />
         )}
 
@@ -302,7 +341,11 @@ export default function DashboardPage() {
           <HabitsTab onAddHabit={() => setShowHabitManager(true)} />
         )}
 
-        {currentTab === "history" && <HistoryTab />}
+        {currentTab === "history" && (
+          <HistoryTab
+            onReplaySession={(session) => handleReplaySession(session, "history")}
+          />
+        )}
 
         {currentTab === "breathing" && (
           standaloneBreathing ? (
