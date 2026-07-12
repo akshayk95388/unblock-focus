@@ -19,12 +19,17 @@ export default function DailyGoalProgress() {
   const [items, setItems] = useState<ProgressItem[]>([]);
 
   useEffect(() => {
-    const habits = getHabits();
-    const progress = habits.map((habit) => ({
-      habit,
-      minutesDone: getDailyGoalProgress(habit.id),
-    }));
-    setItems(progress);
+    async function loadProgress() {
+      const habits = await getHabits();
+      const progress = await Promise.all(
+        habits.map(async (habit) => ({
+          habit,
+          minutesDone: await getDailyGoalProgress(habit.id),
+        }))
+      );
+      setItems(progress);
+    }
+    loadProgress();
   }, []);
 
   if (items.length === 0) return null;
@@ -38,15 +43,15 @@ export default function DailyGoalProgress() {
         {items.map(({ habit, minutesDone }) => {
           const pct = Math.min(
             100,
-            Math.round((minutesDone / habit.dailyGoalMinutes) * 100)
+            Math.round((minutesDone / habit.daily_goal_minutes) * 100)
           );
           const barColor = colorMap[habit.color] || "bg-primary";
 
           // Format display
-          const goalHrs = habit.dailyGoalMinutes >= 60;
+          const goalHrs = habit.daily_goal_minutes >= 60;
           const goalDisplay = goalHrs
-            ? `${Math.round(habit.dailyGoalMinutes / 60)} hrs`
-            : `${habit.dailyGoalMinutes} min`;
+            ? `${Math.round(habit.daily_goal_minutes / 60)} hrs`
+            : `${habit.daily_goal_minutes} min`;
           const doneHrs = minutesDone >= 60;
           const doneDisplay = doneHrs
             ? `${Math.floor(minutesDone / 60)}h ${minutesDone % 60}m`

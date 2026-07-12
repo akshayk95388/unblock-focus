@@ -14,36 +14,53 @@ export default function HabitsTab({ onAddHabit }: HabitsTabProps) {
   const [habitSessions, setHabitSessions] = useState<SessionRecord[]>([]);
   const [miscSessions, setMiscSessions] = useState<SessionRecord[]>([]);
   const [showMisc, setShowMisc] = useState(false);
+  const [habitStats, setHabitStats] = useState<Record<string, { todayMins: number; totalSessions: number }>>({});
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setHabits(getHabits());
-    // Sessions with no habit
-    const all = getSessions();
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMiscSessions(
-      all.filter((s) => !s.habitId).sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())
-    );
+    async function loadData() {
+      const [habitsData, allSessions] = await Promise.all([
+        getHabits(),
+        getSessions(),
+      ]);
+      setHabits(habitsData);
+      setMiscSessions(
+        allSessions.filter((s) => !s.habit_id).sort((a, b) => new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime())
+      );
+
+      // Load per-habit stats
+      const stats: Record<string, { todayMins: number; totalSessions: number }> = {};
+      await Promise.all(
+        habitsData.map(async (habit) => {
+          const [todayMins, sessions] = await Promise.all([
+            getDailyGoalProgress(habit.id),
+            getSessionsByHabit(habit.id),
+          ]);
+          stats[habit.id] = { todayMins, totalSessions: sessions.length };
+        })
+      );
+      setHabitStats(stats);
+    }
+    loadData();
   }, []);
 
-  const handleDelete = (id: string, name: string) => {
+  const handleDelete = async (id: string, name: string) => {
     if (confirm(`Are you sure you want to delete "${name}"?`)) {
-      if (deleteHabit(id)) {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-        setHabits(getHabits());
+      if (await deleteHabit(id)) {
+        setHabits(await getHabits());
       }
     }
   };
 
-  const toggleExpand = (habitId: string) => {
+  const toggleExpand = async (habitId: string) => {
     if (expandedHabitId === habitId) {
       setExpandedHabitId(null);
       return;
     }
     setExpandedHabitId(habitId);
+    const sessions = await getSessionsByHabit(habitId);
     setHabitSessions(
-      getSessionsByHabit(habitId).sort(
-        (a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
+      sessions.sort(
+        (a, b) => new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime()
       )
     );
   };
@@ -94,8 +111,9 @@ export default function HabitsTab({ onAddHabit }: HabitsTabProps) {
         <div className="space-y-4">
           {habits.map((habit) => {
             const isExpanded = expandedHabitId === habit.id;
-            const todayMins = getDailyGoalProgress(habit.id);
-            const totalSessions = getSessionsByHabit(habit.id).length;
+            const stats = habitStats[habit.id] || { todayMins: 0, totalSessions: 0 };
+            const todayMins = stats.todayMins;
+            const totalSessions = stats.totalSessions;
 
             return (
               <div key={habit.id} className="bg-surface-container-low rounded-2xl overflow-hidden transition-colors">
@@ -114,9 +132,9 @@ export default function HabitsTab({ onAddHabit }: HabitsTabProps) {
                       </h3>
                       <div className="flex items-center gap-3 mt-1">
                         <span className="text-primary text-xs font-medium uppercase tracking-widest">
-                          {habit.dailyGoalMinutes >= 60 && habit.dailyGoalMinutes % 60 === 0
-                            ? `${habit.dailyGoalMinutes / 60} HRS/DAY`
-                            : `${habit.dailyGoalMinutes} MINS/DAY`}
+                          {habit.daily_goal_minutes >= 60 && habit.daily_goal_minutes % 60 === 0
+                            ? `${habit.daily_goal_minutes / 60} HRS/DAY`
+                            : `${habit.daily_goal_minutes} MINS/DAY`}
                         </span>
                         <span className="text-on-surface-variant/40 text-xs">•</span>
                         <span className="text-on-surface-variant text-xs">
@@ -161,7 +179,7 @@ export default function HabitsTab({ onAddHabit }: HabitsTabProps) {
                     ) : (
                       <div className="space-y-2 pt-4 max-h-80 overflow-y-auto">
                         {habitSessions.map((session) => {
-                          const mins = Math.floor(session.durationSeconds / 60);
+                          const mins = Math.floor(session.duration_seconds / 60);
                           return (
                             <div
                               key={session.id}
@@ -171,7 +189,7 @@ export default function HabitsTab({ onAddHabit }: HabitsTabProps) {
                             >
                               <div className="flex items-center gap-4">
                                 <div className="text-on-surface-variant/50 font-mono text-xs w-20">
-                                  {formatDate(session.completedAt)} {formatTime(session.completedAt)}
+                                  {formatDate(session.completed_at)} {formatTime(session.completed_at)}
                                 </div>
                                 <span className={`text-sm ${session.aborted ? "text-on-surface-variant line-through" : "text-on-surface"}`}>
                                   {session.intent}
@@ -228,7 +246,7 @@ export default function HabitsTab({ onAddHabit }: HabitsTabProps) {
                 <div className="border-t border-outline-variant/10 px-6 pb-6">
                   <div className="space-y-2 pt-4 max-h-80 overflow-y-auto">
                     {miscSessions.map((session) => {
-                      const mins = Math.floor(session.durationSeconds / 60);
+                      const mins = Math.floor(session.duration_seconds / 60);
                       return (
                         <div
                           key={session.id}
@@ -238,7 +256,7 @@ export default function HabitsTab({ onAddHabit }: HabitsTabProps) {
                         >
                           <div className="flex items-center gap-4">
                             <div className="text-on-surface-variant/50 font-mono text-xs w-20">
-                              {formatDate(session.completedAt)} {formatTime(session.completedAt)}
+                              {formatDate(session.completed_at)} {formatTime(session.completed_at)}
                             </div>
                             <span className={`text-sm ${session.aborted ? "text-on-surface-variant line-through" : "text-on-surface"}`}>
                               {session.intent}

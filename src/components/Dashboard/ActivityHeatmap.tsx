@@ -25,30 +25,42 @@ export default function ActivityHeatmap({ year = new Date().getFullYear() }: Act
     setMounted(true);
   }, []);
 
-  const habits: Habit[] = useMemo(() => {
-    if (!mounted) return [];
-    return getHabits();
+  const [habits, setHabits] = useState<Habit[]>([]);
+  const [sessions, setSessions] = useState<{ completed_at: string; duration_seconds: number }[]>([]);
+
+  // Load habits
+  useEffect(() => {
+    if (!mounted) return;
+    getHabits().then(setHabits);
   }, [mounted]);
 
-  const data = useMemo(() => {
-    if (!mounted) return { grid: [], totalDays: 0, totalMinutes: 0 };
+  // Load sessions based on filter
+  useEffect(() => {
+    if (!mounted) return;
+    const loadSessions = async () => {
+      const data = selectedHabitId
+        ? await getSessionsByHabit(selectedHabitId)
+        : await getSessions();
+      setSessions(data);
+    };
+    loadSessions();
+  }, [mounted, selectedHabitId]);
 
-    // Get correct sessions based on filter
-    const sessions = selectedHabitId
-      ? getSessionsByHabit(selectedHabitId)
-      : getSessions();
+  const data = useMemo(() => {
+    if (!mounted || sessions.length === 0 && !mounted) return { grid: [], totalDays: 0, totalMinutes: 0 };
 
     // Build date → {minutes, count} map
     const dateMap: Record<string, {minutes: number; count: number}> = {};
     sessions.forEach((s) => {
-      const dateKey = s.completedAt.split("T")[0]; // YYYY-MM-DD
-      const mins = Math.round(s.durationSeconds / 60);
+      const dateKey = s.completed_at.split("T")[0]; // YYYY-MM-DD
+      const mins = Math.round(s.duration_seconds / 60);
       if (!dateMap[dateKey]) {
         dateMap[dateKey] = { minutes: 0, count: 0 };
       }
       dateMap[dateKey].minutes += mins;
       dateMap[dateKey].count += 1;
     });
+
 
     // IMPORTANT: Build grid for the specific calendar year (Jan 1 to Dec 31)
     const now = new Date();
@@ -110,7 +122,7 @@ export default function ActivityHeatmap({ year = new Date().getFullYear() }: Act
     const totalMinutes = daysInYear.reduce((acc, date) => acc + dateMap[date].minutes, 0);
 
     return { grid, totalDays, totalMinutes };
-  }, [year, mounted, selectedHabitId]);
+  }, [year, mounted, sessions]);
 
   // Month labels positioned at the first week where a new month starts
   const monthLabels = useMemo(() => {

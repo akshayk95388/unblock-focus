@@ -1,158 +1,218 @@
-// LocalStorage session persistence for guest users
+// Supabase session persistence for authenticated users
+
+import { createClient } from "@/lib/supabase/client";
 
 export interface SessionRecord {
   id: string;
+  user_id: string;
   intent: string;
-  habitId?: string; // linked habit
-  durationSeconds: number;
-  completedAt: string; // ISO date
-  aborted?: boolean;
-}
-
-const SESSIONS_KEY = "unblock_sessions";
-const STREAK_KEY = "unblock_streak";
-
-function generateId(): string {
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+  habit_id?: string | null;
+  duration_seconds: number;
+  completed_at: string; // ISO date
+  aborted: boolean;
+  session_type: string; // 'guided', 'focus', 'breathing'
 }
 
 // Save a completed session
-export function saveSession(
+export async function saveSession(
   intent: string,
   durationSeconds: number,
   habitId?: string,
-  aborted: boolean = false
-): SessionRecord {
-  const record: SessionRecord = {
-    id: generateId(),
-    intent,
-    habitId,
-    durationSeconds,
-    completedAt: new Date().toISOString(),
-    aborted,
-  };
+  aborted: boolean = false,
+  sessionType: string = "focus"
+): Promise<SessionRecord | null> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  const existing = getSessions();
-  existing.push(record);
-  localStorage.setItem(SESSIONS_KEY, JSON.stringify(existing));
+  if (!user) return null;
 
-  // Update streak only if successfully completed
-  if (!aborted) {
-    updateStreak(record.completedAt);
+  const { data, error } = await supabase
+    .from("sessions")
+    .insert({
+      user_id: user.id,
+      intent,
+      habit_id: habitId || null,
+      duration_seconds: durationSeconds,
+      aborted,
+      session_type: sessionType,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error saving session:", error);
+    return null;
   }
 
-  return record;
+  return data as SessionRecord;
 }
 
-// Get all sessions
-export function getSessions(): SessionRecord[] {
-  try {
-    const raw = localStorage.getItem(SESSIONS_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
+// Get all sessions (reverse chronological)
+export async function getSessions(): Promise<SessionRecord[]> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from("sessions")
+    .select("*")
+    .order("completed_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching sessions:", error);
     return [];
   }
+
+  return (data ?? []) as SessionRecord[];
 }
 
 // Get today's sessions
-export function getTodaySessions(): SessionRecord[] {
-  const today = new Date().toISOString().split("T")[0];
-  return getSessions().filter(
-    (s) => s.completedAt.split("T")[0] === today
-  );
+export async function getTodaySessions(): Promise<SessionRecord[]> {
+  const supabase = createClient();
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  const { data, error } = await supabase
+    .from("sessions")
+    .select("*")
+    .gte("completed_at", todayStart.toISOString())
+    .order("completed_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching today sessions:", error);
+    return [];
+  }
+
+  return (data ?? []) as SessionRecord[];
 }
 
 // Get sessions for a specific habit
-export function getSessionsByHabit(habitId: string): SessionRecord[] {
-  return getSessions().filter((s) => s.habitId === habitId);
+export async function getSessionsByHabit(
+  habitId: string
+): Promise<SessionRecord[]> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from("sessions")
+    .select("*")
+    .eq("habit_id", habitId)
+    .order("completed_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching sessions by habit:", error);
+    return [];
+  }
+
+  return (data ?? []) as SessionRecord[];
 }
 
 // Get today's minutes for a specific habit
-export function getDailyGoalProgress(habitId: string): number {
-  const today = new Date().toISOString().split("T")[0];
+export async function getDailyGoalProgress(
+  habitId: string
+): Promise<number> {
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from("sessions")
+    .select("duration_seconds")
+    .eq("habit_id", habitId)
+    .gte("completed_at", todayStart.toISOString());
+
+  if (error) {
+    console.error("Error fetching daily goal progress:", error);
+    return 0;
+  }
+
   return Math.round(
-    getSessions()
-      .filter((s) => s.habitId === habitId && s.completedAt.split("T")[0] === today)
-      .reduce((sum, s) => sum + s.durationSeconds, 0) / 60
+    (data ?? []).reduce(
+      (sum: number, s: { duration_seconds: number }) =>
+        sum + s.duration_seconds,
+      0
+    ) / 60
   );
 }
 
-// Calculate current streak
-export function getStreak(): number {
-  try {
-    const raw = localStorage.getItem(STREAK_KEY);
-    if (!raw) return 0;
-    const data = JSON.parse(raw) as { count: number; lastDate: string };
+// Calculate current streak (consecutive days with at least one completed session)
+export async function getStreak(): Promise<number> {
+  const supabase = createClient();
 
-    // Check if streak is still active (last session was today or yesterday)
-    const lastDate = new Date(data.lastDate);
-    const today = new Date();
-    const diffDays = Math.floor(
-      (today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24)
+  const { data, error } = await supabase
+    .from("sessions")
+    .select("completed_at")
+    .eq("aborted", false)
+    .order("completed_at", { ascending: false });
+
+  if (error || !data || data.length === 0) return 0;
+
+  // Get unique dates
+  const uniqueDates = [
+    ...new Set(
+      data.map((s: { completed_at: string }) =>
+        new Date(s.completed_at).toISOString().split("T")[0]
+      )
+    ),
+  ].sort((a, b) => b.localeCompare(a)); // Most recent first
+
+  if (uniqueDates.length === 0) return 0;
+
+  const today = new Date().toISOString().split("T")[0];
+  const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
+
+  // Streak must include today or yesterday
+  if (uniqueDates[0] !== today && uniqueDates[0] !== yesterday) return 0;
+
+  let streak = 1;
+  for (let i = 1; i < uniqueDates.length; i++) {
+    const prevDate = new Date(uniqueDates[i - 1]);
+    const currDate = new Date(uniqueDates[i]);
+    const diffDays = Math.round(
+      (prevDate.getTime() - currDate.getTime()) / 86400000
     );
 
-    if (diffDays > 1) return 0; // Streak broken
-    return data.count;
-  } catch {
-    return 0;
-  }
-}
-
-function updateStreak(completedAt: string): void {
-  const today = new Date(completedAt).toISOString().split("T")[0];
-
-  try {
-    const raw = localStorage.getItem(STREAK_KEY);
-    if (raw) {
-      const data = JSON.parse(raw) as { count: number; lastDate: string };
-      const lastDate = data.lastDate.split("T")[0];
-
-      if (lastDate === today) {
-        return; // Already recorded today
-      }
-
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toISOString().split("T")[0];
-
-      if (lastDate === yesterdayStr) {
-        localStorage.setItem(
-          STREAK_KEY,
-          JSON.stringify({ count: data.count + 1, lastDate: completedAt })
-        );
-      } else {
-        localStorage.setItem(
-          STREAK_KEY,
-          JSON.stringify({ count: 1, lastDate: completedAt })
-        );
-      }
+    if (diffDays === 1) {
+      streak++;
     } else {
-      localStorage.setItem(
-        STREAK_KEY,
-        JSON.stringify({ count: 1, lastDate: completedAt })
-      );
+      break;
     }
-  } catch {
-    localStorage.setItem(
-      STREAK_KEY,
-      JSON.stringify({ count: 1, lastDate: completedAt })
-    );
   }
+
+  return streak;
 }
 
 // Get total focus minutes
-export function getTotalMinutes(): number {
-  const sessions = getSessions();
+export async function getTotalMinutes(): Promise<number> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from("sessions")
+    .select("duration_seconds");
+
+  if (error) return 0;
+
   return Math.round(
-    sessions.reduce((sum, s) => sum + s.durationSeconds, 0) / 60
+    (data ?? []).reduce(
+      (sum: number, s: { duration_seconds: number }) =>
+        sum + s.duration_seconds,
+      0
+    ) / 60
   );
 }
 
 // Get completion rate (sessions completed / sessions total)
-export function getCompletionRate(): number {
-  const sessions = getSessions();
-  if (sessions.length === 0) return 0;
-  const completed = sessions.filter((s) => !s.aborted).length;
-  return Math.round((completed / sessions.length) * 100);
-  return 100; // All saved sessions are completed sessions
+export async function getCompletionRate(): Promise<number> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from("sessions")
+    .select("aborted");
+
+  if (error || !data || data.length === 0) return 0;
+
+  const completed = data.filter(
+    (s: { aborted: boolean }) => !s.aborted
+  ).length;
+  return Math.round((completed / data.length) * 100);
 }

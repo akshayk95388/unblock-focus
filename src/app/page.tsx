@@ -3,8 +3,11 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { track } from "@/lib/mixpanel";
+import { useAuth } from "@/components/AuthProvider";
 
 export default function Home() {
+  const { user, loading } = useAuth();
+
   useEffect(() => {
     track("home_page_viewed");
   }, []);
@@ -32,6 +35,29 @@ export default function Home() {
             </a>
           </nav>
           <div className="flex items-center gap-3">
+            {!loading && !user && (
+              <Link
+                href="/login"
+                className="text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors duration-300"
+              >
+                Sign in
+              </Link>
+            )}
+            {!loading && user && (
+              <Link
+                href="/focus"
+                className="flex items-center gap-2 text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors duration-300"
+              >
+                <div className="w-6 h-6 rounded-full bg-surface-container-highest flex items-center justify-center text-[10px] font-bold text-on-surface-variant uppercase overflow-hidden">
+                  {user.user_metadata?.avatar_url ? (
+                    <img src={user.user_metadata.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
+                  ) : (
+                    user.email?.charAt(0) || "U"
+                  )}
+                </div>
+                Dashboard
+              </Link>
+            )}
             <Link
               href="/focus"
               className="glow-button px-5 py-2 rounded-xl text-sm font-bold"

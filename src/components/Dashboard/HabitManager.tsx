@@ -21,10 +21,12 @@ export default function HabitManager({ onClose, onCreated }: HabitManagerProps) 
   const [color, setColor] = useState("primary");
   const [goalMinutes, setGoalMinutes] = useState(30);
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!name.trim()) return;
-    const habit = addHabit(name.trim(), emoji, color, goalMinutes);
-    onCreated(habit);
+    const habit = await addHabit(name.trim(), emoji, color, goalMinutes);
+    if (habit) {
+      onCreated(habit);
+    }
     onClose();
   };
 

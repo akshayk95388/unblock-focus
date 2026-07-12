@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { getStreak } from "@/lib/sessions";
+import { useAuth } from "@/components/AuthProvider";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -20,10 +22,15 @@ export default function DashboardLayout({
 }: DashboardLayoutProps) {
   const [streak, setStreak] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user, signOut } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setStreak(getStreak());
+    async function loadStreak() {
+      const s = await getStreak();
+      setStreak(s);
+    }
+    loadStreak();
   }, []);
 
   const navItems = [
@@ -64,10 +71,12 @@ export default function DashboardLayout({
               </span>
             </div>
           )}
-          <div className="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center">
-            <svg className="w-4 h-4 text-on-surface-variant" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-            </svg>
+          <div className="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center text-xs font-bold text-on-surface-variant uppercase">
+            {user?.user_metadata?.avatar_url ? (
+              <img src={user.user_metadata.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
+            ) : (
+              user?.email?.charAt(0) || "U"
+            )}
           </div>
         </div>
       </header>
@@ -182,14 +191,18 @@ export default function DashboardLayout({
           {/* User profile + Streak footer row */}
           <div className="flex items-center justify-between px-2 pt-2">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center border border-outline-variant/10">
-                <svg className="w-4 h-4 text-on-surface-variant" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                </svg>
+              <div className="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center border border-outline-variant/10 text-xs font-bold text-on-surface-variant uppercase overflow-hidden">
+                {user?.user_metadata?.avatar_url ? (
+                  <img src={user.user_metadata.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
+                ) : (
+                  user?.email?.charAt(0) || "U"
+                )}
               </div>
-              <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">
-                Account
-              </span>
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider truncate max-w-[120px]">
+                  {user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Account"}
+                </span>
+              </div>
             </div>
 
             {streak > 0 && (
@@ -201,6 +214,20 @@ export default function DashboardLayout({
               </div>
             )}
           </div>
+
+          {/* Sign out button */}
+          <button
+            onClick={async () => {
+              await signOut();
+              router.push("/");
+            }}
+            className="flex items-center gap-2 px-4 py-2 text-on-surface-variant/60 hover:text-on-surface-variant hover:bg-surface-container-highest/50 rounded-xl transition-all text-xs font-medium"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+            </svg>
+            Sign out
+          </button>
         </div>
       </aside>
 

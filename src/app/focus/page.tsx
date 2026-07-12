@@ -107,20 +107,22 @@ export default function DashboardPage() {
     setStandaloneBreathing({ durationMinutes: minutes });
   }, []);
 
-  const handleBreathingComplete = useCallback((durationSeconds: number) => {
+  const handleBreathingComplete = useCallback(async (durationSeconds: number) => {
     setStandaloneBreathing(undefined);
     if (durationSeconds > 0) {
-      const habits = getHabits();
+      const habits = await getHabits();
       const breathingHabit = habits.find((h) => h.name.toLowerCase().includes("breath"));
 
-      const resolvedHabit = breathingHabit || addHabit("Breathing Exercise", "🫁", "primary", 15);
+      const resolvedHabit = breathingHabit || await addHabit("Breathing Exercise", "🫁", "primary", 15);
 
-      saveSession("Breathing", durationSeconds, resolvedHabit.id, false);
-      track("breathing_session_completed", {
-        duration_mins: Math.round(durationSeconds / 60),
-        duration_seconds: durationSeconds,
-        goal_name: resolvedHabit.name,
-      });
+      if (resolvedHabit) {
+        await saveSession("Breathing", durationSeconds, resolvedHabit.id, false, "breathing");
+        track("breathing_session_completed", {
+          duration_mins: Math.round(durationSeconds / 60),
+          duration_seconds: durationSeconds,
+          goal_name: resolvedHabit.name,
+        });
+      }
       setSuccessMessage(`Breathing complete: ${Math.round(durationSeconds / 60)} minutes recorded.`);
       setRefreshKey((k) => k + 1);
       setTimeout(() => setSuccessMessage(null), 4000);

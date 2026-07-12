@@ -2,22 +2,34 @@
 
 import { useEffect, useState } from "react";
 import { getSessions, type SessionRecord } from "@/lib/sessions";
-import { getHabitById } from "@/lib/habits";
+import { getHabits, type Habit } from "@/lib/habits";
 import StatCards from "@/components/Dashboard/StatCards";
 import ActivityHeatmap from "@/components/Dashboard/ActivityHeatmap";
 
 export default function HistoryTab() {
   const [sessions, setSessions] = useState<SessionRecord[]>([]);
+  const [habitsMap, setHabitsMap] = useState<Record<string, Habit>>({});
 
   useEffect(() => {
-    // Reverse chron
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSessions(getSessions().sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()));
+    async function loadData() {
+      const [sessionsData, habitsData] = await Promise.all([
+        getSessions(),
+        getHabits(),
+      ]);
+      setSessions(sessionsData);
+      // Build a lookup map for habits
+      const map: Record<string, Habit> = {};
+      habitsData.forEach((h) => {
+        map[h.id] = h;
+      });
+      setHabitsMap(map);
+    }
+    loadData();
   }, []);
 
   // Group by date string (YYYY-MM-DD format for robustness, display softly)
   const groupedSessions = sessions.reduce((acc, session) => {
-    const d = new Date(session.completedAt);
+    const d = new Date(session.completed_at);
     const dateKey = d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
     if (!acc[dateKey]) acc[dateKey] = [];
     acc[dateKey].push(session);
@@ -49,7 +61,7 @@ export default function HistoryTab() {
         <div className="space-y-12">
           {Object.entries(groupedSessions).map(([dateLabel, daySessions]) => {
             const totalMins = Math.round(
-              daySessions.reduce((sum, s) => sum + s.durationSeconds, 0) / 60
+              daySessions.reduce((sum, s) => sum + s.duration_seconds, 0) / 60
             );
 
             return (
@@ -65,13 +77,13 @@ export default function HistoryTab() {
 
                 <div className="space-y-3">
                   {daySessions.map((session) => {
-                    const habit = session.habitId ? getHabitById(session.habitId) : undefined;
-                    const time = new Date(session.completedAt).toLocaleTimeString("en-US", {
+                    const habit = session.habit_id ? habitsMap[session.habit_id] : undefined;
+                    const time = new Date(session.completed_at).toLocaleTimeString("en-US", {
                       hour: "2-digit",
                       minute: "2-digit",
                       hour12: false,
                     });
-                    const mins = Math.floor(session.durationSeconds / 60);
+                    const mins = Math.floor(session.duration_seconds / 60);
 
                     return (
                       <div

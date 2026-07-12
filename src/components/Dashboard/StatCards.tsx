@@ -9,12 +9,17 @@ export default function StatCards() {
   const [completionRate, setCompletionRate] = useState(0);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setStreak(getStreak());
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setTotalSessions(getSessions().length);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setCompletionRate(getCompletionRate());
+    async function loadStats() {
+      const [streakVal, sessions, rate] = await Promise.all([
+        getStreak(),
+        getSessions(),
+        getCompletionRate(),
+      ]);
+      setStreak(streakVal);
+      setTotalSessions(sessions.length);
+      setCompletionRate(rate);
+    }
+    loadStats();
   }, []);
 
   const cards = [

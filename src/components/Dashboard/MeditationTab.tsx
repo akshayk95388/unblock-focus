@@ -194,17 +194,20 @@ export default function MeditationTab({
 
   // Load habits
   useEffect(() => {
-    const list = getHabits();
-    setHabits(list);
-    if (list.length > 0) {
-      const found = list.find(
-        (h) =>
-          h.name.toLowerCase().includes("meditation") ||
-          h.name.toLowerCase().includes("breath") ||
-          h.name.toLowerCase().includes("focus")
-      );
-      setSelectedHabitId(found ? found.id : list[0].id);
+    async function loadHabits() {
+      const list = await getHabits();
+      setHabits(list);
+      if (list.length > 0) {
+        const found = list.find(
+          (h) =>
+            h.name.toLowerCase().includes("meditation") ||
+            h.name.toLowerCase().includes("breath") ||
+            h.name.toLowerCase().includes("focus")
+        );
+        setSelectedHabitId(found ? found.id : list[0].id);
+      }
     }
+    loadHabits();
   }, []);
 
   // When pre-filled from the dashboard, skip the setup form and generate immediately.
@@ -508,7 +511,7 @@ export default function MeditationTab({
   };
 
   // Record session to history & streaks
-  const handleLogSession = () => {
+  const handleLogSession = async () => {
     if (sessionLogged) return;
     let totalSeconds = 0;
 
@@ -524,7 +527,8 @@ export default function MeditationTab({
     }
 
     const sessionName = resetDone ? `Guided: ${title}` : `Focus: ${workTask}`;
-    saveSession(sessionName, totalSeconds, selectedHabitId || undefined, false);
+    const sessionType = resetDone ? "guided" : "focus";
+    await saveSession(sessionName, totalSeconds, selectedHabitId || undefined, false, sessionType);
     track(resetDone ? "guided_session_completed" : "focus_session_completed", {
       duration_mins: Math.round(totalSeconds / 60),
       duration_seconds: totalSeconds,
@@ -1121,16 +1125,17 @@ export default function MeditationTab({
                         Keep going
                       </button>
                       <button
-                        onClick={() => {
+                        onClick={async () => {
                           setShowQuitTrap(false);
                           const elapsed = Math.round((Date.now() - focusStartTime) / 1000);
                           if (elapsed > 0) {
                             const resetTime = resetDone ? actualDuration || durationMins * 60 : 0;
-                            saveSession(
+                            await saveSession(
                               resetDone ? `Guided: ${title}` : `Focus: ${workTask}`,
                               resetTime + elapsed,
                               selectedHabitId || undefined,
-                              true
+                              true,
+                              resetDone ? "guided" : "focus"
                             );
                             track(resetDone ? "guided_session_aborted" : "focus_session_aborted", {
                               duration_seconds: resetTime + elapsed,
