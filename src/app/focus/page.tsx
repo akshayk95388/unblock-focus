@@ -71,6 +71,33 @@ export default function DashboardPage() {
     }
   }, []);
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const pendingStr = localStorage.getItem("pending_stressor_session");
+      if (pendingStr) {
+        try {
+          const session = JSON.parse(pendingStr);
+          if (session.stressor && session.stressor.trim()) {
+            track("guided_session_started", {
+              stressor_provided: true,
+              duration_mins: session.durationMins || 5,
+            });
+            setPendingStressor(session.stressor.trim());
+            setDurationMins(session.durationMins || 5);
+            setVoice(session.voice || "gentle_female");
+            setMusic(session.music || "none");
+            setDirectFocusMode(false);
+            setCurrentTab("meditation");
+          }
+        } catch (e) {
+          console.error("Error parsing pending_stressor_session:", e);
+        } finally {
+          localStorage.removeItem("pending_stressor_session");
+        }
+      }
+    }
+  }, []);
+
   const handleStartReset = useCallback(() => {
     if (!heroStressor.trim()) return;
     track("guided_session_started", {

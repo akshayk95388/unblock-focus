@@ -1,16 +1,47 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { track } from "@/lib/mixpanel";
 import { useAuth } from "@/components/AuthProvider";
 
 export default function Home() {
   const { user, loading } = useAuth();
+  const router = useRouter();
+  const [stressor, setStressor] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const suggestions = [
+    "Pitch deck due tomorrow",
+    "Can't focus, keep checking phone",
+    "Feeling overwhelmed",
+    "Exam anxiety",
+  ];
 
   useEffect(() => {
     track("home_page_viewed");
   }, []);
+
+  const handleGetUnblocked = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!stressor.trim()) return;
+
+    // Save pending session config to localStorage
+    const pendingSession = {
+      stressor: stressor.trim(),
+      durationMins: 5,
+      voice: "gentle_female",
+      music: "none",
+    };
+    localStorage.setItem("pending_stressor_session", JSON.stringify(pendingSession));
+
+    if (user) {
+      router.push("/focus");
+    } else {
+      router.push("/login");
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -71,103 +102,71 @@ export default function Home() {
       {/* ===== Hero Section ===== */}
       <main className="flex-1">
         <section className="pt-32 pb-16 md:pt-40 md:pb-24 px-6 md:px-12 max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            {/* Left: Copy */}
-            <div>
-              <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-on-surface leading-[1.05] mb-6">
+          <div className="flex flex-col items-center text-center max-w-3xl mx-auto space-y-10">
+            {/* Center: Copy */}
+            <div className="space-y-6">
+              <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-on-surface leading-[1.05]">
                 Break the loop.
                 <br />
                 <span className="text-primary-container">Get to work.</span>
               </h1>
 
-              <p className="text-on-surface-variant text-lg md:text-xl max-w-lg leading-relaxed mb-10">
+              <p className="text-on-surface-variant text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
                 Can&apos;t start? Tell us what&apos;s blocking you. We&apos;ll
                 build a personalized guided session to clear your head — then
                 get you into deep work.
               </p>
-
-              <div className="flex flex-col sm:flex-row gap-4 mb-12">
-                <Link
-                  href="/focus"
-                  className="glow-button px-8 py-4 rounded-xl text-base font-bold flex items-center justify-center shrink-0"
-                >
-                  Start Guided Session
-                </Link>
-                <a
-                  href="#protocol"
-                  className="px-8 py-4 rounded-xl text-base font-medium text-on-surface ghost-border hover:bg-surface-container-low transition-all duration-300 text-center"
-                >
-                  How it works
-                </a>
-              </div>
-
-              {/* Built for badges */}
-              <div className="flex flex-wrap gap-3">
-                {["Founders", "Engineers", "Students"].map((who) => (
-                  <span
-                    key={who}
-                    className="text-[11px] font-bold uppercase tracking-[0.15em] text-on-surface-variant px-3 py-1 rounded-full bg-surface-container-low ghost-border"
-                  >
-                    {who}
-                  </span>
-                ))}
-              </div>
             </div>
 
-            {/* Right: Session Preview Card */}
-            <div className="hidden lg:block">
-              <div className="bg-surface-container-low rounded-3xl p-8 ghost-border relative overflow-hidden">
-                {/* Dots */}
-                <div className="flex items-center gap-2 mb-6">
-                  <span className="w-3 h-3 rounded-full bg-primary-container" />
-                  <span className="w-3 h-3 rounded-full bg-secondary" />
-                  <span className="w-3 h-3 rounded-full bg-tertiary" />
-                  <span className="ml-auto text-[10px] font-bold uppercase tracking-[0.15em] text-on-surface-variant">
-                    Guided Session
-                  </span>
+            <form onSubmit={handleGetUnblocked} className="bg-surface-container-low p-5 md:p-6 rounded-2xl border border-outline-variant/15 space-y-4 relative w-full max-w-3xl text-left">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none rounded-2xl" />
+              <div className="relative z-10 space-y-4">
+                <textarea
+                  ref={textareaRef}
+                  value={stressor}
+                  onChange={(e) => setStressor(e.target.value)}
+                  placeholder="Describe what's blocking you right now... (e.g. pitch deck panic, feeling like a fraud)"
+                  rows={3}
+                  className="w-full bg-surface-container-highest border-none rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50 text-on-surface placeholder:text-on-surface-variant/40 resize-none"
+                />
+                <div className="flex flex-wrap gap-2">
+                  {suggestions.map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => {
+                        setStressor(s);
+                        textareaRef.current?.focus();
+                      }}
+                      className="text-[10px] px-2.5 py-1 rounded-lg bg-surface-container-highest/60 hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface transition-all cursor-pointer border border-transparent hover:border-outline-variant/10"
+                    >
+                      {s}
+                    </button>
+                  ))}
                 </div>
 
-                {/* Flow steps preview */}
-                <div className="space-y-4 py-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">1</div>
-                    <div>
-                      <p className="text-xs font-bold text-on-surface">Tell us what&apos;s blocking you</p>
-                      <p className="text-[10px] text-on-surface-variant">&quot;Pitch deck due tomorrow&quot;</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">2</div>
-                    <div>
-                      <p className="text-xs font-bold text-on-surface">We build your session</p>
-                      <p className="text-[10px] text-on-surface-variant">Breathing + calming exercises</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">3</div>
-                    <div>
-                      <p className="text-xs font-bold text-on-surface">Listen and reset</p>
-                      <p className="text-[10px] text-on-surface-variant">2-10 min guided audio</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-xs font-bold text-green-400">✓</div>
-                    <div>
-                      <p className="text-xs font-bold text-on-surface">Start your deep work</p>
-                      <p className="text-[10px] text-on-surface-variant">Focus session with a stay-focused guard</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Progress Bar */}
-                <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.12em] text-on-surface-variant mt-4">
-                  <span>Personalized Session</span>
-                  <span>Built For You</span>
-                </div>
-                <div className="h-1 w-full bg-surface-container-highest rounded-full mt-2 overflow-hidden">
-                  <div className="h-full bg-primary-container rounded-full w-3/4" />
-                </div>
+                <button
+                  type="submit"
+                  disabled={!stressor.trim()}
+                  className={`w-full glow-button py-3.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 cursor-pointer transition-all ${
+                    !stressor.trim() ? "opacity-50 pointer-events-none" : "hover:scale-[1.01] active:scale-95"
+                  }`}
+                >
+                  ⚡ Get Unblocked
+                </button>
               </div>
+            </form>
+
+            {/* Built for badges */}
+            <div className="flex flex-wrap gap-3 justify-center">
+              {["Founders", "Engineers", "Students"].map((who) => (
+                <span
+                  key={who}
+                  className="text-[11px] font-bold uppercase tracking-[0.15em] text-on-surface-variant px-3 py-1 rounded-full bg-surface-container-low ghost-border"
+                >
+                  {who}
+                </span>
+              ))}
             </div>
           </div>
         </section>
