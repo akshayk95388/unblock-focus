@@ -37,6 +37,11 @@ export default function Home() {
     router.push("/focus");
   };
 
+  const handleScrollToHero = (e: React.MouseEvent) => {
+    e.preventDefault();
+    document.getElementById("hero")?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* ===== Header ===== */}
@@ -72,7 +77,7 @@ export default function Home() {
 
       {/* ===== Hero Section ===== */}
       <main className="flex-1">
-        <section className="pt-32 pb-16 md:pt-40 md:pb-24 px-6 md:px-12 max-w-7xl mx-auto">
+        <section id="hero" className="pt-32 pb-16 md:pt-40 md:pb-24 px-6 md:px-12 max-w-7xl mx-auto">
           <div className="flex flex-col items-center text-center max-w-3xl mx-auto space-y-10">
             {/* Center: Copy */}
             <div className="space-y-6">
@@ -305,12 +310,13 @@ export default function Home() {
                 Tell us what&apos;s blocking you, clear your head with a short
                 guided session, then start a focus session. No complicated setup.
               </p>
-              <Link
-                href="/focus"
-                className="glow-button px-10 py-4 rounded-xl text-base font-bold mb-4 inline-flex items-center justify-center"
+              <a
+                href="#hero"
+                onClick={handleScrollToHero}
+                className="glow-button px-10 py-4 rounded-xl text-base font-bold mb-4 inline-flex items-center justify-center cursor-pointer"
               >
                 Start Guided Session
-              </Link>
+              </a>
               <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">
                 No account required to start.
               </p>
