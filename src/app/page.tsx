@@ -4,10 +4,8 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { track } from "@/lib/mixpanel";
-import { useAuth } from "@/components/AuthProvider";
 
 export default function Home() {
-  const { user, loading } = useAuth();
   const router = useRouter();
   const [stressor, setStressor] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -36,11 +34,7 @@ export default function Home() {
     };
     localStorage.setItem("pending_stressor_session", JSON.stringify(pendingSession));
 
-    if (user) {
-      router.push("/focus");
-    } else {
-      router.push("/login");
-    }
+    router.push("/focus");
   };
 
   return (
@@ -66,34 +60,11 @@ export default function Home() {
             </a>
           </nav>
           <div className="flex items-center gap-3">
-            {!loading && !user && (
-              <Link
-                href="/login"
-                className="text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors duration-300"
-              >
-                Sign in
-              </Link>
-            )}
-            {!loading && user && (
-              <Link
-                href="/focus"
-                className="flex items-center gap-2 text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors duration-300"
-              >
-                <div className="w-6 h-6 rounded-full bg-surface-container-highest flex items-center justify-center text-[10px] font-bold text-on-surface-variant uppercase overflow-hidden">
-                  {user.user_metadata?.avatar_url ? (
-                    <img src={user.user_metadata.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
-                  ) : (
-                    user.email?.charAt(0) || "U"
-                  )}
-                </div>
-                Dashboard
-              </Link>
-            )}
             <Link
               href="/focus"
-              className="glow-button px-5 py-2 rounded-xl text-sm font-bold"
+              className="text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors duration-300"
             >
-              Start Guided Session
+              Sign in
             </Link>
           </div>
         </div>
@@ -156,18 +127,6 @@ export default function Home() {
                 </button>
               </div>
             </form>
-
-            {/* Built for badges */}
-            <div className="flex flex-wrap gap-3 justify-center">
-              {["Founders", "Engineers", "Students"].map((who) => (
-                <span
-                  key={who}
-                  className="text-[11px] font-bold uppercase tracking-[0.15em] text-on-surface-variant px-3 py-1 rounded-full bg-surface-container-low ghost-border"
-                >
-                  {who}
-                </span>
-              ))}
-            </div>
           </div>
         </section>
 
