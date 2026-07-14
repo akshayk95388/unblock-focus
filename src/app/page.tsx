@@ -1,9 +1,50 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useId } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { track } from "@/lib/mixpanel";
+
+function FAQItem({ question, answer }: { question: string; answer: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const id = useId();
+  const questionId = `faq-question-${id}`;
+  const answerId = `faq-answer-${id}`;
+
+  return (
+    <div className="group bg-surface-container-low border border-outline-variant/15 hover:border-outline-variant/40 rounded-2xl overflow-hidden hover:bg-surface-container transition-all duration-300">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+        aria-controls={answerId}
+        className="w-full flex items-center justify-between p-6 text-left cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-inset rounded-t-2xl"
+      >
+        <span id={questionId} className="font-bold text-on-surface text-base md:text-lg pr-4">{question}</span>
+        <span
+          className={`flex-shrink-0 w-8 h-8 rounded-full bg-surface-container-highest group-hover:bg-primary-container group-hover:text-on-primary-container flex items-center justify-center text-on-surface-variant transition-all duration-300 ${
+            isOpen ? "rotate-180 bg-primary-container text-on-primary-container" : ""
+          }`}
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+          </svg>
+        </span>
+      </button>
+      <div
+        id={answerId}
+        role="region"
+        aria-labelledby={questionId}
+        className={`transition-all duration-300 ease-in-out overflow-hidden ${
+          isOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="p-6 text-on-surface-variant text-sm md:text-base leading-relaxed border-t border-outline-variant/10">
+          {answer}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Home() {
   const router = useRouter();
@@ -15,6 +56,29 @@ export default function Home() {
     "Can't focus, keep checking phone",
     "Feeling overwhelmed",
     "Exam anxiety",
+  ];
+
+  const faqs = [
+    {
+      question: "How does Unblock help me start working?",
+      answer: "If you're feeling stuck, overwhelmed, or anxious about a task, Unblock helps you get unstuck. First, you type what's bothering you, and we build a short 2-to-10 minute guided breathing and calming session to clear your mind. Right after, we start a focus timer to help you get straight to work.",
+    },
+    {
+      question: "What makes the guided session personalized?",
+      answer: "Instead of a generic meditation, Unblock uses the specific problem you typed (like \"worried about a presentation tomorrow\") to create a personalized guided session. It guides you through simple breathing exercises and calming tips designed for your exact anxiety.",
+    },
+    {
+      question: "Is my data private and secure?",
+      answer: "Yes. Your stressors, tasks, and history are kept completely private and secure in your account. We never share them with anyone.",
+    },
+    {
+      question: "What is the Stay-Focused Guard?",
+      answer: "Starting a task is always the hardest part, and your mind will try to distract you in the first few minutes. The Stay-Focused Guard steps in with a friendly reminder if you try to quit early, helping you stay on track and build momentum.",
+    },
+    {
+      question: "Is Unblock free to try?",
+      answer: "Yes! You can create an account and try Unblock for free. All new accounts get free credits to generate custom guided sessions and try the focus timers.",
+    },
   ];
 
   useEffect(() => {
@@ -62,6 +126,12 @@ export default function Home() {
               className="text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors duration-300"
             >
               Features
+            </a>
+            <a
+              href="#faq"
+              className="text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors duration-300"
+            >
+              FAQ
             </a>
           </nav>
           <div className="flex items-center gap-3">
@@ -286,10 +356,30 @@ export default function Home() {
                 Stay-Focused Guard
               </h3>
               <p className="text-on-surface-variant text-sm leading-relaxed">
-                Your brain will try to trick you. A well-timed nudge stops you
+                Your brain will try to trick you. A friendly reminder stops you
                 from quitting when motivation dips in the first 5 minutes.
               </p>
             </div>
+          </div>
+        </section>
+
+        {/* ===== FAQ Section ===== */}
+        <section
+          id="faq"
+          className="py-20 md:py-28 px-6 md:px-12 max-w-4xl mx-auto"
+        >
+          <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-on-surface">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-on-surface-variant text-base md:text-lg">
+              Everything you need to know about Unblock and how it helps you defeat procrastination.
+            </p>
+          </div>
+          <div className="space-y-4">
+            {faqs.map((faq, idx) => (
+              <FAQItem key={idx} question={faq.question} answer={faq.answer} />
+            ))}
           </div>
         </section>
 
@@ -318,7 +408,7 @@ export default function Home() {
                 Start Guided Session
               </a>
               <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">
-                No account required to start.
+                Start for free. No credit card required.
               </p>
             </div>
           </div>
