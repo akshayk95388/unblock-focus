@@ -602,14 +602,7 @@ export default function MeditationTab({
     setStatus("focus_timer");
   };
 
-  // Start automatic 10-second countdown when landing on post_reset screen after a reset is done
-  useEffect(() => {
-    if (status === "post_reset" && resetDone && workTask.trim()) {
-      setCountdown(10);
-    } else {
-      setCountdown(null);
-    }
-  }, [status, resetDone, workTask]);
+
 
   // Autoplay countdown timer tick effect
   useEffect(() => {

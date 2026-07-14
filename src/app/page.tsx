@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useId } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { track } from "@/lib/mixpanel";
+import CustomSelect from "@/components/ui/CustomSelect";
 
 function FAQItem({ question, answer }: { question: string; answer: string }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -51,6 +52,9 @@ export default function Home() {
   const [pricingCycle, setPricingCycle] = useState<"monthly" | "yearly">("monthly");
   const [stressor, setStressor] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [durationMins, setDurationMins] = useState(5);
+  const [voice, setVoice] = useState("gentle_female");
+  const [music, setMusic] = useState("none");
 
   const suggestions = [
     "Pitch deck due tomorrow",
@@ -93,9 +97,9 @@ export default function Home() {
     // Save pending session config to localStorage
     const pendingSession = {
       stressor: stressor.trim(),
-      durationMins: 5,
-      voice: "gentle_female",
-      music: "none",
+      durationMins,
+      voice,
+      music,
     };
     localStorage.setItem("pending_stressor_session", JSON.stringify(pendingSession));
 
@@ -196,6 +200,58 @@ export default function Home() {
                       {s}
                     </button>
                   ))}
+                </div>
+
+                {/* Customization Controls */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1 pb-2">
+                  {/* Duration */}
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant/60">
+                      Duration
+                    </label>
+                    <CustomSelect
+                      size="sm"
+                      value={durationMins}
+                      onChange={(val) => setDurationMins(Number(val))}
+                      options={[
+                        { value: 2, label: "2 Minutes (Quick)" },
+                        { value: 5, label: "5 Minutes (Standard)" },
+                        { value: 10, label: "10 Minutes (Deep)" },
+                      ]}
+                    />
+                  </div>
+
+                  {/* Voice */}
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant/60">
+                      Voice Guide
+                    </label>
+                    <CustomSelect
+                      size="sm"
+                      value={voice}
+                      onChange={setVoice}
+                      options={[
+                        { value: "gentle_female", label: "Calm" },
+                        { value: "soft_male", label: "Steady" },
+                      ]}
+                    />
+                  </div>
+
+                  {/* Background Audio */}
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant/60">
+                      Background Audio
+                    </label>
+                    <CustomSelect
+                      size="sm"
+                      value={music}
+                      onChange={setMusic}
+                      options={[
+                        { value: "none", label: "Voice Only" },
+                        { value: "ambient", label: "Calm Ambient" },
+                      ]}
+                    />
+                  </div>
                 </div>
 
                 <button
