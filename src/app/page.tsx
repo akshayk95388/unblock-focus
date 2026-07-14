@@ -276,6 +276,9 @@ export default function Home() {
           id="features"
           className="py-20 md:py-28 px-6 md:px-12 max-w-7xl mx-auto"
         >
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-on-surface mb-14">
+            Features
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Feature 1 */}
             <div className="bg-surface-container-low rounded-2xl p-8 hover:bg-surface-container transition-colors duration-300">
@@ -369,7 +372,7 @@ export default function Home() {
           className="py-20 md:py-28 px-6 md:px-12 max-w-4xl mx-auto"
         >
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-on-surface">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-on-surface">
               Frequently Asked Questions
             </h2>
             <p className="text-on-surface-variant text-base md:text-lg">
