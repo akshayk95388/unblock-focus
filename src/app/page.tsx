@@ -48,6 +48,7 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
 
 export default function Home() {
   const router = useRouter();
+  const [pricingCycle, setPricingCycle] = useState<"monthly" | "yearly">("monthly");
   const [stressor, setStressor] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -126,6 +127,12 @@ export default function Home() {
               className="text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors duration-300"
             >
               Features
+            </a>
+            <a
+              href="#pricing"
+              className="text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors duration-300"
+            >
+              Pricing
             </a>
             <a
               href="#faq"
@@ -362,6 +369,154 @@ export default function Home() {
                 Your brain will try to trick you. A friendly reminder stops you
                 from quitting when motivation dips in the first 5 minutes.
               </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ===== Pricing Section ===== */}
+        <section
+          id="pricing"
+          className="py-20 md:py-28 px-6 md:px-12 max-w-5xl mx-auto"
+        >
+          <div className="text-center max-w-3xl mx-auto mb-14 space-y-4">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-on-surface">
+              Simple, transparent pricing
+            </h2>
+            <p className="text-on-surface-variant text-base md:text-lg">
+              Start for free. Upgrade when you&apos;re ready to go deeper.
+            </p>
+          </div>
+
+          {/* Billing Toggle */}
+          <div className="flex justify-center mb-10">
+            <div className="flex gap-1 bg-surface-container-highest/50 p-1 rounded-xl">
+              <button
+                onClick={() => setPricingCycle("monthly")}
+                className={`px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
+                  pricingCycle === "monthly"
+                    ? "bg-surface-container-low text-on-surface shadow-sm"
+                    : "text-on-surface-variant hover:text-on-surface"
+                }`}
+              >
+                Monthly
+              </button>
+              <button
+                onClick={() => setPricingCycle("yearly")}
+                className={`px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 ${
+                  pricingCycle === "yearly"
+                    ? "bg-surface-container-low text-on-surface shadow-sm"
+                    : "text-on-surface-variant hover:text-on-surface"
+                }`}
+              >
+                Yearly
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/15 text-primary font-bold normal-case">
+                  Save 43%
+                </span>
+              </button>
+            </div>
+          </div>
+
+          {/* Pricing Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {/* Free Plan */}
+            <div className="bg-surface-container-low border border-outline-variant/15 rounded-3xl p-8 md:p-10 flex flex-col">
+              <div className="mb-8">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/60 mb-3">
+                  Free
+                </p>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-4xl font-bold text-on-surface">$0</span>
+                </div>
+                <p className="text-on-surface-variant text-sm mt-3">
+                  Perfect for trying Unblock and building your first focus habit.
+                </p>
+              </div>
+              <div className="space-y-3.5 mb-8 flex-1">
+                {[
+                  "3 AI guided sessions (one-time)",
+                  "15 & 25 min focus timers",
+                  "Box Breathing technique",
+                  "3 most recent session replays",
+                  "Habit tracking & streaks",
+                  "Session history & stats",
+                ].map((feature) => (
+                  <div key={feature} className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-on-surface-variant/10 flex items-center justify-center shrink-0">
+                      <svg className="w-3 h-3 text-on-surface-variant" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                      </svg>
+                    </div>
+                    <span className="text-sm text-on-surface-variant">{feature}</span>
+                  </div>
+                ))}
+              </div>
+              <Link
+                href="/focus"
+                className="w-full py-3.5 rounded-xl text-sm font-bold border border-outline-variant/20 text-on-surface hover:bg-surface-container-highest/50 transition-all text-center"
+              >
+                Get started free
+              </Link>
+            </div>
+
+            {/* Pro Plan */}
+            <div className="bg-surface-container-low border-2 border-primary/30 rounded-3xl p-8 md:p-10 flex flex-col relative overflow-hidden">
+              {/* Subtle gradient highlight */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/3 pointer-events-none" />
+              <div className="relative z-10 flex flex-col flex-1">
+                <div className="mb-8">
+                  <div className="flex items-center gap-2 mb-3">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-primary">
+                      Pro
+                    </p>
+                    <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                      Most Popular
+                    </span>
+                  </div>
+                  {pricingCycle === "monthly" ? (
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-4xl font-bold text-on-surface">$29</span>
+                      <span className="text-on-surface-variant text-sm">/ month</span>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-4xl font-bold text-on-surface">$199</span>
+                        <span className="text-on-surface-variant text-sm">/ year</span>
+                      </div>
+                      <p className="text-xs text-on-surface-variant/60 mt-1">
+                        That&apos;s just $16.58/mo — less than $0.55/day
+                      </p>
+                    </div>
+                  )}
+                  <p className="text-on-surface-variant text-sm mt-3">
+                    For people serious about deep work and building lasting focus habits.
+                  </p>
+                </div>
+                <div className="space-y-3.5 mb-8 flex-1">
+                  {[
+                    "Unlimited guided sessions (fair use)",
+                    "All focus durations (45m, 90m, custom)",
+                    "Advanced breathing techniques",
+                    "Full session archive & replays",
+                    "Everything in Free",
+                  ].map((feature) => (
+                    <div key={feature} className="flex items-center gap-3">
+                      <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <svg className="w-3 h-3 text-primary" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                        </svg>
+                      </div>
+                      <span className="text-sm text-on-surface">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+                <a
+                  href={`/api/checkout?plan=${pricingCycle === "monthly" ? "pro_monthly" : "pro_yearly"}`}
+                  className="w-full glow-button py-3.5 rounded-xl text-sm font-bold text-center block hover:scale-[1.01] active:scale-95 transition-all"
+                >
+                  Upgrade to Pro
+                </a>
+              </div>
             </div>
           </div>
         </section>

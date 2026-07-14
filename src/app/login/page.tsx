@@ -40,6 +40,15 @@ function LoginForm() {
     setSuccess(null);
     setLoading(true);
 
+    // Build redirect URL from search params
+    const redirectParam = searchParams.get("redirect");
+    const planParam = searchParams.get("plan");
+    let redirectTo = "/focus";
+    if (redirectParam === "checkout" && planParam) {
+      redirectTo = `/api/checkout?plan=${planParam}`;
+    }
+    formData.set("redirectTo", redirectTo);
+
     try {
       let result;
       if (mode === "login") {
@@ -66,10 +75,19 @@ function LoginForm() {
   const handleGoogleLogin = async () => {
     setError(null);
     const supabase = createClient();
+
+    // Preserve checkout redirect through OAuth callback
+    const redirectParam = searchParams.get("redirect");
+    const planParam = searchParams.get("plan");
+    let callbackUrl = `${window.location.origin}/auth/callback`;
+    if (redirectParam === "checkout" && planParam) {
+      callbackUrl += `?next=${encodeURIComponent(`/api/checkout?plan=${planParam}`)}`;
+    }
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: callbackUrl,
       },
     });
     if (error) {

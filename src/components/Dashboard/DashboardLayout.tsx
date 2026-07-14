@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getStreak } from "@/lib/sessions";
 import { useAuth } from "@/components/AuthProvider";
+import { useUserPlan } from "@/hooks/useUserPlan";
+import { isPro } from "@/lib/plans";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -25,6 +27,8 @@ export default function DashboardLayout({
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
   const router = useRouter();
+  const { planType, credits, loading: planLoading } = useUserPlan();
+  const userIsPro = isPro(planType);
 
   useEffect(() => {
     async function loadStreak() {
@@ -146,6 +150,26 @@ export default function DashboardLayout({
           })}
         </nav>
 
+        {/* Upgrade Banner (free users only) */}
+        {!planLoading && !userIsPro && (
+          <div className="px-3 mt-6">
+            <a
+              href="/api/checkout?plan=pro_monthly"
+              className="block bg-gradient-to-br from-primary/8 to-primary-container/5 border border-primary/10 rounded-xl p-4 hover:border-primary/25 transition-all group"
+            >
+              <p className="text-[10px] font-bold uppercase tracking-widest text-primary-container mb-1">
+                Unlock Unlimited
+              </p>
+              <p className="text-[11px] text-on-surface-variant/70 leading-relaxed">
+                Get Pro for unlimited sessions, all durations, and advanced breathing.
+              </p>
+              <span className="inline-block mt-2 text-[10px] font-bold text-primary group-hover:text-primary-container transition-colors">
+                Upgrade to Pro →
+              </span>
+            </a>
+          </div>
+        )}
+
         {/* Quick Relief Section */}
         <div className="mt-auto pt-6">
           <div className="px-4 mb-3">
@@ -192,6 +216,57 @@ export default function DashboardLayout({
           {/* Profile Dropdown Menu */}
           {profileMenuOpen && (
             <div className="absolute bottom-16 left-2 right-2 bg-surface-container-high border border-outline-variant/10 rounded-2xl p-2 shadow-lg z-50 flex flex-col gap-1">
+              {/* Plan & Credits Info */}
+              <div className="px-3 py-2 border-b border-outline-variant/10 mb-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/60">
+                    Plan
+                  </span>
+                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                    userIsPro
+                      ? "bg-primary/10 text-primary"
+                      : "bg-surface-container-highest text-on-surface-variant"
+                  }`}>
+                    {userIsPro ? "Pro" : "Free"}
+                  </span>
+                </div>
+                {!planLoading && (
+                  <p className="text-[10px] text-on-surface-variant/50 mt-1">
+                    {userIsPro
+                      ? `${credits} resets remaining this month`
+                      : `${credits} free resets remaining`}
+                  </p>
+                )}
+              </div>
+
+              {/* Manage Billing (Pro users) */}
+              {userIsPro && (
+                <a
+                  href="https://polar.sh/unblockfocus/portal"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-on-surface-variant/70 hover:text-on-surface hover:bg-surface-container-highest/50 rounded-xl transition-all text-xs font-semibold"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" />
+                  </svg>
+                  Manage billing
+                </a>
+              )}
+
+              {/* Upgrade (Free users) */}
+              {!userIsPro && (
+                <a
+                  href="/api/checkout?plan=pro_monthly"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-primary hover:text-primary-container hover:bg-primary/5 rounded-xl transition-all text-xs font-semibold"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 0 0-2.455 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
+                  </svg>
+                  Upgrade to Pro
+                </a>
+              )}
+
               <button
                 onClick={async () => {
                   await signOut();
@@ -225,8 +300,10 @@ export default function DashboardLayout({
                   <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider truncate max-w-[110px]">
                     {user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Account"}
                   </span>
-                  <span className="text-[9px] text-on-surface-variant/50 truncate max-w-[110px]">
-                    Manage session
+                  <span className={`text-[9px] truncate max-w-[110px] ${
+                    userIsPro ? "text-primary/60" : "text-on-surface-variant/50"
+                  }`}>
+                    {userIsPro ? "Pro" : `${credits} resets left`}
                   </span>
                 </div>
               </div>

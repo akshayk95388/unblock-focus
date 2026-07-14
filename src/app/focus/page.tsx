@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import DashboardLayout from "@/components/Dashboard/DashboardLayout";
 import DailyGoalProgress from "@/components/Dashboard/DailyGoalProgress";
 import HabitManager from "@/components/Dashboard/HabitManager";
@@ -9,9 +10,12 @@ import HistoryTab from "@/components/Dashboard/HistoryTab";
 import MeditationTab, { type ReplayConfig } from "@/components/Dashboard/MeditationTab";
 import Breathing from "@/components/FocusEngine/Breathing";
 import CustomSelect from "@/components/ui/CustomSelect";
+import PaywallModal from "@/components/ui/PaywallModal";
 import { saveSession, type SessionRecord } from "@/lib/sessions";
 import { getHabits, addHabit } from "@/lib/habits";
 import { track } from "@/lib/mixpanel";
+import { useUserPlan } from "@/hooks/useUserPlan";
+import { isPro, canUseBreathingTechnique, hasCredits } from "@/lib/plans";
 
 export default function DashboardPage() {
   const [currentTab, setCurrentTab] = useState("dashboard");
@@ -19,6 +23,11 @@ export default function DashboardPage() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [standaloneBreathing, setStandaloneBreathing] = useState<{ durationMinutes: number }>();
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [showPaywall, setShowPaywall] = useState<"credits" | "breathing" | null>(null);
+  const [showProSuccess, setShowProSuccess] = useState(false);
+  const { planType, credits, refetch: refetchPlan } = useUserPlan();
+  const userIsPro = isPro(planType);
+  const router = useRouter();
 
   // Zen Mode states
   const [isMeditationZen, setIsMeditationZen] = useState(false);
@@ -98,8 +107,31 @@ export default function DashboardPage() {
     }
   }, []);
 
+  // Post-checkout success detection
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("payment") === "success") {
+        setShowProSuccess(true);
+        refetchPlan();
+        // Clean up the URL
+        const url = new URL(window.location.href);
+        url.searchParams.delete("payment");
+        url.searchParams.delete("checkout_id");
+        window.history.replaceState({}, "", url.pathname);
+        track("pro_activation_celebrated");
+      }
+    }
+  }, [refetchPlan]);
+
   const handleStartReset = useCallback(() => {
     if (!heroStressor.trim()) return;
+    // Check credits before starting
+    if (!userIsPro && !hasCredits(credits)) {
+      track("paywall_shown", { trigger: "credits" });
+      setShowPaywall("credits");
+      return;
+    }
     track("guided_session_started", {
       stressor_provided: true,
       duration_mins: durationMins,
@@ -108,7 +140,7 @@ export default function DashboardPage() {
     setDirectFocusMode(false);
     setCurrentTab("meditation");
     setHeroStressor("");
-  }, [heroStressor, durationMins]);
+  }, [heroStressor, durationMins, userIsPro, credits]);
 
   const handleStartFocusDirectly = useCallback(() => {
     track("focus_session_started");
@@ -414,15 +446,20 @@ export default function DashboardPage() {
                         size="sm"
                         value={breathingTech}
                         onChange={(val) => {
+                          if (!canUseBreathingTechnique(planType, val)) {
+                            track("paywall_shown", { trigger: "breathing" });
+                            setShowPaywall("breathing");
+                            return;
+                          }
                           setBreathingTech(val);
                           localStorage.setItem("unblock-breathing-tech", val);
                         }}
                         options={[
                           { value: "box", label: "Box Breathing (Four equal sides)" },
-                          { value: "physiological_sigh", label: "Double Breath (Instant sigh relief)" },
-                          { value: "relaxing_478", label: "4-7-8 Calm (Deep relaxation)" },
-                          { value: "alternate_nostril", label: "Alternate Nostril (Balance & focus)" },
-                          { value: "wim_hof", label: "Power Breath (Advanced energy)" },
+                          { value: "physiological_sigh", label: `Double Breath (Instant sigh relief)${!userIsPro ? " 🔒" : ""}` },
+                          { value: "relaxing_478", label: `4-7-8 Calm (Deep relaxation)${!userIsPro ? " 🔒" : ""}` },
+                          { value: "alternate_nostril", label: `Alternate Nostril (Balance & focus)${!userIsPro ? " 🔒" : ""}` },
+                          { value: "wim_hof", label: `Power Breath (Advanced energy)${!userIsPro ? " 🔒" : ""}` },
                         ]}
                       />
                     </div>
@@ -535,6 +572,48 @@ export default function DashboardPage() {
         />
       )}
 
+      {/* Paywall Modal */}
+      {showPaywall && (
+        <PaywallModal
+          trigger={showPaywall}
+          onClose={() => setShowPaywall(null)}
+        />
+      )}
+
+      {/* Pro Success Modal */}
+      {showProSuccess && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="absolute inset-0 bg-background/80 backdrop-blur-xl"
+            onClick={() => setShowProSuccess(false)}
+          />
+          <div className="relative w-full max-w-sm bg-surface-container-low border border-outline-variant/15 rounded-3xl overflow-hidden shadow-2xl">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-transparent to-secondary/5 pointer-events-none" />
+            <div className="relative z-10 p-10 text-center">
+              <span className="text-5xl mb-6 block">🎉</span>
+              <h2 className="text-2xl font-bold tracking-tight text-on-surface mb-3">
+                Welcome to Unblock Pro!
+              </h2>
+              <p className="text-on-surface-variant text-sm leading-relaxed mb-2">
+                100 guided session resets have been added to your account.
+              </p>
+              <p className="text-on-surface-variant/60 text-xs leading-relaxed mb-8">
+                You now have access to all focus durations, advanced breathing techniques, and your full session archive.
+              </p>
+              <button
+                onClick={() => setShowProSuccess(false)}
+                className="w-full glow-button py-3.5 rounded-xl text-sm font-bold hover:scale-[1.01] active:scale-95 transition-all cursor-pointer"
+              >
+                Let’s go →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </DashboardLayout>
   );

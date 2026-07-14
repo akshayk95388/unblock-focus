@@ -4,9 +4,12 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { getHabits, type Habit } from "@/lib/habits";
 import { saveSession, toggleFavorite, type SubtitleEntry } from "@/lib/sessions";
 import { track } from "@/lib/mixpanel";
+import { useUserPlan } from "@/hooks/useUserPlan";
+import { isPro, canUseFocusDuration, hasCredits } from "@/lib/plans";
 import BreathingRing from "@/components/FocusEngine/BreathingRing";
 import Confetti from "@/components/FocusEngine/Confetti";
 import CustomSelect from "@/components/ui/CustomSelect";
+import PaywallModal from "@/components/ui/PaywallModal";
 
 export interface ReplayConfig {
   audioUrl: string;
@@ -152,6 +155,9 @@ export default function MeditationTab({
   const [showFocusCustom, setShowFocusCustom] = useState(false);
   const [selectedHabitId, setSelectedHabitId] = useState("");
   const [countdown, setCountdown] = useState<number | null>(null);
+  const [showPaywall, setShowPaywall] = useState<"credits" | "duration" | null>(null);
+  const { planType, credits } = useUserPlan();
+  const userIsPro = isPro(planType);
 
   // Sync LLM task or default to Focused Work
   useEffect(() => {
@@ -334,6 +340,13 @@ export default function MeditationTab({
       });
 
       if (!response.ok) {
+        const errorBody = await response.json().catch(() => null);
+        if (response.status === 403 && errorBody?.error === "OUT_OF_CREDITS") {
+          setStatus("idle");
+          track("paywall_shown", { trigger: "credits" });
+          setShowPaywall("credits");
+          return;
+        }
         throw new Error("We couldn't start your session. Please try again.");
       }
 
@@ -951,6 +964,11 @@ export default function MeditationTab({
                     size="sm"
                     value={showFocusCustom ? "custom" : focusDuration}
                     onChange={(val) => {
+                      if (!canUseFocusDuration(planType, val)) {
+                        track("paywall_shown", { trigger: "duration" });
+                        setShowPaywall("duration");
+                        return;
+                      }
                       if (val === "custom") {
                         setShowFocusCustom(true);
                         setFocusDuration(30);
@@ -963,9 +981,9 @@ export default function MeditationTab({
                     options={[
                       { value: 15, label: "15 min (Quick)" },
                       { value: 25, label: "25 min (Classic)" },
-                      { value: 45, label: "45 min (Standard)" },
-                      { value: 90, label: "90 min (Extended)" },
-                      { value: "custom", label: "Custom..." },
+                      { value: 45, label: `45 min (Standard)${!userIsPro ? " \uD83D\uDD12" : ""}` },
+                      { value: 90, label: `90 min (Extended)${!userIsPro ? " \uD83D\uDD12" : ""}` },
+                      { value: "custom", label: `Custom...${!userIsPro ? " \uD83D\uDD12" : ""}` },
                     ]}
                   />
                   {showFocusCustom && (
@@ -1269,6 +1287,14 @@ export default function MeditationTab({
       </div>
       {/* Hidden audio element */}
       {audioUrl && <audio ref={audioRef} src={audioUrl} preload="auto" className="hidden" />}
+
+      {/* Paywall Modal */}
+      {showPaywall && (
+        <PaywallModal
+          trigger={showPaywall}
+          onClose={() => setShowPaywall(null)}
+        />
+      )}
     </div>
   );
 }

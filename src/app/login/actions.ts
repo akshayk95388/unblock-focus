@@ -36,6 +36,7 @@ export async function signIn(formData: FormData): Promise<AuthResult> {
 
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
+  const redirectTo = (formData.get("redirectTo") as string) || "/focus";
 
   if (!email || !password) {
     return { error: "Email and password are required." };
@@ -50,7 +51,7 @@ export async function signIn(formData: FormData): Promise<AuthResult> {
     return { error: error.message };
   }
 
-  redirect("/focus");
+  redirect(redirectTo);
 }
 
 export async function resetPassword(formData: FormData): Promise<AuthResult> {

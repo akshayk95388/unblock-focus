@@ -3,8 +3,12 @@
 import { useEffect, useState } from "react";
 import { getSessions, toggleFavorite, type SessionRecord } from "@/lib/sessions";
 import { getHabits, type Habit } from "@/lib/habits";
+import { useUserPlan } from "@/hooks/useUserPlan";
+import { isPro, FREE_REPLAY_LIMIT } from "@/lib/plans";
 import StatCards from "@/components/Dashboard/StatCards";
 import ActivityHeatmap from "@/components/Dashboard/ActivityHeatmap";
+import PaywallModal from "@/components/ui/PaywallModal";
+import { track } from "@/lib/mixpanel";
 
 interface HistoryTabProps {
   onReplaySession?: (session: SessionRecord) => void;
@@ -14,6 +18,9 @@ export default function HistoryTab({ onReplaySession }: HistoryTabProps) {
   const [sessions, setSessions] = useState<SessionRecord[]>([]);
   const [habitsMap, setHabitsMap] = useState<Record<string, Habit>>({});
   const [filter, setFilter] = useState<"all" | "favorites">("all");
+  const [showPaywall, setShowPaywall] = useState(false);
+  const { planType } = useUserPlan();
+  const userIsPro = isPro(planType);
 
   useEffect(() => {
     async function loadData() {
@@ -59,10 +66,31 @@ export default function HistoryTab({ onReplaySession }: HistoryTabProps) {
     return acc;
   }, {} as Record<string, SessionRecord[]>);
 
+  // Track the replay index for guided sessions (for free-tier gating)
+  // Build a separate counter for guided sessions with audio
+  const guidedSessionIds = new Set<string>();
+  let guidedIndex = 0;
+  const guidedSessionIndexMap = new Map<string, number>();
+  for (const session of sessions) {
+    if (session.session_type === "guided" && session.audio_url) {
+      guidedSessionIndexMap.set(session.id, guidedIndex);
+      guidedSessionIds.add(session.id);
+      guidedIndex++;
+    }
+  }
+
   const canReplay = (session: SessionRecord) =>
     session.session_type === "guided" && !!session.audio_url;
 
+  const isReplayLocked = (session: SessionRecord) => {
+    if (userIsPro) return false;
+    if (!canReplay(session)) return false;
+    const idx = guidedSessionIndexMap.get(session.id);
+    return idx !== undefined && idx >= FREE_REPLAY_LIMIT;
+  };
+
   return (
+    <>
     <div className="flex flex-col flex-1 min-w-0 p-6 md:px-6 md:py-12 space-y-10">
       <div>
         <h2 className="text-3xl font-bold tracking-tight mb-2">History</h2>
@@ -174,15 +202,30 @@ export default function HistoryTab({ onReplaySession }: HistoryTabProps) {
                           )}
                           {/* Play button — only for guided sessions with audio */}
                           {canReplay(session) && onReplaySession && (
-                            <button
-                              onClick={() => onReplaySession(session)}
-                              className="w-8 h-8 rounded-full bg-primary/10 hover:bg-primary/20 flex items-center justify-center transition-all text-primary"
-                              title="Replay this session"
-                            >
-                              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M8 5v14l11-7z" />
-                              </svg>
-                            </button>
+                            isReplayLocked(session) ? (
+                              <button
+                                onClick={() => {
+                                  track("paywall_shown", { trigger: "replay" });
+                                  setShowPaywall(true);
+                                }}
+                                className="w-8 h-8 rounded-full bg-surface-container-highest/50 flex items-center justify-center transition-all text-on-surface-variant/40"
+                                title="Unlock with Pro"
+                              >
+                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                                </svg>
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => onReplaySession(session)}
+                                className="w-8 h-8 rounded-full bg-primary/10 hover:bg-primary/20 flex items-center justify-center transition-all text-primary"
+                                title="Replay this session"
+                              >
+                                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                  <path d="M8 5v14l11-7z" />
+                                </svg>
+                              </button>
+                            )
                           )}
                           {session.aborted && (
                             <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tighter bg-error/10 text-error border border-error/10">
@@ -203,5 +246,14 @@ export default function HistoryTab({ onReplaySession }: HistoryTabProps) {
         </div>
       )}
     </div>
+
+      {/* Paywall Modal */}
+      {showPaywall && (
+        <PaywallModal
+          trigger="replay"
+          onClose={() => setShowPaywall(false)}
+        />
+      )}
+    </>
   );
 }

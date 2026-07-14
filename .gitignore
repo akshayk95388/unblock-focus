@@ -56,3 +56,4 @@ __pycache__/
 backend/media/
 backend/meditation.db
 backend/.pytest_cache/
+docs
