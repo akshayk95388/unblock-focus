@@ -931,11 +931,28 @@ export default function MeditationTab({
                   </button>
                 )}
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     if (audioRef.current) {
                       audioRef.current.pause();
                     }
                     setIsPlaying(false);
+                    
+                    const elapsed = Math.round(currentTime);
+                    if (elapsed > 0 && !isReplay) {
+                      await saveSession(
+                        `Guided: ${title}`,
+                        elapsed,
+                        selectedHabitId || undefined,
+                        true, // aborted
+                        "guided",
+                        audioUrl,
+                        subtitles as SubtitleEntry[]
+                      );
+                      track("guided_session_aborted", {
+                        duration_seconds: elapsed,
+                      });
+                    }
+                    
                     handleResetAll();
                   }}
                   className="px-5 py-2 rounded-full text-[10px] tracking-wider uppercase text-outline hover:text-error transition-all border border-transparent hover:border-error/20 hover:bg-error-container/5 cursor-pointer font-bold"
