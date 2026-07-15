@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { getStreak } from "@/lib/sessions";
 import { useAuth } from "@/components/AuthProvider";
@@ -11,7 +11,6 @@ interface DashboardLayoutProps {
   children: React.ReactNode;
   activeTab?: string;
   onTabChange?: (tabId: string) => void;
-  onAddHabit?: () => void;
   zenMode?: boolean;
 }
 
@@ -19,7 +18,6 @@ export default function DashboardLayout({
   children,
   activeTab = "dashboard",
   onTabChange,
-  onAddHabit,
   zenMode = false,
 }: DashboardLayoutProps) {
   const [streak, setStreak] = useState(0);
@@ -29,6 +27,34 @@ export default function DashboardLayout({
   const router = useRouter();
   const { planType, credits, loading: planLoading } = useUserPlan();
   const userIsPro = isPro(planType);
+
+  // Helper to check if it's a default Google letter avatar
+  const isDefaultGoogleAvatar = (url?: string) => {
+    if (!url) return true;
+    if (url.includes("googleusercontent.com")) {
+      return url.includes("/a/") && !url.includes("/a-/");
+    }
+    return false;
+  };
+
+  const rawName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Account";
+  const firstName = rawName.trim().split(/\s+/)[0];
+  const userInitial = firstName.charAt(0).toUpperCase();
+
+  // Ref wrapping the profile trigger + dropdown — clicks inside it do NOT close the menu
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close the profile menu when clicking anywhere outside the profile section
+  useEffect(() => {
+    if (!profileMenuOpen) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
+        setProfileMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [profileMenuOpen]);
 
   useEffect(() => {
     async function loadStreak() {
@@ -76,11 +102,13 @@ export default function DashboardLayout({
               </span>
             </div>
           )}
-          <div className="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center text-xs font-bold text-on-surface-variant uppercase">
-            {user?.user_metadata?.avatar_url ? (
-              <img src={user.user_metadata.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
+          <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-outline-variant/10">
+            {!user?.user_metadata?.avatar_url || isDefaultGoogleAvatar(user.user_metadata.avatar_url) ? (
+              <div className="w-full h-full bg-gradient-to-br from-primary-container to-primary flex items-center justify-center text-xs font-black text-on-primary-container uppercase shadow-inner">
+                {userInitial}
+              </div>
             ) : (
-              user?.email?.charAt(0) || "U"
+              <img src={user.user_metadata.avatar_url} alt="" className="w-full h-full object-cover" />
             )}
           </div>
         </div>
@@ -212,7 +240,8 @@ export default function DashboardLayout({
         </div>
 
         {/* Desktop Footer (Streak + Profile) */}
-        <div className="pt-6 border-t border-outline-variant/10 relative">
+        <div ref={profileMenuRef} className="pt-6 border-t border-outline-variant/10 relative">
+
           {/* Profile Dropdown Menu */}
           {profileMenuOpen && (
             <div className="absolute bottom-16 left-2 right-2 bg-surface-container-high border border-outline-variant/10 rounded-2xl p-2 shadow-lg z-50 flex flex-col gap-1">
@@ -282,45 +311,35 @@ export default function DashboardLayout({
             </div>
           )}
 
-          {/* Interactive Profile Selector */}
-          <div className="flex items-center justify-between px-2 pt-2">
-            <button
-              onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-              className="flex-1 flex items-center justify-between p-2 hover:bg-surface-container-high rounded-xl transition-all border border-transparent hover:border-outline-variant/5 text-left min-w-0"
-            >
-              <div className="flex items-center gap-2 truncate">
-                <div className="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center border border-outline-variant/10 text-xs font-bold text-on-surface-variant uppercase overflow-hidden shrink-0">
-                  {user?.user_metadata?.avatar_url ? (
-                    <img src={user.user_metadata.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
-                  ) : (
-                    user?.email?.charAt(0) || "U"
-                  )}
+          {/* Profile Button — ChatGPT/Claude style: single clean row, no chevron */}
+          <button
+            onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+            className={`w-full flex items-center gap-3 px-2 py-2 rounded-xl transition-all text-left ${
+              profileMenuOpen
+                ? "bg-surface-container-high"
+                : "hover:bg-surface-container-high"
+            }`}
+          >
+            <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-outline-variant/10">
+              {!user?.user_metadata?.avatar_url || isDefaultGoogleAvatar(user.user_metadata.avatar_url) ? (
+                <div className="w-full h-full bg-gradient-to-br from-primary-container to-primary flex items-center justify-center text-xs font-black text-on-primary-container uppercase">
+                  {userInitial}
                 </div>
-                <div className="flex flex-col min-w-0">
-                  <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider truncate max-w-[110px]">
-                    {user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Account"}
-                  </span>
-                  <span className={`text-[9px] truncate max-w-[110px] ${
-                    userIsPro ? "text-primary/60" : "text-on-surface-variant/50"
-                  }`}>
-                    {userIsPro ? "Pro" : `${credits} resets left`}
-                  </span>
-                </div>
-              </div>
-              <svg className={`w-3 h-3 text-on-surface-variant/60 transition-transform ${profileMenuOpen ? 'rotate-180' : ''} shrink-0 ml-2`} fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
-              </svg>
-            </button>
-
-            {streak > 0 && (
-              <div className="flex items-center gap-1 px-2.5 py-1 bg-surface-container-high rounded-full border border-outline-variant/5 ml-2 shrink-0">
-                <span className="text-xs">🔥</span>
-                <span className="text-[10px] font-bold text-on-surface font-mono">
-                  {streak}d
-                </span>
-              </div>
-            )}
-          </div>
+              ) : (
+                <img src={user.user_metadata.avatar_url} alt="" className="w-full h-full object-cover" />
+              )}
+            </div>
+            <div className="flex flex-col min-w-0 flex-1">
+              <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider truncate">
+                {firstName}
+              </span>
+              <span className={`text-[9px] truncate ${
+                userIsPro ? "text-primary/60" : "text-on-surface-variant/50"
+              }`}>
+                {userIsPro ? "Pro" : `${credits} resets left`}
+              </span>
+            </div>
+          </button>
         </div>
       </aside>
 

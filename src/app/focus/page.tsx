@@ -315,7 +315,6 @@ function DashboardContent() {
     <DashboardLayout
       activeTab={currentTab}
       onTabChange={handleTabChange}
-      onAddHabit={() => setShowHabitManager(true)}
       zenMode={isZenActive && (currentTab === "meditation" || currentTab === "breathing")}
     >
       <div className="flex flex-col lg:flex-row min-h-[calc(100vh-4rem)] md:min-h-screen">
