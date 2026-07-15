@@ -13,6 +13,7 @@ import CustomSelect from "@/components/ui/CustomSelect";
 import PaywallModal from "@/components/ui/PaywallModal";
 import SidebarSessionCard from "@/components/Dashboard/SidebarSessionCard";
 import FocusSetupModal from "@/components/Dashboard/FocusSetupModal";
+import BreathingSetupModal from "@/components/Dashboard/BreathingSetupModal";
 import { ActiveSessionProvider, useActiveSession } from "@/components/ActiveSessionContext";
 import { saveSession, type SessionRecord } from "@/lib/sessions";
 import { getHabits, addHabit } from "@/lib/habits";
@@ -33,7 +34,7 @@ function DashboardContent() {
   const [showHabitManager, setShowHabitManager] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [standaloneBreathing, setStandaloneBreathing] = useState<{ durationMinutes: number }>();
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
   const [showPaywall, setShowPaywall] = useState<"credits" | "breathing" | null>(null);
   const [showProSuccess, setShowProSuccess] = useState(false);
   const { planType, credits, refetch: refetchPlan } = useUserPlan();
@@ -57,6 +58,7 @@ function DashboardContent() {
   const [modalFocusDuration, setModalFocusDuration] = useState(25);
   const [modalSelectedHabitId, setModalSelectedHabitId] = useState("");
   const [autoStartFocus, setAutoStartFocus] = useState(false);
+  const [showBreathingSetupModal, setShowBreathingSetupModal] = useState(false);
 
   // Inline stressor input on dashboard hero
   const [heroStressor, setHeroStressor] = useState("");
@@ -64,11 +66,6 @@ function DashboardContent() {
 
   // Replay state — for replaying past guided sessions
   const [pendingReplay, setPendingReplay] = useState<ReplayConfig | null>(null);
-
-  // Quick Breathing Tab settings
-  const [breathingTech, setBreathingTech] = useState("box");
-  const [breathingMins, setBreathingMins] = useState(5);
-  const [showBreathingCustom, setShowBreathingCustom] = useState(false);
 
   const { session, setSession } = useActiveSession();
 
@@ -98,12 +95,6 @@ function DashboardContent() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isZenActive]);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setBreathingTech(localStorage.getItem("unblock-breathing-tech") || "box");
-    }
-  }, []);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -238,7 +229,6 @@ function DashboardContent() {
   }, []);
 
   const handleStartBreathing = useCallback((minutes: number) => {
-    if (session) return;
     track("breathing_session_started", { duration_mins: minutes });
     try {
       const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -249,11 +239,16 @@ function DashboardContent() {
       console.warn("Audio context failed:", e);
     }
     setStandaloneBreathing({ durationMinutes: minutes });
-  }, [session]);
+  }, []);
+
+  const handleBreathingModalStart = useCallback((techId: string, durationMins: number) => {
+    handleStartBreathing(durationMins);
+    setShowBreathingSetupModal(false);
+    setCurrentTab("breathing");
+  }, [handleStartBreathing]);
 
   const handleBreathingComplete = useCallback(async (durationSeconds: number) => {
     setSession(null); // Clear active session from context
-    setStandaloneBreathing(undefined);
     if (durationSeconds > 0) {
       const habits = await getHabits();
       const breathingHabit = habits.find((h) => h.name.toLowerCase().includes("breath"));
@@ -268,20 +263,19 @@ function DashboardContent() {
           goal_name: resolvedHabit.name,
         });
       }
-      setSuccessMessage(`Breathing complete: ${Math.round(durationSeconds / 60)} minutes recorded.`);
       setRefreshKey((k) => k + 1);
-      setTimeout(() => setSuccessMessage(null), 4000);
     }
-  }, [setSession]);
+    
+    // Go back to the dashboard/home tab upon completion/exit
+    if (currentTab === "breathing") {
+      setCurrentTab("dashboard");
+    }
 
-  // Tab navigation handler — sessions persist via CSS hidden, so no state clearing needed
-  const handleTabChange = useCallback((tabId: string) => {
-    if (tabId !== "meditation") {
-      setPendingStressor("");
-      setDirectFocusMode(false);
-    }
-    setCurrentTab(tabId);
-  }, []);
+    // Delay clearing the state to let the slide transition finish cleanly
+    setTimeout(() => {
+      setStandaloneBreathing(undefined);
+    }, 600);
+  }, [setSession, currentTab]);
 
   // Resume handler for the sidebar mini-timer card
   const handleResumeSession = useCallback(() => {
@@ -291,6 +285,23 @@ function DashboardContent() {
       setCurrentTab("meditation");
     }
   }, [session]);
+
+  // Tab navigation handler — sessions persist via CSS hidden, so no state clearing needed
+  const handleTabChange = useCallback((tabId: string) => {
+    if (tabId === "breathing") {
+      if (session) {
+        handleResumeSession();
+      } else {
+        setShowBreathingSetupModal(true);
+      }
+      return;
+    }
+    if (tabId !== "meditation") {
+      setPendingStressor("");
+      setDirectFocusMode(false);
+    }
+    setCurrentTab(tabId);
+  }, [session, handleResumeSession]);
 
   // Suggestions — same as MeditationTab for consistency
   const heroSuggestions = [
@@ -307,7 +318,7 @@ function DashboardContent() {
       onAddHabit={() => setShowHabitManager(true)}
       zenMode={isZenActive && (currentTab === "meditation" || currentTab === "breathing")}
     >
-      <div className="flex flex-col lg:flex-row min-h-[calc(100vh-4rem)]">
+      <div className="flex flex-col lg:flex-row min-h-[calc(100vh-4rem)] md:min-h-screen">
         {/* ===== Center Content ===== */}
         {currentTab === "dashboard" && (
           <section className="flex-1 p-6 md:p-12 overflow-y-auto" key={refreshKey}>
@@ -429,12 +440,7 @@ function DashboardContent() {
                   </div>
                 )}
 
-                {/* Success message */}
-                {successMessage && (
-                  <div className="mt-6 p-4 rounded-xl bg-green-500/5 border border-green-500/15 text-center">
-                    <p className="text-sm text-green-400 font-medium">{successMessage}</p>
-                  </div>
-                )}
+
               </div>
             </div>
           </section>
@@ -488,107 +494,7 @@ function DashboardContent() {
                   />
                 </div>
               </div>
-            ) : (
-              <div className="flex flex-col flex-1 p-6 md:p-12 space-y-10 overflow-y-auto">
-                <div className="max-w-2xl w-full mx-auto space-y-10">
-                  <div>
-                    <h2 className="text-3xl font-bold tracking-tight mb-2">Breathing</h2>
-                    <p className="text-on-surface-variant text-sm">
-                      Calm your mind instantly with focused breathing exercises. No setup required, works offline.
-                    </p>
-                  </div>
-
-                  <div className="bg-surface-container-low p-6 md:p-8 rounded-2xl border border-outline-variant/15 relative">
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none rounded-2xl" />
-
-                    <div className="relative z-10 space-y-6">
-                      <div className="space-y-1">
-                        <h3 className="text-lg font-bold text-on-surface">Set up your breathing session</h3>
-                        <p className="text-xs text-on-surface-variant">Pick a technique and duration, then begin.</p>
-                      </div>
-
-                      {/* Breathing Technique */}
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                          Select Technique
-                        </label>
-                        <CustomSelect
-                          size="sm"
-                          value={breathingTech}
-                          onChange={(val) => {
-                            if (!canUseBreathingTechnique(planType, val)) {
-                              track("paywall_shown", { trigger: "breathing" });
-                              setShowPaywall("breathing");
-                              return;
-                            }
-                            setBreathingTech(val);
-                            localStorage.setItem("unblock-breathing-tech", val);
-                          }}
-                          options={[
-                            { value: "box", label: "Box Breathing (Four equal sides)" },
-                            { value: "physiological_sigh", label: `Double Breath (Instant sigh relief)${!userIsPro ? " 🔒" : ""}` },
-                            { value: "relaxing_478", label: `4-7-8 Calm (Deep relaxation)${!userIsPro ? " 🔒" : ""}` },
-                            { value: "alternate_nostril", label: `Alternate Nostril (Balance & focus)${!userIsPro ? " 🔒" : ""}` },
-                            { value: "wim_hof", label: `Power Breath (Advanced energy)${!userIsPro ? " 🔒" : ""}` },
-                          ]}
-                        />
-                      </div>
-
-                      {/* Duration */}
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                          Duration
-                        </label>
-                        <CustomSelect
-                          size="sm"
-                          value={showBreathingCustom ? "custom" : breathingMins}
-                          onChange={(val) => {
-                            if (val === "custom") {
-                              setShowBreathingCustom(true);
-                              setBreathingMins(5);
-                            } else {
-                              setShowBreathingCustom(false);
-                              setBreathingMins(Number(val));
-                            }
-                          }}
-                          options={[
-                            { value: 2, label: "2 Minutes (Quick)" },
-                            { value: 5, label: "5 Minutes (Standard)" },
-                            { value: 10, label: "10 Minutes (Deep)" },
-                            { value: "custom", label: "Custom..." },
-                          ]}
-                        />
-                        {showBreathingCustom && (
-                          <div className="mt-2.5 animate-in slide-in-from-top-1 duration-200 flex items-center gap-2">
-                            <input
-                              type="number"
-                              min={1}
-                              max={180}
-                              value={breathingMins}
-                              onChange={(e) => {
-                                const val = Math.max(1, Math.min(180, Number(e.target.value) || 1));
-                                setBreathingMins(val);
-                              }}
-                              className="w-24 bg-surface-container-highest border border-outline-variant/15 rounded-xl px-3.5 py-2 text-xs text-on-surface focus:outline-none focus:ring-1 focus:ring-primary/30 text-center font-mono font-bold"
-                            />
-                            <span className="text-xs text-on-surface-variant/70 font-medium">Minutes</span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Primary Start Button — disabled when another session is active */}
-                      <button
-                        onClick={() => handleStartBreathing(breathingMins)}
-                        disabled={!!session}
-                        className={`w-full glow-button py-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${session ? "opacity-50 pointer-events-none" : "hover:scale-[1.01] active:scale-95"}`}
-                      >
-                        🫁 Start Breathing Session — {breathingMins} min
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+            ) : null}
           </div>
         )}
 
@@ -611,7 +517,7 @@ function DashboardContent() {
           <DailyGoalProgress />
 
           {/* Insight card */}
-          <div className="bg-surface-container-low/50 p-6 rounded-2xl border border-outline-variant/10">
+          <div className="bg-surface-container-low/50 p-6 rounded-2xl border border-outline-variant/10 mt-auto">
             <p className="text-[10px] text-primary font-bold uppercase mb-2">
               Insight
             </p>
@@ -679,6 +585,13 @@ function DashboardContent() {
         isOpen={showFocusSetupModal}
         onClose={() => setShowFocusSetupModal(false)}
         onStart={handleModalStart}
+      />
+
+      {/* Breathing Configuration Modal */}
+      <BreathingSetupModal
+        isOpen={showBreathingSetupModal}
+        onClose={() => setShowBreathingSetupModal(false)}
+        onStart={handleBreathingModalStart}
       />
 
     </DashboardLayout>
