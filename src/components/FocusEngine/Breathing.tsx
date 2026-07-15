@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import BreathingRing from "./BreathingRing";
+import { useActiveSession } from "@/components/ActiveSessionContext";
 
 interface BreathingProps {
   onComplete: (durationSeconds: number) => void;
@@ -24,6 +25,9 @@ export default function Breathing({
   const [finalSeconds, setFinalSeconds] = useState(0);
   const [techniqueId, setTechniqueId] = useState<string>("box");
   const [elapsed, setElapsed] = useState(0);
+
+  const { setSession, updateTimer } = useActiveSession();
+  const totalSeconds = (durationMinutes || 0) * 60;
 
   useEffect(() => {
     setTechniqueId(localStorage.getItem("unblock-breathing-tech") || "box");
@@ -60,6 +64,27 @@ export default function Breathing({
     }, 1000);
     return () => clearInterval(interval);
   }, [sessionPhase]);
+
+  // ── Report breathing session to ActiveSessionContext ──
+  useEffect(() => {
+    if (sessionPhase === "breathing" && totalSeconds > 0) {
+      setSession({
+        type: "breathing",
+        totalSeconds,
+        secondsLeft: totalSeconds,
+        sourceTab: "breathing",
+      });
+    } else if (sessionPhase === "complete") {
+      setSession(null);
+    }
+  }, [sessionPhase, totalSeconds, setSession]);
+
+  // ── Sync elapsed time to context for sidebar mini-timer ──
+  useEffect(() => {
+    if (sessionPhase === "breathing" && totalSeconds > 0) {
+      updateTimer(Math.max(0, totalSeconds - elapsed));
+    }
+  }, [elapsed, sessionPhase, totalSeconds, updateTimer]);
 
   // Auto-dismiss on complete
   useEffect(() => {

@@ -11,6 +11,8 @@ import MeditationTab, { type ReplayConfig } from "@/components/Dashboard/Meditat
 import Breathing from "@/components/FocusEngine/Breathing";
 import CustomSelect from "@/components/ui/CustomSelect";
 import PaywallModal from "@/components/ui/PaywallModal";
+import SidebarSessionCard from "@/components/Dashboard/SidebarSessionCard";
+import { ActiveSessionProvider, useActiveSession } from "@/components/ActiveSessionContext";
 import { saveSession, type SessionRecord } from "@/lib/sessions";
 import { getHabits, addHabit } from "@/lib/habits";
 import { track } from "@/lib/mixpanel";
@@ -18,6 +20,14 @@ import { useUserPlan } from "@/hooks/useUserPlan";
 import { isPro, canUseBreathingTechnique, hasCredits } from "@/lib/plans";
 
 export default function DashboardPage() {
+  return (
+    <ActiveSessionProvider>
+      <DashboardContent />
+    </ActiveSessionProvider>
+  );
+}
+
+function DashboardContent() {
   const [currentTab, setCurrentTab] = useState("dashboard");
   const [showHabitManager, setShowHabitManager] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -52,8 +62,15 @@ export default function DashboardPage() {
   const [breathingMins, setBreathingMins] = useState(5);
   const [showBreathingCustom, setShowBreathingCustom] = useState(false);
 
+  const { session, setSession } = useActiveSession();
+
   const isBreathingActive = !!standaloneBreathing;
-  const isZenActive = (isBreathingActive || isMeditationZen) && !manualZenDisabled;
+  // Zen mode only applies when viewing the session tab — navigating to Goals/History
+  // should show the full UI layout (sidebars visible)
+  const isOnSessionTab =
+    (currentTab === "meditation" && (isMeditationZen)) ||
+    (currentTab === "breathing" && isBreathingActive);
+  const isZenActive = isOnSessionTab && !manualZenDisabled;
 
   useEffect(() => {
     track("focus_page_viewed");
@@ -126,6 +143,8 @@ export default function DashboardPage() {
 
   const handleStartReset = useCallback(() => {
     if (!heroStressor.trim()) return;
+    // Prevent starting a new session while one is active
+    if (session) return;
     // Check credits before starting
     if (!userIsPro && !hasCredits(credits)) {
       track("paywall_shown", { trigger: "credits" });
@@ -140,14 +159,15 @@ export default function DashboardPage() {
     setDirectFocusMode(false);
     setCurrentTab("meditation");
     setHeroStressor("");
-  }, [heroStressor, durationMins, userIsPro, credits]);
+  }, [heroStressor, durationMins, userIsPro, credits, session]);
 
   const handleStartFocusDirectly = useCallback(() => {
+    if (session) return;
     track("focus_session_started");
     setPendingStressor("");
     setDirectFocusMode(true);
     setCurrentTab("meditation");
-  }, []);
+  }, [session]);
 
   const handleSessionComplete = useCallback(() => {
     setRefreshKey((k) => k + 1);
@@ -191,6 +211,7 @@ export default function DashboardPage() {
   }, []);
 
   const handleStartBreathing = useCallback((minutes: number) => {
+    if (session) return;
     track("breathing_session_started", { duration_mins: minutes });
     try {
       const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -201,9 +222,10 @@ export default function DashboardPage() {
       console.warn("Audio context failed:", e);
     }
     setStandaloneBreathing({ durationMinutes: minutes });
-  }, []);
+  }, [session]);
 
   const handleBreathingComplete = useCallback(async (durationSeconds: number) => {
+    setSession(null); // Clear active session from context
     setStandaloneBreathing(undefined);
     if (durationSeconds > 0) {
       const habits = await getHabits();
@@ -223,9 +245,9 @@ export default function DashboardPage() {
       setRefreshKey((k) => k + 1);
       setTimeout(() => setSuccessMessage(null), 4000);
     }
-  }, []);
+  }, [setSession]);
 
-  // When tab changes away from meditation, clear pending props
+  // Tab navigation handler — sessions persist via CSS hidden, so no state clearing needed
   const handleTabChange = useCallback((tabId: string) => {
     if (tabId !== "meditation") {
       setPendingStressor("");
@@ -233,6 +255,15 @@ export default function DashboardPage() {
     }
     setCurrentTab(tabId);
   }, []);
+
+  // Resume handler for the sidebar mini-timer card
+  const handleResumeSession = useCallback(() => {
+    if (session?.sourceTab === "breathing") {
+      setCurrentTab("breathing");
+    } else {
+      setCurrentTab("meditation");
+    }
+  }, [session]);
 
   // Suggestions — same as MeditationTab for consistency
   const heroSuggestions = [
@@ -247,7 +278,7 @@ export default function DashboardPage() {
       activeTab={currentTab}
       onTabChange={handleTabChange}
       onAddHabit={() => setShowHabitManager(true)}
-      zenMode={isZenActive}
+      zenMode={isZenActive && (currentTab === "meditation" || currentTab === "breathing")}
     >
       <div className="flex flex-col lg:flex-row min-h-[calc(100vh-4rem)]">
         {/* ===== Center Content ===== */}
@@ -350,8 +381,8 @@ export default function DashboardPage() {
 
                     <button
                       onClick={handleStartReset}
-                      disabled={!heroStressor.trim()}
-                      className={`w-full glow-button py-3.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 ${!heroStressor.trim() ? "opacity-50 pointer-events-none" : "hover:scale-[1.01] active:scale-95"
+                      disabled={!heroStressor.trim() || !!session}
+                      className={`w-full glow-button py-3.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 ${(!heroStressor.trim() || !!session) ? "opacity-50 pointer-events-none" : "hover:scale-[1.01] active:scale-95"
                         }`}
                     >
                       ⚡ Start Guided Session
@@ -359,165 +390,174 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                {/* Secondary: direct focus */}
-                <div className="flex justify-center">
-                  <button
-                    onClick={handleStartFocusDirectly}
-                    className="mt-4 text-sm text-on-surface-variant/60 hover:text-primary transition-colors flex items-center gap-1"
-                  >
-                    Skip to focus session →
-                  </button>
-                </div>
+                {/* Secondary: direct focus — hidden when a session is already active */}
+                {!session && (
+                  <div className="flex justify-center">
+                    <button
+                      onClick={handleStartFocusDirectly}
+                      className="mt-4 text-sm text-on-surface-variant/60 hover:text-primary transition-colors flex items-center gap-1"
+                    >
+                      Skip to focus session →
+                    </button>
+                  </div>
+                )}
+
+                {/* Success message */}
+                {successMessage && (
+                  <div className="mt-6 p-4 rounded-xl bg-green-500/5 border border-green-500/15 text-center">
+                    <p className="text-sm text-green-400 font-medium">{successMessage}</p>
+                  </div>
+                )}
               </div>
             </div>
-
-            {/* Success toast */}
-            {successMessage && (
-              <div className="fixed bottom-6 right-6 z-50 bg-surface-container-low border border-green-500/20 rounded-xl px-6 py-3 shadow-2xl">
-                <p className="text-sm font-bold text-green-400">{successMessage}</p>
-              </div>
-            )}
           </section>
         )}
 
-        {currentTab === "meditation" && (
-          <MeditationTab
-            initialStressor={pendingStressor}
-            directFocusMode={directFocusMode}
-            initialDurationMins={durationMins}
-            initialVoice={voice}
-            initialMusic={music}
-            onSessionComplete={handleSessionComplete}
-            onZenModeChange={setIsMeditationZen}
-            zenActive={isZenActive}
-            onToggleZen={() => setManualZenDisabled((prev) => !prev)}
-            replayConfig={pendingReplay}
-            onClearReplay={() => setPendingReplay(null)}
-          />
+        {/* ===== MeditationTab — stays mounted (hidden) during active guided/focus sessions ===== */}
+        {(currentTab === "meditation" || (session?.sourceTab === "meditation")) && (
+          <div className={currentTab === "meditation" ? "contents" : "hidden"}>
+            <MeditationTab
+              initialStressor={pendingStressor}
+              directFocusMode={directFocusMode}
+              initialDurationMins={durationMins}
+              initialVoice={voice}
+              initialMusic={music}
+              onSessionComplete={handleSessionComplete}
+              onZenModeChange={setIsMeditationZen}
+              zenActive={isZenActive}
+              onToggleZen={() => setManualZenDisabled((prev) => !prev)}
+              replayConfig={pendingReplay}
+              onClearReplay={() => setPendingReplay(null)}
+            />
+          </div>
         )}
 
-        {currentTab === "goals" && (
+        <div className={currentTab === "goals" ? "contents" : "hidden"}>
           <HabitsTab onAddHabit={() => setShowHabitManager(true)} />
-        )}
+        </div>
 
-        {currentTab === "history" && (
+        <div className={currentTab === "history" ? "contents" : "hidden"}>
           <HistoryTab
-            onReplaySession={(session) => handleReplaySession(session, "history")}
+            onReplaySession={(s) => handleReplaySession(s, "history")}
           />
-        )}
+        </div>
 
-        {currentTab === "breathing" && (
-          standaloneBreathing ? (
-            <div className="flex-1 p-6 md:p-12 overflow-y-auto">
-              <div className="max-w-2xl w-full mx-auto">
-                <Breathing
-                  durationMinutes={standaloneBreathing.durationMinutes}
-                  onComplete={handleBreathingComplete}
-                  zenActive={isZenActive}
-                  onToggleZen={() => setManualZenDisabled((prev) => !prev)}
-                />
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-col flex-1 p-6 md:p-12 space-y-10 overflow-y-auto">
-              <div className="max-w-2xl w-full mx-auto space-y-10">
-                <div>
-                  <h2 className="text-3xl font-bold tracking-tight mb-2">Breathing</h2>
-                  <p className="text-on-surface-variant text-sm">
-                    Calm your mind instantly with focused breathing exercises. No setup required, works offline.
-                  </p>
+        {/* ===== Breathing — stays mounted (hidden) during active breathing sessions ===== */}
+        {(currentTab === "breathing" || (session?.sourceTab === "breathing")) && (
+          <div className={currentTab === "breathing" ? "contents" : "hidden"}>
+            {standaloneBreathing ? (
+              <div className="flex-1 p-6 md:p-12 overflow-y-auto">
+                <div className="max-w-2xl w-full mx-auto">
+                  <Breathing
+                    durationMinutes={standaloneBreathing.durationMinutes}
+                    onComplete={handleBreathingComplete}
+                    zenActive={isZenActive}
+                    onToggleZen={() => setManualZenDisabled((prev) => !prev)}
+                  />
                 </div>
+              </div>
+            ) : (
+              <div className="flex flex-col flex-1 p-6 md:p-12 space-y-10 overflow-y-auto">
+                <div className="max-w-2xl w-full mx-auto space-y-10">
+                  <div>
+                    <h2 className="text-3xl font-bold tracking-tight mb-2">Breathing</h2>
+                    <p className="text-on-surface-variant text-sm">
+                      Calm your mind instantly with focused breathing exercises. No setup required, works offline.
+                    </p>
+                  </div>
 
-                <div className="bg-surface-container-low p-6 md:p-8 rounded-2xl border border-outline-variant/15 relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none rounded-2xl" />
+                  <div className="bg-surface-container-low p-6 md:p-8 rounded-2xl border border-outline-variant/15 relative">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none rounded-2xl" />
 
-                  <div className="relative z-10 space-y-6">
-                    <div className="space-y-1">
-                      <h3 className="text-lg font-bold text-on-surface">Set up your breathing session</h3>
-                      <p className="text-xs text-on-surface-variant">Pick a technique and duration, then begin.</p>
+                    <div className="relative z-10 space-y-6">
+                      <div className="space-y-1">
+                        <h3 className="text-lg font-bold text-on-surface">Set up your breathing session</h3>
+                        <p className="text-xs text-on-surface-variant">Pick a technique and duration, then begin.</p>
+                      </div>
+
+                      {/* Breathing Technique */}
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
+                          Select Technique
+                        </label>
+                        <CustomSelect
+                          size="sm"
+                          value={breathingTech}
+                          onChange={(val) => {
+                            if (!canUseBreathingTechnique(planType, val)) {
+                              track("paywall_shown", { trigger: "breathing" });
+                              setShowPaywall("breathing");
+                              return;
+                            }
+                            setBreathingTech(val);
+                            localStorage.setItem("unblock-breathing-tech", val);
+                          }}
+                          options={[
+                            { value: "box", label: "Box Breathing (Four equal sides)" },
+                            { value: "physiological_sigh", label: `Double Breath (Instant sigh relief)${!userIsPro ? " 🔒" : ""}` },
+                            { value: "relaxing_478", label: `4-7-8 Calm (Deep relaxation)${!userIsPro ? " 🔒" : ""}` },
+                            { value: "alternate_nostril", label: `Alternate Nostril (Balance & focus)${!userIsPro ? " 🔒" : ""}` },
+                            { value: "wim_hof", label: `Power Breath (Advanced energy)${!userIsPro ? " 🔒" : ""}` },
+                          ]}
+                        />
+                      </div>
+
+                      {/* Duration */}
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
+                          Duration
+                        </label>
+                        <CustomSelect
+                          size="sm"
+                          value={showBreathingCustom ? "custom" : breathingMins}
+                          onChange={(val) => {
+                            if (val === "custom") {
+                              setShowBreathingCustom(true);
+                              setBreathingMins(5);
+                            } else {
+                              setShowBreathingCustom(false);
+                              setBreathingMins(Number(val));
+                            }
+                          }}
+                          options={[
+                            { value: 2, label: "2 Minutes (Quick)" },
+                            { value: 5, label: "5 Minutes (Standard)" },
+                            { value: 10, label: "10 Minutes (Deep)" },
+                            { value: "custom", label: "Custom..." },
+                          ]}
+                        />
+                        {showBreathingCustom && (
+                          <div className="mt-2.5 animate-in slide-in-from-top-1 duration-200 flex items-center gap-2">
+                            <input
+                              type="number"
+                              min={1}
+                              max={180}
+                              value={breathingMins}
+                              onChange={(e) => {
+                                const val = Math.max(1, Math.min(180, Number(e.target.value) || 1));
+                                setBreathingMins(val);
+                              }}
+                              className="w-24 bg-surface-container-highest border border-outline-variant/15 rounded-xl px-3.5 py-2 text-xs text-on-surface focus:outline-none focus:ring-1 focus:ring-primary/30 text-center font-mono font-bold"
+                            />
+                            <span className="text-xs text-on-surface-variant/70 font-medium">Minutes</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Primary Start Button — disabled when another session is active */}
+                      <button
+                        onClick={() => handleStartBreathing(breathingMins)}
+                        disabled={!!session}
+                        className={`w-full glow-button py-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${session ? "opacity-50 pointer-events-none" : "hover:scale-[1.01] active:scale-95"}`}
+                      >
+                        🫁 Start Breathing Session — {breathingMins} min
+                      </button>
                     </div>
-
-                    {/* Breathing Technique */}
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                        Select Technique
-                      </label>
-                      <CustomSelect
-                        size="sm"
-                        value={breathingTech}
-                        onChange={(val) => {
-                          if (!canUseBreathingTechnique(planType, val)) {
-                            track("paywall_shown", { trigger: "breathing" });
-                            setShowPaywall("breathing");
-                            return;
-                          }
-                          setBreathingTech(val);
-                          localStorage.setItem("unblock-breathing-tech", val);
-                        }}
-                        options={[
-                          { value: "box", label: "Box Breathing (Four equal sides)" },
-                          { value: "physiological_sigh", label: `Double Breath (Instant sigh relief)${!userIsPro ? " 🔒" : ""}` },
-                          { value: "relaxing_478", label: `4-7-8 Calm (Deep relaxation)${!userIsPro ? " 🔒" : ""}` },
-                          { value: "alternate_nostril", label: `Alternate Nostril (Balance & focus)${!userIsPro ? " 🔒" : ""}` },
-                          { value: "wim_hof", label: `Power Breath (Advanced energy)${!userIsPro ? " 🔒" : ""}` },
-                        ]}
-                      />
-                    </div>
-
-                    {/* Duration */}
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                        Duration
-                      </label>
-                      <CustomSelect
-                        size="sm"
-                        value={showBreathingCustom ? "custom" : breathingMins}
-                        onChange={(val) => {
-                          if (val === "custom") {
-                            setShowBreathingCustom(true);
-                            setBreathingMins(5);
-                          } else {
-                            setShowBreathingCustom(false);
-                            setBreathingMins(Number(val));
-                          }
-                        }}
-                        options={[
-                          { value: 2, label: "2 Minutes (Quick)" },
-                          { value: 5, label: "5 Minutes (Standard)" },
-                          { value: 10, label: "10 Minutes (Deep)" },
-                          { value: "custom", label: "Custom..." },
-                        ]}
-                      />
-                      {showBreathingCustom && (
-                        <div className="mt-2.5 animate-in slide-in-from-top-1 duration-200 flex items-center gap-2">
-                          <input
-                            type="number"
-                            min={1}
-                            max={180}
-                            value={breathingMins}
-                            onChange={(e) => {
-                              const val = Math.max(1, Math.min(180, Number(e.target.value) || 1));
-                              setBreathingMins(val);
-                            }}
-                            className="w-24 bg-surface-container-highest border border-outline-variant/15 rounded-xl px-3.5 py-2 text-xs text-on-surface focus:outline-none focus:ring-1 focus:ring-primary/30 text-center font-mono font-bold"
-                          />
-                          <span className="text-xs text-on-surface-variant/70 font-medium">Minutes</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Primary Start Button */}
-                    <button
-                      onClick={() => handleStartBreathing(breathingMins)}
-                      className="w-full glow-button py-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-95 transition-all cursor-pointer"
-                    >
-                      🫁 Start Breathing Session — {breathingMins} min
-                    </button>
                   </div>
                 </div>
               </div>
-            </div>
-          )
+            )}
+          </div>
         )}
 
         {/* ===== Right Sidebar ===== */}
@@ -528,25 +568,12 @@ export default function DashboardPage() {
               : "w-80 border-l p-8 opacity-100"
           } gap-10`}
         >
-          {/* Timer Preview */}
-          <button
-            onClick={handleStartFocusDirectly}
-            className="glass-panel rounded-2xl p-8 aspect-square flex flex-col items-center justify-center text-center relative overflow-hidden group hover:scale-[1.02] active:scale-95 transition-all duration-300 border border-outline-variant/10 w-full cursor-pointer"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-30 group-hover:opacity-40 transition-opacity" />
-            <div className="relative z-10">
-              <p className="text-primary text-[10px] font-bold uppercase tracking-[0.2em] mb-4 group-hover:text-primary-container transition-colors">
-                Focus Session
-              </p>
-              <div className="text-5xl font-light tracking-tighter text-on-surface mb-2 font-mono tabular-nums">
-                25:00
-              </div>
-              <p className="text-on-surface-variant text-xs font-medium group-hover:text-on-surface transition-colors">
-                Start focus session →
-              </p>
-            </div>
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-surface-container-highest group-hover:bg-primary transition-colors" />
-          </button>
+          {/* Dynamic session card — idle / flow visualizer / mini timer */}
+          <SidebarSessionCard
+            currentTab={currentTab}
+            onStartFocusDirectly={handleStartFocusDirectly}
+            onResumeSession={handleResumeSession}
+          />
 
           {/* Daily Goal Progress */}
           <DailyGoalProgress />

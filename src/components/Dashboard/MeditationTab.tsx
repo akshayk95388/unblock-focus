@@ -10,6 +10,7 @@ import BreathingRing from "@/components/FocusEngine/BreathingRing";
 import Confetti from "@/components/FocusEngine/Confetti";
 import CustomSelect from "@/components/ui/CustomSelect";
 import PaywallModal from "@/components/ui/PaywallModal";
+import { useActiveSession } from "@/components/ActiveSessionContext";
 
 export interface ReplayConfig {
   audioUrl: string;
@@ -217,6 +218,9 @@ export default function MeditationTab({
   const eventSourceRef = useRef<EventSource | null>(null);
   const autoStartedRef = useRef(false);
 
+  // ── Active session context (for sidebar persistence) ──
+  const { setSession, updateTimer } = useActiveSession();
+
   // Load habits
   useEffect(() => {
     async function loadHabits() {
@@ -272,6 +276,52 @@ export default function MeditationTab({
       onZenModeChange?.(false);
     };
   }, [status, onZenModeChange]);
+
+  // ── Report session state to ActiveSessionContext ──
+  // This lets the sidebar card show the flow visualizer or mini timer.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (status === "generating") {
+      setSession({
+        type: "guided",
+        totalSeconds: durationMins * 60,
+        secondsLeft: durationMins * 60,
+        sourceTab: "meditation",
+        isGenerating: true,
+      });
+    } else if (status === "playing") {
+      setSession({
+        type: "guided",
+        totalSeconds: actualDuration || durationMins * 60,
+        secondsLeft: actualDuration || durationMins * 60,
+        sourceTab: "meditation",
+      });
+    } else if (status === "focus_timer") {
+      setSession({
+        type: resetDone ? "guided" : "focus",
+        totalSeconds: focusDuration * 60,
+        secondsLeft: focusDuration * 60,
+        sourceTab: "meditation",
+      });
+    } else {
+      // idle, post_reset, session_complete, failed → no active ticking session
+      setSession(null);
+    }
+  }, [status]); // intentionally only fires on status change
+
+  // ── Sync focus timer countdown to context ──
+  useEffect(() => {
+    if (status === "focus_timer") {
+      updateTimer(focusSecondsLeft);
+    }
+  }, [focusSecondsLeft, status, updateTimer]);
+
+  // ── Sync audio playback time to context ──
+  useEffect(() => {
+    if (status === "playing" && actualDuration > 0) {
+      updateTimer(Math.max(0, Math.round(actualDuration - currentTime)));
+    }
+  }, [currentTime, status, actualDuration, updateTimer]);
 
   // Fetch final status
   const fetchStatus = async (id: string) => {
@@ -659,6 +709,7 @@ export default function MeditationTab({
   };
 
   const handleResetAll = () => {
+    setSession(null); // Clear context immediately
     setStatus("idle");
     setStressor("");
     setWorkTask("");
@@ -670,6 +721,7 @@ export default function MeditationTab({
     setIsReplay(false);
     setSavedSessionId(null);
     setIsFavorited(false);
+    autoStartedRef.current = false; // Allow new session auto-starts
     onClearReplay?.();
     onSessionComplete?.();
   };

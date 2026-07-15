@@ -153,3 +153,9 @@ body {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: var(--color-primary-container);
 }
+
+/* ===== Flow State Visualizer — bobbing vertical bars ===== */
+@keyframes flow-bob {
+  0%, 100% { transform: scaleY(0.35); }
+  50% { transform: scaleY(1); }
+}
