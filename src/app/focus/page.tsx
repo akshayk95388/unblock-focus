@@ -12,6 +12,7 @@ import Breathing from "@/components/FocusEngine/Breathing";
 import CustomSelect from "@/components/ui/CustomSelect";
 import PaywallModal from "@/components/ui/PaywallModal";
 import SidebarSessionCard from "@/components/Dashboard/SidebarSessionCard";
+import FocusSetupModal from "@/components/Dashboard/FocusSetupModal";
 import { ActiveSessionProvider, useActiveSession } from "@/components/ActiveSessionContext";
 import { saveSession, type SessionRecord } from "@/lib/sessions";
 import { getHabits, addHabit } from "@/lib/habits";
@@ -49,6 +50,13 @@ function DashboardContent() {
   const [durationMins, setDurationMins] = useState(5);
   const [voice, setVoice] = useState("gentle_female");
   const [music, setMusic] = useState("none");
+
+  // Modal setup presets (direct focus session)
+  const [showFocusSetupModal, setShowFocusSetupModal] = useState(false);
+  const [modalWorkTask, setModalWorkTask] = useState("");
+  const [modalFocusDuration, setModalFocusDuration] = useState(25);
+  const [modalSelectedHabitId, setModalSelectedHabitId] = useState("");
+  const [autoStartFocus, setAutoStartFocus] = useState(false);
 
   // Inline stressor input on dashboard hero
   const [heroStressor, setHeroStressor] = useState("");
@@ -163,16 +171,35 @@ function DashboardContent() {
 
   const handleStartFocusDirectly = useCallback(() => {
     if (session) return;
+    setShowFocusSetupModal(true);
+  }, [session]);
+
+  const handleModalStart = useCallback((task: string, duration: number, habitId: string) => {
     track("focus_session_started");
+    setModalWorkTask(task);
+    setModalFocusDuration(duration);
+    setModalSelectedHabitId(habitId);
+    setAutoStartFocus(true);
     setPendingStressor("");
     setDirectFocusMode(true);
+    setShowFocusSetupModal(false);
     setCurrentTab("meditation");
-  }, [session]);
+  }, []);
+
+  const handleClearAutoStart = useCallback(() => {
+    setAutoStartFocus(false);
+  }, []);
 
   const handleSessionComplete = useCallback(() => {
     setRefreshKey((k) => k + 1);
     setPendingStressor("");
     setDirectFocusMode(false);
+    // Cleanup modal setup presets
+    setModalWorkTask("");
+    setModalFocusDuration(25);
+    setModalSelectedHabitId("");
+    setAutoStartFocus(false);
+    
     // If replaying, return to the tab they came from
     if (pendingReplay) {
       setCurrentTab(pendingReplay.returnTab);
@@ -428,6 +455,11 @@ function DashboardContent() {
               onToggleZen={() => setManualZenDisabled((prev) => !prev)}
               replayConfig={pendingReplay}
               onClearReplay={() => setPendingReplay(null)}
+              initialWorkTask={modalWorkTask}
+              initialFocusDuration={modalFocusDuration}
+              initialSelectedHabitId={modalSelectedHabitId}
+              autoStartFocus={autoStartFocus}
+              onClearAutoStart={handleClearAutoStart}
             />
           </div>
         )}
@@ -641,6 +673,13 @@ function DashboardContent() {
           </div>
         </div>
       )}
+
+      {/* Focus Configuration Modal */}
+      <FocusSetupModal
+        isOpen={showFocusSetupModal}
+        onClose={() => setShowFocusSetupModal(false)}
+        onStart={handleModalStart}
+      />
 
     </DashboardLayout>
   );

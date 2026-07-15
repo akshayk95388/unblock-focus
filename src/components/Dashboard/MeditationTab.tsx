@@ -38,6 +38,11 @@ interface MeditationTabProps {
   onToggleZen?: () => void;
   replayConfig?: ReplayConfig | null;
   onClearReplay?: () => void;
+  initialWorkTask?: string;
+  initialFocusDuration?: number;
+  initialSelectedHabitId?: string;
+  autoStartFocus?: boolean;
+  onClearAutoStart?: () => void;
 }
 
 // ===== Breathing Guide shown during AI generation =====
@@ -142,6 +147,11 @@ export default function MeditationTab({
   onToggleZen,
   replayConfig,
   onClearReplay,
+  initialWorkTask = "",
+  initialFocusDuration = 25,
+  initialSelectedHabitId = "",
+  autoStartFocus = false,
+  onClearAutoStart,
 }: MeditationTabProps) {
   // Input settings
   const [stressor, setStressor] = useState(initialStressor);
@@ -248,6 +258,33 @@ export default function MeditationTab({
       handleGenerate(initialStressor);
     }
   }, [initialStressor]);
+
+  // Handle auto-starting a direct focus session from the sidebar modal
+  useEffect(() => {
+    if (autoStartFocus && initialWorkTask) {
+      setWorkTask(initialWorkTask);
+      setFocusDuration(initialFocusDuration);
+      if (initialSelectedHabitId) {
+        setSelectedHabitId(initialSelectedHabitId);
+      }
+      
+      // Auto-start focus timer countdown
+      const seconds = initialFocusDuration * 60;
+      setFocusSecondsLeft(seconds);
+      setFocusStartTime(Date.now());
+      setFocusTimerUsed(true);
+      setStatus("focus_timer");
+      
+      // Safeguard: immediately clear auto-start trigger to prevent render loops
+      onClearAutoStart?.();
+    }
+  }, [
+    autoStartFocus,
+    initialWorkTask,
+    initialFocusDuration,
+    initialSelectedHabitId,
+    onClearAutoStart
+  ]);
 
   // Clean up SSE stream
   const cleanupStream = useCallback(() => {
