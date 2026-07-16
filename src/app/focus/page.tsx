@@ -501,15 +501,15 @@ function DashboardContent() {
           </div>
         )}
 
-        <div className={currentTab === "goals" ? "contents" : "hidden"}>
+        {currentTab === "goals" && (
           <HabitsTab onAddHabit={() => setShowHabitManager(true)} />
-        </div>
+        )}
 
-        <div className={currentTab === "history" ? "contents" : "hidden"}>
+        {currentTab === "history" && (
           <HistoryTab
             onReplaySession={(s) => handleReplaySession(s, "history")}
           />
-        </div>
+        )}
 
         {/* ===== Breathing — stays mounted (hidden) during active breathing sessions ===== */}
         {(currentTab === "breathing" || (session?.sourceTab === "breathing")) && (
@@ -545,7 +545,7 @@ function DashboardContent() {
           />
 
           {/* Daily Goal Progress */}
-          <DailyGoalProgress />
+          <DailyGoalProgress key={refreshKey} />
 
           {/* Insight card */}
           <div className="bg-surface-container-low/50 p-6 rounded-2xl border border-outline-variant/10 mt-auto">

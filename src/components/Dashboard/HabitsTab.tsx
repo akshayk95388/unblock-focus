@@ -180,6 +180,8 @@ export default function HabitsTab({ onAddHabit }: HabitsTabProps) {
                       <div className="space-y-2 pt-4 max-h-80 overflow-y-auto">
                         {habitSessions.map((session) => {
                           const mins = Math.floor(session.duration_seconds / 60);
+                          const secs = session.duration_seconds % 60;
+                          const durationDisplay = mins > 0 ? `${mins}m` : `${secs}s`;
                           return (
                             <div
                               key={session.id}
@@ -202,7 +204,7 @@ export default function HabitsTab({ onAddHabit }: HabitsTabProps) {
                                   </span>
                                 )}
                                 <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-primary-container/10 text-primary border border-primary/10">
-                                  {mins}m
+                                  {durationDisplay}
                                 </span>
                               </div>
                             </div>
@@ -247,6 +249,8 @@ export default function HabitsTab({ onAddHabit }: HabitsTabProps) {
                   <div className="space-y-2 pt-4 max-h-80 overflow-y-auto">
                     {miscSessions.map((session) => {
                       const mins = Math.floor(session.duration_seconds / 60);
+                      const secs = session.duration_seconds % 60;
+                      const durationDisplay = mins > 0 ? `${mins}m` : `${secs}s`;
                       return (
                         <div
                           key={session.id}
@@ -269,7 +273,7 @@ export default function HabitsTab({ onAddHabit }: HabitsTabProps) {
                               </span>
                             )}
                             <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-primary-container/10 text-primary border border-primary/10">
-                              {mins}m
+                              {durationDisplay}
                             </span>
                           </div>
                         </div>

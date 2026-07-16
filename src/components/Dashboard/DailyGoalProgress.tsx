@@ -10,7 +10,7 @@ interface ProgressItem {
 }
 
 const colorMap: Record<string, string> = {
-  primary: "bg-primary",
+  primary: "bg-primary-container",
   secondary: "bg-secondary",
   tertiary: "bg-tertiary-container",
 };

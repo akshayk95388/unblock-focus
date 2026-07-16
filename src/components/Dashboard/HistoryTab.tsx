@@ -164,6 +164,8 @@ export default function HistoryTab({ onReplaySession }: HistoryTabProps) {
                       hour12: false,
                     });
                     const mins = Math.floor(session.duration_seconds / 60);
+                    const secs = session.duration_seconds % 60;
+                    const durationDisplay = mins > 0 ? `${mins} min` : `${secs} sec`;
 
                     return (
                       <div
@@ -233,7 +235,7 @@ export default function HistoryTab({ onReplaySession }: HistoryTabProps) {
                             </span>
                           )}
                           <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tighter bg-primary-container/10 text-primary border border-primary/10">
-                            {mins} min
+                            {durationDisplay}
                           </span>
                         </div>
                       </div>
