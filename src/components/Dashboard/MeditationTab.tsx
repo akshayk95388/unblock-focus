@@ -11,6 +11,16 @@ import Confetti from "@/components/FocusEngine/Confetti";
 import CustomSelect from "@/components/ui/CustomSelect";
 import PaywallModal from "@/components/ui/PaywallModal";
 import { useActiveSession } from "@/components/ActiveSessionContext";
+import {
+  ACTIVE_SESSION_KEY,
+  createClientSessionId,
+  clearGuidedSnapshot,
+  writeGuidedSnapshot,
+  markGuidedLogged,
+  stripAudioQuery,
+  isLoggedPayload,
+  type GuidedSnapshot,
+} from "@/lib/active-session-storage";
 
 export interface ReplayConfig {
   audioUrl: string;
@@ -43,6 +53,8 @@ interface MeditationTabProps {
   initialSelectedHabitId?: string;
   autoStartFocus?: boolean;
   onClearAutoStart?: () => void;
+  /** Restore an in-progress guided/focus session after a page refresh. */
+  restoreSnapshot?: GuidedSnapshot | null;
 }
 
 // ===== Breathing Guide shown during AI generation =====
@@ -152,19 +164,20 @@ export default function MeditationTab({
   initialSelectedHabitId = "",
   autoStartFocus = false,
   onClearAutoStart,
+  restoreSnapshot = null,
 }: MeditationTabProps) {
   // Input settings
-  const [stressor, setStressor] = useState(initialStressor);
-  const [durationMins, setDurationMins] = useState(initialDurationMins);
-  const [voice, setVoice] = useState(initialVoice);
-  const [music, setMusic] = useState(initialMusic);
+  const [stressor, setStressor] = useState(restoreSnapshot?.stressor ?? initialStressor);
+  const [durationMins, setDurationMins] = useState(restoreSnapshot?.durationMins ?? initialDurationMins);
+  const [voice, setVoice] = useState(restoreSnapshot?.voice ?? initialVoice);
+  const [music, setMusic] = useState(restoreSnapshot?.music ?? initialMusic);
 
   // Post-reset settings (moved from idle form)
-  const [llmFocusTask, setLlmFocusTask] = useState("");
-  const [workTask, setWorkTask] = useState("");
-  const [focusDuration, setFocusDuration] = useState(25);
+  const [llmFocusTask, setLlmFocusTask] = useState(restoreSnapshot?.llmFocusTask ?? "");
+  const [workTask, setWorkTask] = useState(restoreSnapshot?.workTask ?? "");
+  const [focusDuration, setFocusDuration] = useState(restoreSnapshot?.focusDuration ?? 25);
   const [showFocusCustom, setShowFocusCustom] = useState(false);
-  const [selectedHabitId, setSelectedHabitId] = useState("");
+  const [selectedHabitId, setSelectedHabitId] = useState(restoreSnapshot?.selectedHabitId ?? "");
   const [countdown, setCountdown] = useState<number | null>(null);
   const [showPaywall, setShowPaywall] = useState<"credits" | "duration" | null>(null);
   const { planType, credits } = useUserPlan();
@@ -183,24 +196,44 @@ export default function MeditationTab({
   const [habits, setHabits] = useState<Habit[]>([]);
   const [status, setStatus] = useState<
     "idle" | "generating" | "playing" | "post_reset" | "focus_timer" | "session_complete" | "failed"
-  >(replayConfig ? "playing" : directFocusMode ? "post_reset" : initialStressor.trim() ? "generating" : "idle");
-  const [jobId, setJobId] = useState<string | null>(null);
+  >(
+    replayConfig
+      ? "playing"
+      : restoreSnapshot
+        ? restoreSnapshot.status
+        : directFocusMode
+          ? "post_reset"
+          : initialStressor.trim()
+            ? "generating"
+            : "idle"
+  );
+  const [jobId, setJobId] = useState<string | null>(restoreSnapshot?.jobId ?? null);
   const [error, setError] = useState<string | null>(null);
 
   // Buffered audio ready flag — lets breathing finish its cycle before transitioning
-  const [audioReady, setAudioReady] = useState(replayConfig ? true : false);
+  const [audioReady, setAudioReady] = useState(
+    replayConfig ? true : restoreSnapshot ? restoreSnapshot.status !== "generating" : false
+  );
 
   // Progress state
   const [stage, setStage] = useState("");
   const [percent, setPercent] = useState(0);
 
   // Audio / Subtitle state
-  const [audioUrl, setAudioUrl] = useState<string | null>(replayConfig ? replayConfig.audioUrl : null);
-  const [title, setTitle] = useState(replayConfig ? replayConfig.title : "Guided Session");
-  const [subtitles, setSubtitles] = useState<MeditationSubtitleEntry[]>(
-    replayConfig ? (replayConfig.subtitles as MeditationSubtitleEntry[]) : []
+  const [audioUrl, setAudioUrl] = useState<string | null>(
+    replayConfig ? replayConfig.audioUrl : restoreSnapshot?.audioUrl ?? null
   );
-  const [actualDuration, setActualDuration] = useState(replayConfig ? replayConfig.duration : 0);
+  const [title, setTitle] = useState(
+    replayConfig ? replayConfig.title : restoreSnapshot?.title ?? "Guided Session"
+  );
+  const [subtitles, setSubtitles] = useState<MeditationSubtitleEntry[]>(
+    replayConfig
+      ? (replayConfig.subtitles as MeditationSubtitleEntry[])
+      : (restoreSnapshot?.subtitles as MeditationSubtitleEntry[] | undefined) ?? []
+  );
+  const [actualDuration, setActualDuration] = useState(
+    replayConfig ? replayConfig.duration : restoreSnapshot?.actualDuration ?? 0
+  );
 
   // Replay mode
   const [isReplay, setIsReplay] = useState(replayConfig ? true : false);
@@ -217,12 +250,19 @@ export default function MeditationTab({
 
   // Focus Timer State
   const [focusSecondsLeft, setFocusSecondsLeft] = useState(0);
-  const [focusStartTime, setFocusStartTime] = useState(0);
-  const [focusTimerUsed, setFocusTimerUsed] = useState(false);
+  const [focusStartTime, setFocusStartTime] = useState(restoreSnapshot?.focusStartTime ?? 0);
+  const [focusTimerUsed, setFocusTimerUsed] = useState(restoreSnapshot?.focusTimerUsed ?? false);
   const [showQuitTrap, setShowQuitTrap] = useState(false);
 
   // Track whether a reset was done (for session logging)
-  const [resetDone, setResetDone] = useState(replayConfig ? true : false);
+  const [resetDone, setResetDone] = useState(
+    replayConfig ? true : restoreSnapshot?.resetDone ?? false
+  );
+
+  // True when a guided session was restored mid-playback — start paused, no autoplay.
+  const [restoredPaused, setRestoredPaused] = useState(
+    restoreSnapshot?.status === "playing"
+  );
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   // Stores the absolute end timestamp so the focus timer stays accurate
@@ -230,6 +270,11 @@ export default function MeditationTab({
   const focusEndTimeRef = useRef<number>(0);
   const eventSourceRef = useRef<EventSource | null>(null);
   const autoStartedRef = useRef(false);
+  // Session-persistence bookkeeping.
+  const loggedRef = useRef(false);
+  const clientSessionIdRef = useRef<string>(restoreSnapshot?.clientSessionId ?? "");
+  const restoreAttemptedRef = useRef(false);
+  const restorePollRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── Active session context (for sidebar persistence) ──
   const { setSession, updateTimer } = useActiveSession();
@@ -246,7 +291,8 @@ export default function MeditationTab({
             h.name.toLowerCase().includes("breath") ||
             h.name.toLowerCase().includes("focus")
         );
-        setSelectedHabitId(found ? found.id : list[0].id);
+        // Don't clobber a habit already chosen (e.g. restored from a saved session).
+        setSelectedHabitId((prev) => prev || (found ? found.id : list[0].id));
       }
     }
     loadHabits();
@@ -302,8 +348,97 @@ export default function MeditationTab({
     return () => cleanupStream();
   }, [cleanupStream]);
 
-  // Fallback to go back to the dashboard if the state ever lands on idle
+  // ── Restore an in-progress guided/focus session after a refresh (once) ──
+  // Initial state was already seeded from restoreSnapshot; here we wire up the
+  // pieces that can't live in a state initializer: timer ref, generation
+  // reconnect, and audio re-signing.
   useEffect(() => {
+    if (restoreAttemptedRef.current) return;
+    restoreAttemptedRef.current = true;
+    if (!restoreSnapshot) return;
+
+    // A restore is active — block the initialStressor auto-generate guard so we
+    // never kick off a duplicate (paid) generation job.
+    autoStartedRef.current = true;
+
+    if (restoreSnapshot.status === "focus_timer" && typeof restoreSnapshot.focusEndTime === "number") {
+      focusEndTimeRef.current = restoreSnapshot.focusEndTime;
+    }
+
+    if (restoreSnapshot.status === "generating" && restoreSnapshot.jobId) {
+      // Reconnect to the existing job by polling — do NOT re-POST /api/generate.
+      reconnectToGeneratingJob(restoreSnapshot.jobId);
+      return () => {
+        if (restorePollRef.current) {
+          clearTimeout(restorePollRef.current);
+          restorePollRef.current = null;
+        }
+      };
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── Re-sign + restore guided audio for a mid-playback resume (start paused) ──
+  useEffect(() => {
+    if (!restoreSnapshot || restoreSnapshot.status !== "playing") return;
+    const staticUrl = restoreSnapshot.audioUrl;
+    if (!staticUrl) {
+      clearGuidedSnapshot();
+      handleResetAll();
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      let playable = staticUrl;
+      if (staticUrl.includes("s3.amazonaws.com") || staticUrl.includes(".s3.")) {
+        try {
+          const u = new URL(staticUrl);
+          const key = u.pathname.startsWith("/") ? u.pathname.slice(1) : u.pathname;
+          const res = await fetch(`/api/audio-url?key=${encodeURIComponent(key)}`);
+          if (!res.ok) throw new Error("re-sign failed");
+          const data = await res.json();
+          playable = data.url;
+        } catch {
+          if (!cancelled) {
+            clearGuidedSnapshot();
+            handleResetAll();
+          }
+          return;
+        }
+      }
+      if (!cancelled) setAudioUrl(playable);
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Seek restored audio to the saved position once it is seekable.
+  useEffect(() => {
+    if (!restoredPaused) return;
+    const audio = audioRef.current;
+    if (!audio) return;
+    const target = restoreSnapshot?.playbackPositionSeconds || 0;
+    const applySeek = () => {
+      try {
+        audio.currentTime = target;
+        setCurrentTime(target);
+      } catch {
+        /* not seekable yet */
+      }
+    };
+    if (audio.readyState >= 1) applySeek();
+    audio.addEventListener("loadedmetadata", applySeek);
+    return () => audio.removeEventListener("loadedmetadata", applySeek);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [restoredPaused, audioUrl]);
+
+  // Fallback to go back to the dashboard if the state ever lands on idle.
+  // Suppressed until a restore attempt has run so a restored session isn't
+  // bounced away before it hydrates.
+  useEffect(() => {
+    if (!restoreAttemptedRef.current) return;
     if (status === "idle") {
       onSessionComplete?.();
     }
@@ -405,6 +540,166 @@ export default function MeditationTab({
     }
   };
 
+  // Attach to a generation job's progress stream (SSE with polling fallback).
+  // Shared by fresh generations and by restoring an in-progress generation
+  // after a refresh — the latter must NOT re-POST /api/generate (credit spent).
+  const attachToJob = (id: string) => {
+    setJobId(id);
+
+    // Setup EventSource for real-time progress stream
+    cleanupStream();
+    const es = new EventSource(`/api/generate/stream/${id}`);
+    eventSourceRef.current = es;
+
+    es.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        setPercent(data.pct || 0);
+        setStage(data.stage || "Building your session…");
+
+        if (data.stage === "complete" || data.pct >= 100) {
+          cleanupStream();
+          fetchStatus(id);
+        } else if (data.stage === "failed") {
+          cleanupStream();
+          setStatus("failed");
+          setError(data.error || "We couldn't finish building your session. Please try again.");
+        }
+      } catch (e) {
+        console.error("Error parsing progress SSE event:", e);
+      }
+    };
+
+    es.onerror = () => {
+      console.warn("SSE stream error. Falling back to status polling.");
+      cleanupStream();
+
+      let pollCount = 0;
+      const interval = setInterval(async () => {
+        pollCount++;
+        if (pollCount > 120) {
+          clearInterval(interval);
+          setStatus("failed");
+          setError("This is taking longer than expected. Please try again.");
+          return;
+        }
+
+        try {
+          const check = await fetch(`/api/status/${id}`);
+          if (check.ok) {
+            const info = await check.json();
+            setPercent(info.progress_pct || 0);
+            setStage(info.current_stage || "Building your session…");
+
+            if (info.status === "complete") {
+              clearInterval(interval);
+              setAudioUrl(info.audio_url);
+              setTitle(info.title || "Guided Session");
+              setActualDuration(info.duration_s || durationMins * 60);
+
+              if (info.focus_task) {
+                setLlmFocusTask(info.focus_task);
+              }
+
+              if (info.subtitles) {
+                if (Array.isArray(info.subtitles)) {
+                  setSubtitles(info.subtitles);
+                } else if (info.subtitles && typeof info.subtitles === "object" && Array.isArray((info.subtitles as any).events)) {
+                  setSubtitles((info.subtitles as any).events);
+                }
+              }
+              setAudioReady(true);
+            } else if (info.status === "failed") {
+              clearInterval(interval);
+              setStatus("failed");
+              setError(info.error || "We couldn't finish building your session. Please try again.");
+            }
+          }
+        } catch (e) {
+          console.error("Polling error:", e);
+        }
+      }, 3000);
+    };
+  };
+
+  // Reconnect to an in-progress generation after a refresh.
+  //
+  // Unlike a fresh generation (which uses the live SSE stream), a restore polls
+  // the DB-backed /api/status endpoint. SSE only reflects in-memory progress and
+  // streams "pending 0%" forever — with no error — for a job the server no
+  // longer tracks, which would spin the breathing guide indefinitely. Polling
+  // the DB resolves completed jobs instantly, detects unknown jobs (404), and is
+  // bounded so a dead job fails cleanly instead of hanging.
+  const reconnectToGeneratingJob = (id: string) => {
+    const MAX_ATTEMPTS = 40; // ~2 min at 3s intervals
+    let attempts = 0;
+
+    const stopPolling = () => {
+      if (restorePollRef.current) {
+        clearTimeout(restorePollRef.current);
+        restorePollRef.current = null;
+      }
+    };
+
+    const failRestore = (message: string) => {
+      stopPolling();
+      clearGuidedSnapshot();
+      setStatus("failed");
+      setError(message);
+    };
+
+    const poll = async () => {
+      attempts++;
+      try {
+        const res = await fetch(`/api/status/${id}`);
+        if (res.status === 404) {
+          // The server no longer knows this job (e.g. it was restarted).
+          failRestore("We couldn't resume your session. Please start a new one.");
+          return;
+        }
+        if (res.ok) {
+          const info = await res.json();
+          setPercent(info.progress_pct || 0);
+          setStage(info.current_stage || "Building your session…");
+
+          if (info.status === "complete") {
+            stopPolling();
+            setAudioUrl(info.audio_url);
+            setTitle(info.title || "Guided Session");
+            setActualDuration(info.duration_s || durationMins * 60);
+            if (info.focus_task) {
+              setLlmFocusTask(info.focus_task);
+            }
+            if (info.subtitles) {
+              if (Array.isArray(info.subtitles)) {
+                setSubtitles(info.subtitles);
+              } else if (typeof info.subtitles === "object") {
+                const events = (info.subtitles as { events?: MeditationSubtitleEntry[] }).events;
+                if (Array.isArray(events)) setSubtitles(events);
+              }
+            }
+            setAudioReady(true);
+            return;
+          }
+          if (info.status === "failed") {
+            failRestore(info.error || "We couldn't finish building your session. Please try again.");
+            return;
+          }
+        }
+      } catch (e) {
+        console.error("Restore poll error:", e);
+      }
+
+      if (attempts >= MAX_ATTEMPTS) {
+        failRestore("This is taking longer than expected. Please start a new session.");
+        return;
+      }
+      restorePollRef.current = setTimeout(poll, 3000);
+    };
+
+    poll();
+  };
+
   // Start Generation
   const handleGenerate = async (stressorOverride?: string) => {
     const text = stressorOverride || stressor;
@@ -415,6 +710,7 @@ export default function MeditationTab({
     setPercent(0);
     setStage("Warming up…");
     setSessionLogged(false);
+    loggedRef.current = false;
     setResetDone(true);
     setAudioReady(false);
 
@@ -442,83 +738,7 @@ export default function MeditationTab({
       }
 
       const body = await response.json();
-      const id = body.job_id;
-      setJobId(id);
-
-      // Setup EventSource for real-time progress stream
-      cleanupStream();
-      const es = new EventSource(`/api/generate/stream/${id}`);
-      eventSourceRef.current = es;
-
-      es.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          setPercent(data.pct || 0);
-          setStage(data.stage || "Building your session…");
-
-          if (data.stage === "complete" || data.pct >= 100) {
-            cleanupStream();
-            fetchStatus(id);
-          } else if (data.stage === "failed") {
-            cleanupStream();
-            setStatus("failed");
-            setError(data.error || "We couldn't finish building your session. Please try again.");
-          }
-        } catch (e) {
-          console.error("Error parsing progress SSE event:", e);
-        }
-      };
-
-      es.onerror = () => {
-        console.warn("SSE stream error. Falling back to status polling.");
-        cleanupStream();
-
-        let pollCount = 0;
-        const interval = setInterval(async () => {
-          pollCount++;
-          if (pollCount > 120) {
-            clearInterval(interval);
-            setStatus("failed");
-            setError("This is taking longer than expected. Please try again.");
-            return;
-          }
-
-          try {
-            const check = await fetch(`/api/status/${id}`);
-            if (check.ok) {
-              const info = await check.json();
-              setPercent(info.progress_pct || 0);
-              setStage(info.current_stage || "Building your session…");
-
-              if (info.status === "complete") {
-                clearInterval(interval);
-                setAudioUrl(info.audio_url);
-                setTitle(info.title || "Guided Session");
-                setActualDuration(info.duration_s || durationMins * 60);
-
-                if (info.focus_task) {
-                  setLlmFocusTask(info.focus_task);
-                }
-
-                if (info.subtitles) {
-                  if (Array.isArray(info.subtitles)) {
-                    setSubtitles(info.subtitles);
-                  } else if (info.subtitles && typeof info.subtitles === "object" && Array.isArray((info.subtitles as any).events)) {
-                    setSubtitles((info.subtitles as any).events);
-                  }
-                }
-                setAudioReady(true);
-              } else if (info.status === "failed") {
-                clearInterval(interval);
-                setStatus("failed");
-                setError(info.error || "We couldn't finish building your session. Please try again.");
-              }
-            }
-          } catch (e) {
-            console.error("Polling error:", e);
-          }
-        }, 3000);
-      };
+      attachToJob(body.job_id);
     } catch (err: unknown) {
       cleanupStream();
       setStatus("failed");
@@ -583,9 +803,10 @@ export default function MeditationTab({
     }
   }, [audioVolume]);
 
-  // Auto-play audio when transitioning to playing status
+  // Auto-play audio when transitioning to playing status.
+  // Skipped for restored sessions — those start paused until the user taps play.
   useEffect(() => {
-    if (status === "playing" && audioUrl && audioRef.current) {
+    if (status === "playing" && audioUrl && audioRef.current && !restoredPaused) {
       try {
         const ctx = (window as any).__unblockAudioCtx;
         if (ctx && ctx.state === "suspended") ctx.resume();
@@ -600,10 +821,12 @@ export default function MeditationTab({
           console.warn("Auto-play blocked by browser. User needs to tap Play.", e);
         });
     }
-  }, [status, audioUrl]);
+  }, [status, audioUrl, restoredPaused]);
 
   const togglePlay = () => {
     if (!audioRef.current) return;
+    // Once the user interacts, drop the "restored/paused" affordance.
+    if (restoredPaused) setRestoredPaused(false);
     if (isPlaying) {
       audioRef.current.pause();
       setIsPlaying(false);
@@ -640,12 +863,19 @@ export default function MeditationTab({
 
   // Record session to history & streaks
   const handleLogSession = async () => {
-    if (sessionLogged) return;
+    // Synchronous guard (ref) so concurrent callers — e.g. a timer tick and a
+    // visibilitychange both hitting 0, or two tabs — can't double-insert.
+    if (loggedRef.current || sessionLogged) return;
     // Replays don't create new session records
     if (isReplay) {
+      loggedRef.current = true;
       setSessionLogged(true);
       return;
     }
+    loggedRef.current = true;
+    // Mark the snapshot logged before the async write so a crash mid-save can't
+    // resurrect it and log again on the next load.
+    markGuidedLogged();
 
     let totalSeconds = 0;
 
@@ -682,7 +912,103 @@ export default function MeditationTab({
         : {}),
     });
     setSessionLogged(true);
+    clearGuidedSnapshot();
   };
+
+  // Build a persistence snapshot from current state. Only called for the four
+  // persistable statuses; audio position is read live from the element.
+  const buildGuidedSnapshot = () => {
+    if (!clientSessionIdRef.current) {
+      clientSessionIdRef.current = createClientSessionId();
+    }
+    // While a restored session is still paused (pre-seek), keep the saved
+    // position instead of the element's not-yet-seeked currentTime (0).
+    const position = restoredPaused
+      ? restoreSnapshot?.playbackPositionSeconds ?? 0
+      : audioRef.current
+        ? audioRef.current.currentTime
+        : currentTime;
+    return {
+      clientSessionId: clientSessionIdRef.current,
+      logged: loggedRef.current,
+      status: status as GuidedSnapshot["status"],
+      jobId,
+      stressor,
+      title,
+      workTask,
+      llmFocusTask: llmFocusTask || undefined,
+      selectedHabitId: selectedHabitId || undefined,
+      durationMins,
+      voice,
+      music,
+      actualDuration,
+      audioUrl: stripAudioQuery(audioUrl),
+      subtitles: subtitles as SubtitleEntry[],
+      playbackPositionSeconds: Math.max(0, Math.round(position)),
+      focusDuration,
+      focusEndTime: focusEndTimeRef.current || undefined,
+      focusStartTime: focusStartTime || undefined,
+      resetDone,
+      focusTimerUsed,
+    };
+  };
+
+  // ── Persist / clear the active guided/focus snapshot on state changes ──
+  useEffect(() => {
+    if (isReplay) return;
+    if (
+      status === "generating" ||
+      status === "playing" ||
+      status === "post_reset" ||
+      status === "focus_timer"
+    ) {
+      writeGuidedSnapshot(buildGuidedSnapshot());
+    } else {
+      // idle / failed / session_complete — nothing to resume.
+      clearGuidedSnapshot();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, jobId, audioUrl, actualDuration, resetDone, focusTimerUsed, title, subtitles, selectedHabitId]);
+
+  // ── Keep audio playback position fresh while playing (throttled) ──
+  useEffect(() => {
+    if (isReplay || status !== "playing") return;
+    const save = () => writeGuidedSnapshot(buildGuidedSnapshot());
+    const interval = setInterval(save, 5000);
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") save();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("beforeunload", save);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("beforeunload", save);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, isReplay]);
+
+  // ── Cross-tab: stop this tab if the session was logged/cleared elsewhere ──
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== ACTIVE_SESSION_KEY) return;
+      // Ignore routine snapshot updates; only react to a clear or a logged flag.
+      if (e.newValue !== null && !isLoggedPayload(e.newValue)) return;
+      const active =
+        status === "generating" ||
+        status === "playing" ||
+        status === "post_reset" ||
+        status === "focus_timer";
+      if (active && !loggedRef.current) {
+        loggedRef.current = true;
+        setSessionLogged(true);
+        handleResetAll();
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status]);
 
   // Focus Timer logic
   const handleStartFocusTimer = () => {
@@ -760,6 +1086,7 @@ export default function MeditationTab({
   };
 
   const handleResetAll = () => {
+    clearGuidedSnapshot(); // Drop any persisted resume state
     setSession(null); // Clear context immediately
     setStatus("idle");
     setStressor("");
@@ -770,9 +1097,12 @@ export default function MeditationTab({
     setResetDone(false);
     setFocusTimerUsed(false);
     setIsReplay(false);
+    setRestoredPaused(false);
     setSavedSessionId(null);
     setIsFavorited(false);
     autoStartedRef.current = false; // Allow new session auto-starts
+    loggedRef.current = false;
+    clientSessionIdRef.current = "";
     onClearReplay?.();
     onSessionComplete?.();
   };
@@ -850,9 +1180,11 @@ export default function MeditationTab({
             <div className="w-full flex items-center justify-between border-b border-outline-variant/10 pb-4 z-10">
               <div className="flex items-center gap-3">
                 <span className={`text-xs px-2 py-0.5 rounded font-bold uppercase tracking-wider ${isReplay ? "bg-tertiary/20 text-tertiary" : "bg-primary/20 text-primary"}`}>
-                  {isReplay ? "Replaying" : "Active Session"}
+                  {isReplay ? "Replaying" : restoredPaused ? "Restored" : "Active Session"}
                 </span>
-                <h3 className="text-sm font-bold text-on-surface">{title}</h3>
+                <h3 className="text-sm font-bold text-on-surface">
+                  {restoredPaused ? "Tap play to continue" : title}
+                </h3>
               </div>
               {isReplay ? (
                 <button
@@ -989,7 +1321,9 @@ export default function MeditationTab({
                     setIsPlaying(false);
                     
                     const elapsed = Math.round(currentTime);
-                    if (elapsed > 0 && !isReplay) {
+                    if (elapsed > 0 && !isReplay && !loggedRef.current) {
+                      loggedRef.current = true;
+                      markGuidedLogged();
                       await saveSession(
                         `Guided: ${title}`,
                         elapsed,
@@ -1313,7 +1647,9 @@ export default function MeditationTab({
                         onClick={async () => {
                           setShowQuitTrap(false);
                           const elapsed = Math.round((Date.now() - focusStartTime) / 1000);
-                          if (elapsed > 0) {
+                          if (elapsed > 0 && !loggedRef.current) {
+                            loggedRef.current = true;
+                            markGuidedLogged();
                             const resetTime = resetDone ? actualDuration || durationMins * 60 : 0;
                             await saveSession(
                               resetDone ? `Guided: ${title}` : `Focus: ${workTask}`,

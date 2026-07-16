@@ -28,6 +28,12 @@ interface BreathingRingProps {
   onComplete?: (elapsedSeconds: number) => void;
   /** When true, finish the current cycle then call onComplete instead of looping */
   finishAfterCycle?: boolean;
+  /**
+   * Absolute timestamp (ms) the session started. When provided, the ring
+   * resumes from that point instead of restarting — used to restore an
+   * in-progress breathing session after a page refresh.
+   */
+  sessionStartTime?: number;
   size?: "full" | "compact";
   showTimer?: boolean;
   enableAudio?: boolean;
@@ -39,6 +45,7 @@ export default function BreathingRing({
   durationMinutes,
   onComplete,
   finishAfterCycle = false,
+  sessionStartTime,
   size = "full",
   showTimer = true,
   enableAudio = true,
@@ -83,14 +90,16 @@ export default function BreathingRing({
 
   useEffect(() => {
     if (active) {
-      sessionStartRef.current = Date.now();
+      // Resume from a restored start time when provided, else start now.
+      sessionStartRef.current =
+        sessionStartTime && Number.isFinite(sessionStartTime) ? sessionStartTime : Date.now();
       setCurrentPhaseIndex(0);
       setPointerAngle(0);
       setTotalElapsed(0);
       completedRef.current = false;
       finishAtRef.current = 0;
     }
-  }, [active]);
+  }, [active, sessionStartTime]);
 
   // When finishAfterCycle transitions to true, capture the next cycle boundary
   useEffect(() => {

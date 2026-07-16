@@ -16,6 +16,12 @@ import FocusSetupModal from "@/components/Dashboard/FocusSetupModal";
 import BreathingSetupModal from "@/components/Dashboard/BreathingSetupModal";
 import { ActiveSessionProvider, useActiveSession } from "@/components/ActiveSessionContext";
 import { saveSession, type SessionRecord } from "@/lib/sessions";
+import {
+  readGuidedSnapshot,
+  readBreathingSnapshot,
+  clearAllActiveSessions,
+  type GuidedSnapshot,
+} from "@/lib/active-session-storage";
 import { getHabits, addHabit } from "@/lib/habits";
 import { track } from "@/lib/mixpanel";
 import { useUserPlan } from "@/hooks/useUserPlan";
@@ -67,6 +73,9 @@ function DashboardContent() {
   // Replay state — for replaying past guided sessions
   const [pendingReplay, setPendingReplay] = useState<ReplayConfig | null>(null);
 
+  // Restore state — rehydrates an in-progress guided/focus session after refresh
+  const [restoreSnapshot, setRestoreSnapshot] = useState<GuidedSnapshot | null>(null);
+
   const { session, setSession } = useActiveSession();
 
   const isBreathingActive = !!standaloneBreathing;
@@ -97,29 +106,47 @@ function DashboardContent() {
   }, [isZenActive]);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const pendingStr = localStorage.getItem("pending_stressor_session");
-      if (pendingStr) {
-        try {
-          const session = JSON.parse(pendingStr);
-          if (session.stressor && session.stressor.trim()) {
-            track("guided_session_started", {
-              stressor_provided: true,
-              duration_mins: session.durationMins || 5,
-            });
-            setPendingStressor(session.stressor.trim());
-            setDurationMins(session.durationMins || 5);
-            setVoice(session.voice || "gentle_female");
-            setMusic(session.music || "none");
-            setDirectFocusMode(false);
-            setCurrentTab("meditation");
-          }
-        } catch (e) {
-          console.error("Error parsing pending_stressor_session:", e);
-        } finally {
-          localStorage.removeItem("pending_stressor_session");
+    if (typeof window === "undefined") return;
+
+    const pendingStr = localStorage.getItem("pending_stressor_session");
+    if (pendingStr) {
+      // An explicit new session from the landing page always wins over a saved
+      // draft — the user intentionally started fresh.
+      clearAllActiveSessions();
+      try {
+        const session = JSON.parse(pendingStr);
+        if (session.stressor && session.stressor.trim()) {
+          track("guided_session_started", {
+            stressor_provided: true,
+            duration_mins: session.durationMins || 5,
+          });
+          setPendingStressor(session.stressor.trim());
+          setDurationMins(session.durationMins || 5);
+          setVoice(session.voice || "gentle_female");
+          setMusic(session.music || "none");
+          setDirectFocusMode(false);
+          setCurrentTab("meditation");
         }
+      } catch (e) {
+        console.error("Error parsing pending_stressor_session:", e);
+      } finally {
+        localStorage.removeItem("pending_stressor_session");
       }
+      return;
+    }
+
+    // No explicit handoff — try to restore an in-progress session after refresh.
+    const guided = readGuidedSnapshot();
+    if (guided) {
+      setRestoreSnapshot(guided);
+      setDirectFocusMode(false);
+      setCurrentTab("meditation");
+      return;
+    }
+    const breathing = readBreathingSnapshot();
+    if (breathing) {
+      setStandaloneBreathing({ durationMinutes: breathing.durationMinutes });
+      setCurrentTab("breathing");
     }
   }, []);
 
@@ -185,6 +212,7 @@ function DashboardContent() {
     setRefreshKey((k) => k + 1);
     setPendingStressor("");
     setDirectFocusMode(false);
+    setRestoreSnapshot(null); // Consumed — don't re-restore on a future mount
     // Cleanup modal setup presets
     setModalWorkTask("");
     setModalFocusDuration(25);
@@ -465,6 +493,7 @@ function DashboardContent() {
               initialSelectedHabitId={modalSelectedHabitId}
               autoStartFocus={autoStartFocus}
               onClearAutoStart={handleClearAutoStart}
+              restoreSnapshot={restoreSnapshot}
             />
           </div>
         )}
