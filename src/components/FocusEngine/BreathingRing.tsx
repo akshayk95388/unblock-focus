@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { BREATHING_TECHNIQUES, type BreathPhase } from "@/lib/breathingConfig";
+import { BREATHING_TECHNIQUES } from "@/lib/breathingConfig";
 import { useBreathingAudio } from "@/hooks/useBreathingAudio";
 
 /**
@@ -47,9 +47,7 @@ export default function BreathingRing({
   const [pointerAngle, setPointerAngle] = useState(0);
   const [totalElapsed, setTotalElapsed] = useState(0);
 
-  const animFrameRef = useRef<number>(0);
   const sessionStartRef = useRef<number>(0);
-  const phaseStartRef = useRef<number>(0);
 
   const technique = BREATHING_TECHNIQUES[techniqueId] || BREATHING_TECHNIQUES["box"];
   const phases = technique.phases;
@@ -70,86 +68,109 @@ export default function BreathingRing({
     enableAudio ? isMoving : false
   );
 
-  // Start tracking when active
+  // Pre-compute cumulative phase end times so we can find current phase by clock position
+  const phaseDurationsMs = phases.map((p) => (p.durationSeconds || 0) * 1000);
+  const phaseCumulativeMs = phaseDurationsMs.reduce<number[]>((acc, ms, i) => {
+    acc.push((acc[i - 1] ?? 0) + ms);
+    return acc;
+  }, []);
+  const cycleMs = phaseCumulativeMs[phaseCumulativeMs.length - 1] || 1;
+
+  const completedRef = useRef(false);
+  // Tracks the absolute timestamp at which the session should end when finishAfterCycle is set.
+  // Captured once at the moment finishAfterCycle transitions to true.
+  const finishAtRef = useRef<number>(0);
+
   useEffect(() => {
     if (active) {
       sessionStartRef.current = Date.now();
-      phaseStartRef.current = Date.now();
       setCurrentPhaseIndex(0);
       setPointerAngle(0);
       setTotalElapsed(0);
+      completedRef.current = false;
+      finishAtRef.current = 0;
     }
   }, [active]);
 
-  // Phase Progression
+  // When finishAfterCycle transitions to true, capture the next cycle boundary
   useEffect(() => {
-    if (!active) return;
-    const ms = (activePhase.durationSeconds || 0) * 1000;
-    const timer = setTimeout(() => {
-      let nextPhase = currentPhaseIndex + 1;
+    if (finishAfterCycle && active && finishAtRef.current === 0) {
+      const elapsed = Date.now() - sessionStartRef.current;
+      // End of the current cycle
+      const nextBoundary = (Math.floor(elapsed / cycleMs) + 1) * cycleMs;
+      finishAtRef.current = sessionStartRef.current + nextBoundary;
+    }
+  }, [finishAfterCycle, active, cycleMs]);
 
-      if (nextPhase >= phases.length) {
-        // If finishAfterCycle is set, stop here
-        if (finishAfterCycle) {
-          const elapsed = Date.now() - sessionStartRef.current;
-          onComplete?.(Math.round(elapsed / 1000));
-          return;
-        }
-
-        // Check if session is over (only if duration is set)
-        if (durationMinutes) {
-          const now = Date.now();
-          const totalTimeTarget = durationMinutes * 60 * 1000;
-          const elapsed = now - sessionStartRef.current;
-
-          if (elapsed >= totalTimeTarget) {
-            onComplete?.(Math.round(elapsed / 1000));
-            return;
-          }
-        }
-        nextPhase = 0; // Loop
-      }
-
-      phaseStartRef.current = Date.now();
-      setCurrentPhaseIndex(nextPhase);
-    }, ms);
-
-    return () => clearTimeout(timer);
-  }, [currentPhaseIndex, active, activePhase, phases.length, durationMinutes, finishAfterCycle, onComplete]);
-
-  // Animation tick — pointer angle + elapsed
+  // Single clock-driven interval — derives phase + progress + elapsed from Date.now().
+  // Replaces both the setTimeout phase chain and the requestAnimationFrame loop.
+  // Accurate in background/minimized tabs because all calculations use wall-clock time.
   useEffect(() => {
     if (!active) return;
 
     const tick = () => {
+      if (completedRef.current) return;
       const now = Date.now();
-      const elapsed = now - sessionStartRef.current;
-      setTotalElapsed(elapsed);
+      const totalElapsedMs = now - sessionStartRef.current;
+      setTotalElapsed(totalElapsedMs);
 
-      // Pointer angle interpolation
-      const ms = (activePhase.durationSeconds || 0) * 1000;
-      const phaseElapsed = now - phaseStartRef.current;
-      const phaseProgress = Math.min(phaseElapsed / (ms || 1), 1);
-
-      let startAngle = 0;
-      if (currentPhaseIndex > 0) {
-        startAngle = phases[currentPhaseIndex - 1].targetAngle;
-      } else {
-        startAngle = phases[phases.length - 1].targetAngle;
+      // Check if session duration has been reached
+      if (durationMinutes) {
+        const targetMs = durationMinutes * 60 * 1000;
+        if (totalElapsedMs >= targetMs) {
+          completedRef.current = true;
+          onComplete?.(Math.round(totalElapsedMs / 1000));
+          return;
+        }
       }
 
-      let endAngle = activePhase.targetAngle;
+      // Check if finishAfterCycle was triggered and we've reached the captured boundary
+      if (finishAtRef.current > 0 && now >= finishAtRef.current) {
+        completedRef.current = true;
+        onComplete?.(Math.round(totalElapsedMs / 1000));
+        return;
+      }
+
+      // Determine position within the current cycle
+      const positionInCycle = totalElapsedMs % cycleMs;
+
+      // Find which phase we are currently in
+      let phaseIdx = phaseCumulativeMs.findIndex((cumMs) => positionInCycle < cumMs);
+      if (phaseIdx < 0) phaseIdx = phases.length - 1;
+
+      const phaseStartMs = phaseIdx === 0 ? 0 : phaseCumulativeMs[phaseIdx - 1];
+      const phaseElapsedMs = positionInCycle - phaseStartMs;
+      const phaseDurationMs = phaseDurationsMs[phaseIdx] || 1;
+      const phaseProgress = Math.min(phaseElapsedMs / phaseDurationMs, 1);
+
+      // Update current phase (triggers instruction text / audio updates)
+      setCurrentPhaseIndex(phaseIdx);
+
+      // Interpolate pointer angle between previous phase target and current phase target
+      const prevAngle = phaseIdx === 0
+        ? phases[phases.length - 1].targetAngle
+        : phases[phaseIdx - 1].targetAngle;
+      let startAngle = prevAngle;
+      const endAngle = phases[phaseIdx].targetAngle;
       if (startAngle === 360 && endAngle !== 360 && endAngle > 0 && endAngle < 360) {
         startAngle = 0;
       }
-
       setPointerAngle(startAngle + (endAngle - startAngle) * phaseProgress);
-      animFrameRef.current = requestAnimationFrame(tick);
     };
 
-    animFrameRef.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(animFrameRef.current);
-  }, [active, currentPhaseIndex, activePhase, phases]);
+    tick(); // Immediate tick so UI is correct when returning from a background tab
+    const interval = setInterval(tick, 200); // 200ms is smooth enough for visual updates
+
+    // Snap immediately when user returns to the tab
+    const handleVisibility = () => { if (document.visibilityState === "visible") tick(); };
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active, durationMinutes]);
 
   // Computed values
   const cycleTime = phases.reduce((acc, p) => acc + (p.durationSeconds || 0) * 1000, 0);

@@ -225,6 +225,9 @@ export default function MeditationTab({
   const [resetDone, setResetDone] = useState(replayConfig ? true : false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  // Stores the absolute end timestamp so the focus timer stays accurate
+  // even when the browser throttles or pauses JS in background tabs.
+  const focusEndTimeRef = useRef<number>(0);
   const eventSourceRef = useRef<EventSource | null>(null);
   const autoStartedRef = useRef(false);
 
@@ -683,6 +686,7 @@ export default function MeditationTab({
   // Focus Timer logic
   const handleStartFocusTimer = () => {
     const seconds = focusDuration * 60;
+    focusEndTimeRef.current = Date.now() + seconds * 1000; // absolute end time
     setFocusSecondsLeft(seconds);
     setFocusStartTime(Date.now());
     setFocusTimerUsed(true);
@@ -707,25 +711,34 @@ export default function MeditationTab({
     return () => clearTimeout(timer);
   }, [countdown]);
 
-  // Focus timer countdown effect
+  // Focus timer countdown effect — clock-driven (accurate in background/minimized tabs)
   useEffect(() => {
     if (status !== "focus_timer") return;
-    if (focusSecondsLeft <= 0) {
-      handleLogSession();
-      setStatus("session_complete");
-      return;
-    }
-    const interval = setInterval(() => {
-      setFocusSecondsLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [status, focusSecondsLeft]);
+
+    // Recalculate remaining time from the absolute end timestamp
+    const tick = () => {
+      const remaining = Math.max(0, Math.round((focusEndTimeRef.current - Date.now()) / 1000));
+      setFocusSecondsLeft(remaining);
+      if (remaining <= 0) {
+        handleLogSession();
+        setStatus("session_complete");
+      }
+    };
+
+    // Tick immediately in case we're returning from a background tab
+    tick();
+    const interval = setInterval(tick, 1000);
+
+    // Snap the timer instantly when the user switches back to this tab
+    const handleVisibility = () => { if (document.visibilityState === "visible") tick(); };
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status]);
 
   // Update tab title during focus
   useEffect(() => {
