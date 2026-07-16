@@ -317,11 +317,14 @@ function DashboardContent() {
   // Tab navigation handler — sessions persist via CSS hidden, so no state clearing needed
   const handleTabChange = useCallback((tabId: string) => {
     if (tabId === "breathing") {
-      if (session) {
-        handleResumeSession();
-      } else {
-        setShowBreathingSetupModal(true);
+      // Resume only an active breathing session. If guided/focus is running,
+      // do nothing — same guard as starting a new focus session from the hero.
+      if (session?.sourceTab === "breathing" || standaloneBreathing) {
+        setCurrentTab("breathing");
+        return;
       }
+      if (session) return;
+      setShowBreathingSetupModal(true);
       return;
     }
     if (tabId !== "meditation") {
@@ -329,7 +332,7 @@ function DashboardContent() {
       setDirectFocusMode(false);
     }
     setCurrentTab(tabId);
-  }, [session, handleResumeSession]);
+  }, [session, standaloneBreathing]);
 
   // Suggestions — same as MeditationTab for consistency
   const heroSuggestions = [
