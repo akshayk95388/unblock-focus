@@ -1651,16 +1651,48 @@ export default function MeditationTab({
                             loggedRef.current = true;
                             markGuidedLogged();
                             const resetTime = resetDone ? actualDuration || durationMins * 60 : 0;
-                            await saveSession(
-                              resetDone ? `Guided: ${title}` : `Focus: ${workTask}`,
-                              resetTime + elapsed,
-                              selectedHabitId || undefined,
-                              true,
-                              resetDone ? "guided" : "focus"
-                            );
-                            track(resetDone ? "guided_session_aborted" : "focus_session_aborted", {
-                              duration_seconds: resetTime + elapsed,
-                            });
+                            
+                            if (resetDone) {
+                              // 1. Log completed guided reset session
+                              await saveSession(
+                                `Guided: ${title}`,
+                                resetTime,
+                                selectedHabitId || undefined,
+                                false,
+                                "guided",
+                                audioUrl,
+                                subtitles as SubtitleEntry[]
+                              );
+                              track("guided_session_completed", {
+                                duration_mins: Math.round(resetTime / 60),
+                                duration_seconds: resetTime,
+                                ...(selectedHabitId ? { goal_name: habits.find((h) => h.id === selectedHabitId)?.name } : {}),
+                              });
+
+                              // 2. Log aborted focus timer session
+                              await saveSession(
+                                `Focus: ${workTask}`,
+                                elapsed,
+                                selectedHabitId || undefined,
+                                true,
+                                "focus"
+                              );
+                              track("focus_session_aborted", {
+                                duration_seconds: elapsed,
+                              });
+                            } else {
+                              // Direct focus mode (no guided reset). Just log aborted focus session.
+                              await saveSession(
+                                `Focus: ${workTask}`,
+                                elapsed,
+                                selectedHabitId || undefined,
+                                true,
+                                "focus"
+                              );
+                              track("focus_session_aborted", {
+                                duration_seconds: elapsed,
+                              });
+                            }
                           }
                           handleResetAll();
                         }}
