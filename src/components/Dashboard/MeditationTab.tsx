@@ -273,6 +273,7 @@ export default function MeditationTab({
       
       // Auto-start focus timer countdown
       const seconds = initialFocusDuration * 60;
+      focusEndTimeRef.current = Date.now() + seconds * 1000;
       setFocusSecondsLeft(seconds);
       setFocusStartTime(Date.now());
       setFocusTimerUsed(true);

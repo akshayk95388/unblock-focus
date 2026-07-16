@@ -85,3 +85,20 @@ describe('Focus Timer — Session Logging Guard', () => {
     expect(logCallCount).toBe(1);
   });
 });
+
+describe('Focus Timer — Auto-start Initialization Simulation', () => {
+  it('correctly calculates remaining seconds using the exact same steps as the auto-start hook', () => {
+    // 1. Simulate autoStartFocus trigger with 25 minutes
+    const initialFocusDuration = 25;
+    const now = Date.now();
+    
+    // 2. Setup variables exactly as done in the useEffect hook
+    const seconds = initialFocusDuration * 60;
+    const focusEndTime = now + seconds * 1000;
+    
+    // 3. Ensure the calculated remaining seconds matches the requested duration
+    const remaining = calcFocusRemaining(focusEndTime, now);
+    expect(remaining).toBe(25 * 60);
+  });
+});
+
