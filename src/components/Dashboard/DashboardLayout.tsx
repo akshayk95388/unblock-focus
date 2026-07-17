@@ -12,6 +12,7 @@ interface DashboardLayoutProps {
   activeTab?: string;
   onTabChange?: (tabId: string) => void;
   zenMode?: boolean;
+  rightSidebar?: React.ReactNode;
 }
 
 export default function DashboardLayout({
@@ -19,6 +20,7 @@ export default function DashboardLayout({
   activeTab = "dashboard",
   onTabChange,
   zenMode = false,
+  rightSidebar,
 }: DashboardLayoutProps) {
   const [streak, setStreak] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -71,7 +73,7 @@ export default function DashboardLayout({
   ];
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-background text-on-surface">
+    <div className="min-h-screen md:h-screen md:overflow-hidden flex flex-col md:flex-row bg-background text-on-surface">
       {/* ===== Top Nav (Mobile Only) ===== */}
       <header
         className={`fixed top-0 left-0 right-0 h-16 bg-surface-container-low z-30 flex justify-between items-center px-6 md:hidden transition-all duration-500 ease-in-out ${
@@ -310,6 +312,19 @@ export default function DashboardLayout({
       >
         {children}
       </main>
+
+      {/* ===== Right Sidebar (Desktop Only) ===== */}
+      {rightSidebar && (
+        <aside
+          className={`hidden lg:flex bg-surface-container-lowest border-l border-outline-variant/5 flex-col transition-all duration-500 ease-in-out overflow-hidden ${
+            zenMode
+              ? "w-0 !p-0 border-none opacity-0 pointer-events-none"
+              : "w-80 p-8 opacity-100"
+          } gap-10`}
+        >
+          {rightSidebar}
+        </aside>
+      )}
     </div>
   );
 }

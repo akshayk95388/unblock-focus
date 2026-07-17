@@ -364,6 +364,15 @@ function DashboardContent() {
       activeTab={currentTab}
       onTabChange={handleTabChange}
       zenMode={isZenActive && (currentTab === "meditation" || currentTab === "breathing")}
+      rightSidebar={
+        <>
+          <SidebarSessionCard
+            currentTab={currentTab}
+            onResumeSession={handleResumeSession}
+          />
+          <DailyGoalProgress key={refreshKey} />
+        </>
+      }
     >
       <div className="flex flex-col lg:flex-row min-h-[calc(100vh-4rem)] md:min-h-screen">
         {/* ===== Center Content ===== */}
@@ -655,24 +664,6 @@ function DashboardContent() {
           </div>
         )}
 
-        {/* ===== Right Sidebar ===== */}
-        <aside
-          className={`hidden lg:flex bg-surface-container-lowest border-outline-variant/5 flex-col transition-all duration-500 ease-in-out overflow-hidden ${
-            isZenActive
-              ? "w-0 !p-0 border-none opacity-0 pointer-events-none"
-              : "w-80 border-l p-8 opacity-100"
-          } gap-10`}
-        >
-          {/* Dynamic session card — idle / flow visualizer / mini timer */}
-          <SidebarSessionCard
-            currentTab={currentTab}
-            onResumeSession={handleResumeSession}
-          />
-
-          {/* Daily Goal Progress */}
-          <DailyGoalProgress key={refreshKey} />
-
-        </aside>
       </div>
 
       {/* Habit Manager Modal */}
