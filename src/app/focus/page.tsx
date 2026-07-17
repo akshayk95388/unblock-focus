@@ -305,6 +305,12 @@ function DashboardContent() {
     }, 600);
   }, [setSession, currentTab]);
 
+  const formatTime = (secs: number) => {
+    const m = Math.floor(Math.max(0, secs) / 60);
+    const s = Math.floor(Math.max(0, secs) % 60);
+    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  };
+
   // Resume handler for the sidebar mini-timer card
   const handleResumeSession = useCallback(() => {
     if (session?.sourceTab === "breathing") {
@@ -470,9 +476,27 @@ function DashboardContent() {
                   </div>
                 )}
 
+                {/* Mobile-only inline widgets */}
+                <div className="lg:hidden mt-12 pt-8 border-t border-outline-variant/10 space-y-8">
+                  <DailyGoalProgress key={refreshKey} />
+                  
+                  {/* Insight card */}
+                  <div className="bg-surface-container-low/50 p-6 rounded-2xl border border-outline-variant/10">
+                    <p className="text-[10px] text-primary font-bold uppercase mb-2">
+                      Insight
+                    </p>
+                    <p className="text-xs text-on-surface-variant italic leading-relaxed">
+                      &ldquo;Start with just 5 minutes. Once you begin, momentum takes
+                      over. The hardest part is pressing play.&rdquo;
+                    </p>
+                  </div>
+                </div>
 
               </div>
             </div>
+            {session && (
+              <div className="h-24 lg:hidden" />
+            )}
           </section>
         )}
 
@@ -502,13 +526,23 @@ function DashboardContent() {
         )}
 
         {currentTab === "goals" && (
-          <HabitsTab onAddHabit={() => setShowHabitManager(true)} />
+          <div className="flex-1">
+            <HabitsTab onAddHabit={() => setShowHabitManager(true)} />
+            {session && (
+              <div className="h-24 lg:hidden" />
+            )}
+          </div>
         )}
 
         {currentTab === "history" && (
-          <HistoryTab
-            onReplaySession={(s) => handleReplaySession(s, "history")}
-          />
+          <div className="flex-1">
+            <HistoryTab
+              onReplaySession={(s) => handleReplaySession(s, "history")}
+            />
+            {session && (
+              <div className="h-24 lg:hidden" />
+            )}
+          </div>
         )}
 
         {/* ===== Breathing — stays mounted (hidden) during active breathing sessions ===== */}
@@ -624,6 +658,43 @@ function DashboardContent() {
         onClose={() => setShowBreathingSetupModal(false)}
         onStart={handleBreathingModalStart}
       />
+
+      {/* ===== Sticky Resume Bar (Mobile Only) ===== */}
+      {session && currentTab !== session.sourceTab && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-surface-container-high/90 backdrop-blur-md border-t border-outline-variant/15 px-6 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] flex items-center justify-between shadow-[0_-8px_24px_rgba(0,0,0,0.12)]">
+          <div className="flex items-center gap-3">
+            <span
+              className="w-2.5 h-2.5 rounded-full bg-green-400 shrink-0"
+              style={{ animation: "pulse 2s ease-in-out infinite" }}
+            />
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
+                {session.type === "guided"
+                  ? "Guided Session Active"
+                  : session.type === "focus"
+                  ? "Focus Session Active"
+                  : "Breathing Active"}
+              </span>
+              {!session.isGenerating && (
+                <span className="text-sm font-medium font-mono text-on-surface tabular-nums">
+                  {formatTime(session.secondsLeft)} remaining
+                </span>
+              )}
+              {session.isGenerating && (
+                <span className="text-xs font-medium text-on-surface-variant/70">
+                  Building your session...
+                </span>
+              )}
+            </div>
+          </div>
+          <button
+            onClick={handleResumeSession}
+            className="glow-button px-5 py-2.5 rounded-xl text-xs font-bold text-on-primary-fixed cursor-pointer transition-all hover:scale-[1.02] active:scale-98"
+          >
+            Return →
+          </button>
+        </div>
+      )}
 
     </DashboardLayout>
   );
