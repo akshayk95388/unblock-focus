@@ -492,14 +492,20 @@ function DashboardContent() {
                   <DailyGoalProgress key={refreshKey} />
                   
                   {/* Insight card */}
-                  <div className="bg-surface-container-low/50 p-6 rounded-2xl border border-outline-variant/10">
-                    <p className="text-[10px] text-primary font-bold uppercase mb-2">
-                      Insight
-                    </p>
-                    <p className="text-xs text-on-surface-variant italic leading-relaxed">
-                      &ldquo;Start with just 5 minutes. Once you begin, momentum takes
-                      over. The hardest part is pressing play.&rdquo;
-                    </p>
+                  <div className="bg-surface-container-low/50 p-6 rounded-2xl border border-outline-variant/10 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
+                    <div className="relative z-10">
+                      <svg
+                        className="w-5 h-5 text-primary/70 mb-3"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+                      </svg>
+                      <p className="text-xs text-on-surface-variant italic leading-relaxed">
+                        You&apos;re not lazy. You&apos;re blocked. Different problem.
+                      </p>
+                    </div>
                   </div>
                 </div>
 
@@ -593,14 +599,20 @@ function DashboardContent() {
           <DailyGoalProgress key={refreshKey} />
 
           {/* Insight card */}
-          <div className="bg-surface-container-low/50 p-6 rounded-2xl border border-outline-variant/10 mt-auto">
-            <p className="text-[10px] text-primary font-bold uppercase mb-2">
-              Insight
-            </p>
-            <p className="text-xs text-on-surface-variant italic leading-relaxed">
-              &ldquo;Start with just 5 minutes. Once you begin, momentum takes
-              over. The hardest part is pressing play.&rdquo;
-            </p>
+          <div className="bg-surface-container-low/50 p-6 rounded-2xl border border-outline-variant/10 mt-auto relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
+            <div className="relative z-10">
+              <svg
+                className="w-5 h-5 text-primary/70 mb-3"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+              </svg>
+              <p className="text-xs text-on-surface-variant italic leading-relaxed">
+                You&apos;re not lazy. You&apos;re blocked. Different problem.
+              </p>
+            </div>
           </div>
         </aside>
       </div>
