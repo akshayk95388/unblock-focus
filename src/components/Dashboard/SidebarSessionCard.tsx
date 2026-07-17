@@ -27,26 +27,25 @@ export default function SidebarSessionCard({
     ((session.sourceTab === "meditation" && currentTab === "meditation") ||
       (session.sourceTab === "breathing" && currentTab === "breathing"));
 
-  // ── State 1: No active session (idle) ──
   if (!session) {
     return (
       <button
         onClick={onStartFocusDirectly}
         className="glass-panel rounded-2xl p-8 aspect-square flex flex-col items-center justify-center text-center relative overflow-hidden group hover:scale-[1.02] active:scale-95 transition-all duration-300 border border-outline-variant/10 w-full cursor-pointer"
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-30 group-hover:opacity-40 transition-opacity" />
-        <div className="relative z-10">
-          <p className="text-primary text-[10px] font-bold uppercase tracking-[0.2em] mb-4 group-hover:text-primary-container transition-colors">
+        <span className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-30 group-hover:opacity-40 transition-opacity pointer-events-none" />
+        <span className="relative z-10 flex flex-col items-center">
+          <span className="text-primary text-[10px] font-bold uppercase tracking-[0.2em] mb-4 group-hover:text-primary-container transition-colors block">
             Focus Session
-          </p>
-          <div className="text-5xl font-light tracking-tighter text-on-surface mb-2 font-mono tabular-nums">
+          </span>
+          <span className="text-5xl font-light tracking-tighter text-on-surface mb-2 font-mono tabular-nums block">
             25:00
-          </div>
-          <p className="text-on-surface-variant text-xs font-medium group-hover:text-on-surface transition-colors">
+          </span>
+          <span className="text-on-surface-variant text-xs font-medium group-hover:text-on-surface transition-colors block">
             Start focus session →
-          </p>
-        </div>
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-surface-container-highest group-hover:bg-primary transition-colors" />
+          </span>
+        </span>
+        <span className="absolute bottom-0 left-0 right-0 h-1 bg-surface-container-highest group-hover:bg-primary transition-colors block" />
       </button>
     );
   }
@@ -125,39 +124,39 @@ export default function SidebarSessionCard({
 
   // ── State 3: Active + different tab → Mini ticking timer ──
   return (
-    <div className="glass-panel rounded-2xl p-8 aspect-square flex flex-col items-center justify-center text-center relative overflow-hidden border border-outline-variant/10 w-full">
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
-      <div className="relative z-10 flex flex-col items-center gap-4 w-full">
+    <button
+      onClick={onResumeSession}
+      className="glass-panel rounded-2xl p-8 aspect-square flex flex-col items-center justify-center text-center relative overflow-hidden group hover:scale-[1.02] active:scale-95 transition-all duration-300 border border-outline-variant/10 w-full cursor-pointer"
+    >
+      <span className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-30 group-hover:opacity-40 transition-opacity pointer-events-none" />
+      <span className="relative z-10 flex flex-col items-center gap-4 w-full">
         {/* Status pill */}
-        <div className="flex items-center gap-2">
+        <span className="flex items-center gap-2">
           <span
-            className="w-2 h-2 rounded-full bg-green-400 shrink-0"
+            className="w-2.5 h-2.5 rounded-full bg-green-400 shrink-0"
             style={{ animation: "pulse 2s ease-in-out infinite" }}
           />
-          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant group-hover:text-on-surface transition-colors">
             {session.isGenerating ? "Building…" : label}
           </span>
-        </div>
+        </span>
 
         {/* Ticking countdown or generating state */}
         {session.isGenerating ? (
-          <p className="text-lg font-medium text-on-surface-variant/60 tracking-wide">
+          <span className="text-lg font-medium text-on-surface-variant/60 tracking-wide block">
             Building your session…
-          </p>
+          </span>
         ) : (
-          <div className="text-4xl font-light tracking-tighter text-primary-container font-mono tabular-nums">
+          <span className="text-4xl font-light tracking-tighter text-primary-container font-mono tabular-nums block">
             {formatTime(session.secondsLeft)}
-          </div>
+          </span>
         )}
 
-        {/* Resume link */}
-        <button
-          onClick={onResumeSession}
-          className="text-xs text-on-surface-variant/60 hover:text-primary transition-colors font-medium"
-        >
-          Resume full view →
-        </button>
-      </div>
-    </div>
+        {/* Return helper link style */}
+        <span className="text-xs text-on-surface-variant/60 group-hover:text-primary transition-colors font-medium">
+          Return →
+        </span>
+      </span>
+    </button>
   );
 }

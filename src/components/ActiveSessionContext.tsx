@@ -16,7 +16,7 @@ export interface SessionSummary {
   type: SessionType;
   totalSeconds: number;
   secondsLeft: number;
-  /** Which tab owns this session — used for "Resume Full View" navigation */
+  /** Which tab owns this session — used for "Return" navigation */
   sourceTab: "meditation" | "breathing";
   /** True during AI generation phase (no meaningful timer yet) */
   isGenerating?: boolean;
