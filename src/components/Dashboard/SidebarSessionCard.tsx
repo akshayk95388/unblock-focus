@@ -157,6 +157,7 @@ export default function SidebarSessionCard({
           Return →
         </span>
       </span>
+      <span className="absolute bottom-0 left-0 right-0 h-1 bg-surface-container-highest group-hover:bg-primary transition-colors block" />
     </button>
   );
 }
