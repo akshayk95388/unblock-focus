@@ -116,21 +116,21 @@ export default function HabitsTab({ onAddHabit }: HabitsTabProps) {
             const totalSessions = stats.totalSessions;
 
             return (
-              <div key={habit.id} className="bg-surface-container-low rounded-2xl overflow-hidden transition-colors">
+              <div key={habit.id} className="bg-surface-container-low rounded-xl overflow-hidden transition-colors">
                 {/* Habit Card Header */}
                 <div
-                  className="p-6 flex items-center justify-between cursor-pointer hover:bg-surface-container transition-colors group"
+                  className="p-4 sm:p-5 flex items-center justify-between cursor-pointer hover:bg-surface-container transition-colors group"
                   onClick={() => toggleExpand(habit.id)}
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-surface-container-highest flex items-center justify-center text-xl shadow-md">
+                    <div className="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-lg shadow-sm">
                       {habit.emoji}
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-on-surface">
+                      <h3 className="text-base font-semibold text-on-surface">
                         {habit.name}
                       </h3>
-                      <div className="flex items-center gap-3 mt-1">
+                      <div className="flex items-center gap-3 mt-0.5">
                         <span className="text-primary text-xs font-medium uppercase tracking-widest">
                           {habit.daily_goal_minutes >= 60 && habit.daily_goal_minutes % 60 === 0
                             ? `${habit.daily_goal_minutes / 60} HRS/DAY`
