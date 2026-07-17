@@ -377,13 +377,13 @@ function DashboardContent() {
                   <br />
                   <span className="text-primary-container">Get to work.</span>
                 </h1>
-                <p className="text-on-surface-variant text-base md:text-lg mb-6 md:mb-8 leading-relaxed">
+                <p className="hidden sm:block text-on-surface-variant text-base md:text-lg mb-6 md:mb-8 leading-relaxed">
                   A personalized guided session to clear what&apos;s blocking you, then a
                   focus session to get your deep work done.
                 </p>
 
                 {/* Timeline Roadmap Layout */}
-                <div className="relative flex gap-6 md:gap-8 mt-8">
+                <div className="relative flex gap-0 md:gap-8 mt-4 sm:mt-8">
                   {/* Left Timeline Column (Desktop Only) */}
                   <div className="hidden md:flex flex-col items-center w-8 shrink-0">
                     {/* Step 1 Bullet */}
@@ -409,7 +409,7 @@ function DashboardContent() {
                       <div className="text-[10px] font-bold uppercase tracking-widest text-primary md:hidden">
                         Step 1: Clear your head
                       </div>
-                      <div className="bg-surface-container-low p-5 md:p-6 rounded-2xl border border-outline-variant/15 space-y-4 relative">
+                      <div className="bg-surface-container-low p-4 sm:p-5 md:p-6 rounded-2xl border border-outline-variant/15 space-y-3 sm:space-y-4 relative">
                         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none rounded-2xl" />
                         <div className="relative z-10 space-y-4">
                           <label className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">
@@ -439,7 +439,7 @@ function DashboardContent() {
                           </div>
 
                           {/* Inline Customization Controls */}
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1 pb-2">
+                          <div className="grid grid-cols-3 gap-2 sm:gap-4 pt-1 pb-2">
                             {/* Reset Duration */}
                             <div className="space-y-1.5">
                               <label className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant/60">
@@ -476,7 +476,7 @@ function DashboardContent() {
                             {/* Background Audio */}
                             <div className="space-y-1.5">
                               <label className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant/60">
-                                Background Audio
+                                Audio
                               </label>
                               <CustomSelect
                                 size="sm"
@@ -501,11 +501,11 @@ function DashboardContent() {
 
                           {/* Breathing Quick Relief Option */}
                           {!session && (
-                            <div className="mt-5 pt-4 border-t border-outline-variant/20 flex items-center justify-between text-sm text-on-surface-variant/70">
+                            <div className="mt-4 sm:mt-5 pt-3 sm:pt-4 border-t border-outline-variant/20 flex flex-col sm:flex-row items-center sm:justify-between gap-2 sm:gap-0 text-xs sm:text-sm text-on-surface-variant/70">
                               <span>Need quick relief?</span>
                               <button
                                 onClick={() => handleTabChange("breathing")}
-                                className="text-primary hover:text-primary-container font-semibold transition-all flex items-center gap-1.5 cursor-pointer hover:bg-primary/5 px-3 py-1.5 -mr-3 rounded-lg"
+                                className="text-primary hover:text-primary-container font-semibold transition-all flex items-center gap-1.5 cursor-pointer hover:bg-primary/5 px-3 py-1.5 sm:-mr-3 rounded-lg"
                               >
                                 Try a breathing exercise &rarr;
                               </button>
@@ -517,17 +517,17 @@ function DashboardContent() {
 
                     {/* Step 2: Focus Session (Get to Work) Banner */}
                     {!session && (
-                      <div className="mt-8 md:mt-10 space-y-3">
+                      <div className="mt-5 sm:mt-8 md:mt-10 space-y-2 sm:space-y-3">
                         <div className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/50 ml-1">
                           <span className="md:hidden">Step 2: Get to work</span>
                           <span className="hidden md:inline">Ready to work?</span>
                         </div>
                         <button
                           onClick={handleStartFocusDirectly}
-                          className="w-full glass-panel bg-surface-container-low/50 hover:bg-surface-container-low border border-outline-variant/10 hover:border-primary/20 rounded-2xl p-6 flex items-center justify-between transition-all group hover:scale-[1.01] active:scale-[0.98] cursor-pointer"
+                          className="w-full glass-panel bg-surface-container-low/50 hover:bg-surface-container-low border border-outline-variant/10 hover:border-primary/20 rounded-2xl p-4 sm:p-6 flex items-center justify-between transition-all group hover:scale-[1.01] active:scale-[0.98] cursor-pointer"
                         >
                           <span className="flex items-center gap-4 text-left">
-                            <span className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                            <span className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
                               <svg
                                 className="w-5 h-5"
                                 fill="none"
@@ -547,12 +547,14 @@ function DashboardContent() {
                                 Focus Session
                               </span>
                               <span className="text-xs text-on-surface-variant/60">
-                                Start a deep work timer. No guided exercises.
+                                For when you&apos;re ready to get straight to work.
                               </span>
                             </span>
                           </span>
-                          <span className="text-xs font-bold text-primary group-hover:translate-x-1 transition-transform flex items-center gap-1">
-                            Start Focus &rarr;
+                          <span className="text-xs font-bold text-primary group-hover:translate-x-1 transition-transform flex items-center gap-1 whitespace-nowrap shrink-0">
+                            <span className="sm:hidden">Start</span>
+                            <span className="hidden sm:inline">Start Focus</span>
+                            <span>&rarr;</span>
                           </span>
                         </button>
                       </div>
