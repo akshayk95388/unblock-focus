@@ -198,49 +198,8 @@ export default function DashboardLayout({
           </div>
         )}
 
-        {/* Quick Relief Section */}
-        <div className="mt-auto pt-6">
-          <div className="px-4 mb-3">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-primary-container">
-              Quick Relief
-            </p>
-            <p className="text-[11px] text-on-surface-variant opacity-60 mt-0.5">
-              Instant calm. Works offline.
-            </p>
-          </div>
-          <button
-            onClick={() => {
-              setSidebarOpen(false);
-              onTabChange?.("breathing");
-            }}
-            className={`flex items-center w-full text-left gap-3 rounded-xl px-4 py-3 transition-all active:scale-[0.98] border border-outline-variant/10 ${
-              activeTab === "breathing"
-                ? "text-on-surface bg-surface-container-highest"
-                : "text-on-surface-variant hover:bg-surface-container-highest/50 hover:text-on-surface"
-            }`}
-          >
-            <svg
-              className={`w-5 h-5 ${activeTab === "breathing" ? "text-primary-container" : ""}`}
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-            >
-              <circle cx="12" cy="12" r="9" />
-              <circle
-                cx="12"
-                cy="12"
-                r="5"
-                className="animate-pulse origin-center"
-                style={{ animationDuration: "4s" }}
-              />
-            </svg>
-            <span className="text-sm font-medium">Breathing Exercise</span>
-          </button>
-        </div>
-
         {/* Desktop Footer (Streak + Profile) */}
-        <div ref={profileMenuRef} className="pt-6 border-t border-outline-variant/10 relative">
+        <div ref={profileMenuRef} className="mt-auto pt-6 border-t border-outline-variant/10 relative">
 
           {/* Profile Dropdown Menu */}
           {profileMenuOpen && (

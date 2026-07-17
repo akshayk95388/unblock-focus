@@ -382,110 +382,183 @@ function DashboardContent() {
                   focus session to get your deep work done.
                 </p>
 
-                {/* Inline stressor input */}
-                <div className="bg-surface-container-low p-5 md:p-6 rounded-2xl border border-outline-variant/15 space-y-4 relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none rounded-2xl" />
-                  <div className="relative z-10 space-y-4">
-                    <label className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-                      What&apos;s blocking you right now?
-                    </label>
-                     <textarea
-                      ref={textareaRef}
-                      value={heroStressor}
-                      onChange={(e) => setHeroStressor(e.target.value)}
-                      placeholder="e.g. Can't focus, pitch deck panic, feeling like a fraud..."
-                      rows={2}
-                      className="w-full bg-surface-container-highest border-none rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50 text-on-surface placeholder:text-on-surface-variant/40 resize-none"
-                    />
-                    <div className="flex flex-wrap gap-2">
-                      {heroSuggestions.map((s) => (
+                {/* Timeline Roadmap Layout */}
+                <div className="relative flex gap-6 md:gap-8 mt-8">
+                  {/* Left Timeline Column (Desktop Only) */}
+                  <div className="hidden md:flex flex-col items-center w-8 shrink-0">
+                    {/* Step 1 Bullet */}
+                    <div className="w-8 h-8 rounded-full border border-primary/30 bg-surface-container-low flex items-center justify-center text-[10px] text-primary font-bold z-10 shrink-0 shadow-sm mt-1">
+                      01
+                    </div>
+                    {/* Connecting Line */}
+                    {!session && (
+                      <div className="flex-1 w-[2px] border-l-2 border-dashed border-outline-variant/15 my-3" />
+                    )}
+                    {/* Step 2 Bullet */}
+                    {!session && (
+                      <div className="w-8 h-8 rounded-full border border-outline-variant/30 bg-surface-container-low flex items-center justify-center text-[10px] text-on-surface-variant/60 font-bold z-10 shrink-0 shadow-sm">
+                        02
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right Content Column (Cards) */}
+                  <div className="flex-1 min-w-0">
+                    {/* Step 1: Clear your head */}
+                    <div className="space-y-3">
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-primary md:hidden">
+                        Step 1: Clear your head
+                      </div>
+                      <div className="bg-surface-container-low p-5 md:p-6 rounded-2xl border border-outline-variant/15 space-y-4 relative">
+                        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none rounded-2xl" />
+                        <div className="relative z-10 space-y-4">
+                          <label className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">
+                            What&apos;s blocking you right now?
+                          </label>
+                          <textarea
+                            ref={textareaRef}
+                            value={heroStressor}
+                            onChange={(e) => setHeroStressor(e.target.value)}
+                            placeholder="e.g. Can't focus, pitch deck panic, feeling like a fraud..."
+                            rows={2}
+                            className="w-full bg-surface-container-highest border-none rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50 text-on-surface placeholder:text-on-surface-variant/40 resize-none"
+                          />
+                          <div className="flex flex-wrap gap-2">
+                            {heroSuggestions.map((s) => (
+                              <button
+                                key={s}
+                                onClick={() => {
+                                  setHeroStressor(s);
+                                  textareaRef.current?.focus();
+                                }}
+                                className="text-[10px] px-2.5 py-1 rounded-lg bg-surface-container-highest/60 hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface transition-all"
+                              >
+                                {s}
+                              </button>
+                            ))}
+                          </div>
+
+                          {/* Inline Customization Controls */}
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1 pb-2">
+                            {/* Reset Duration */}
+                            <div className="space-y-1.5">
+                              <label className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant/60">
+                                Duration
+                              </label>
+                              <CustomSelect
+                                size="sm"
+                                value={durationMins}
+                                onChange={(val) => setDurationMins(Number(val))}
+                                options={[
+                                  { value: 2, label: "2 Minutes (Quick)" },
+                                  { value: 5, label: "5 Minutes (Standard)" },
+                                  { value: 10, label: "10 Minutes (Deep)" },
+                                ]}
+                              />
+                            </div>
+
+                            {/* Voice */}
+                            <div className="space-y-1.5">
+                              <label className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant/60">
+                                Voice Guide
+                              </label>
+                              <CustomSelect
+                                size="sm"
+                                value={voice}
+                                onChange={setVoice}
+                                options={[
+                                  { value: "gentle_female", label: "Calm" },
+                                  { value: "soft_male", label: "Steady" },
+                                ]}
+                              />
+                            </div>
+
+                            {/* Background Audio */}
+                            <div className="space-y-1.5">
+                              <label className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant/60">
+                                Background Audio
+                              </label>
+                              <CustomSelect
+                                size="sm"
+                                value={music}
+                                onChange={setMusic}
+                                options={[
+                                  { value: "none", label: "Voice Only" },
+                                  { value: "ambient", label: "Calm Ambient" },
+                                ]}
+                              />
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={handleStartReset}
+                            disabled={!heroStressor.trim() || !!session}
+                            className={`w-full glow-button py-3.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 ${(!heroStressor.trim() || !!session) ? "opacity-50 pointer-events-none" : "hover:scale-[1.01] active:scale-95"
+                              }`}
+                          >
+                            ⚡ Start Guided Session
+                          </button>
+
+                          {/* Breathing Quick Relief Option */}
+                          {!session && (
+                            <div className="mt-5 pt-4 border-t border-outline-variant/20 flex items-center justify-between text-sm text-on-surface-variant/70">
+                              <span>Need quick relief?</span>
+                              <button
+                                onClick={() => handleTabChange("breathing")}
+                                className="text-primary hover:text-primary-container font-semibold transition-all flex items-center gap-1.5 cursor-pointer hover:bg-primary/5 px-3 py-1.5 -mr-3 rounded-lg"
+                              >
+                                Try a breathing exercise &rarr;
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Step 2: Focus Session (Get to Work) Banner */}
+                    {!session && (
+                      <div className="mt-8 md:mt-10 space-y-3">
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/50 ml-1">
+                          <span className="md:hidden">Step 2: Get to work</span>
+                          <span className="hidden md:inline">Ready to work?</span>
+                        </div>
                         <button
-                          key={s}
-                          onClick={() => {
-                            setHeroStressor(s);
-                            textareaRef.current?.focus();
-                          }}
-                          className="text-[10px] px-2.5 py-1 rounded-lg bg-surface-container-highest/60 hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface transition-all"
+                          onClick={handleStartFocusDirectly}
+                          className="w-full glass-panel bg-surface-container-low/50 hover:bg-surface-container-low border border-outline-variant/10 hover:border-primary/20 rounded-2xl p-6 flex items-center justify-between transition-all group hover:scale-[1.01] active:scale-[0.98] cursor-pointer"
                         >
-                          {s}
+                          <span className="flex items-center gap-4 text-left">
+                            <span className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                              <svg
+                                className="w-5 h-5"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={2}
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
+                              </svg>
+                            </span>
+                            <span className="flex flex-col">
+                              <span className="text-sm font-semibold text-on-surface group-hover:text-primary transition-colors">
+                                Focus Session
+                              </span>
+                              <span className="text-xs text-on-surface-variant/60">
+                                Start a deep work timer. No guided exercises.
+                              </span>
+                            </span>
+                          </span>
+                          <span className="text-xs font-bold text-primary group-hover:translate-x-1 transition-transform flex items-center gap-1">
+                            Start Focus &rarr;
+                          </span>
                         </button>
-                      ))}
-                    </div>
-
-                    {/* Inline Customization Controls */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1 pb-2">
-                      {/* Reset Duration */}
-                      <div className="space-y-1.5">
-                        <label className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant/60">
-                          Duration
-                        </label>
-                        <CustomSelect
-                          size="sm"
-                          value={durationMins}
-                          onChange={(val) => setDurationMins(Number(val))}
-                          options={[
-                            { value: 2, label: "2 Minutes (Quick)" },
-                            { value: 5, label: "5 Minutes (Standard)" },
-                            { value: 10, label: "10 Minutes (Deep)" },
-                          ]}
-                        />
                       </div>
-
-                      {/* Voice */}
-                      <div className="space-y-1.5">
-                        <label className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant/60">
-                          Voice Guide
-                        </label>
-                        <CustomSelect
-                          size="sm"
-                          value={voice}
-                          onChange={setVoice}
-                          options={[
-                            { value: "gentle_female", label: "Calm" },
-                            { value: "soft_male", label: "Steady" },
-                          ]}
-                        />
-                      </div>
-
-                      {/* Background Audio */}
-                      <div className="space-y-1.5">
-                        <label className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant/60">
-                          Background Audio
-                        </label>
-                        <CustomSelect
-                          size="sm"
-                          value={music}
-                          onChange={setMusic}
-                          options={[
-                            { value: "none", label: "Voice Only" },
-                            { value: "ambient", label: "Calm Ambient" },
-                          ]}
-                        />
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={handleStartReset}
-                      disabled={!heroStressor.trim() || !!session}
-                      className={`w-full glow-button py-3.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 ${(!heroStressor.trim() || !!session) ? "opacity-50 pointer-events-none" : "hover:scale-[1.01] active:scale-95"
-                        }`}
-                    >
-                      ⚡ Start Guided Session
-                    </button>
+                    )}
                   </div>
                 </div>
-
-                {/* Secondary: direct focus — hidden when a session is already active */}
-                {!session && (
-                  <div className="flex justify-center">
-                    <button
-                      onClick={handleStartFocusDirectly}
-                      className="mt-4 text-sm text-on-surface-variant/60 hover:text-primary transition-colors flex items-center gap-1"
-                    >
-                      Skip to focus session →
-                    </button>
-                  </div>
-                )}
 
                 {/* Mobile-only inline widgets */}
                 <div className="lg:hidden mt-12 pt-8 border-t border-outline-variant/10 space-y-8">
@@ -591,29 +664,12 @@ function DashboardContent() {
           {/* Dynamic session card — idle / flow visualizer / mini timer */}
           <SidebarSessionCard
             currentTab={currentTab}
-            onStartFocusDirectly={handleStartFocusDirectly}
             onResumeSession={handleResumeSession}
           />
 
           {/* Daily Goal Progress */}
           <DailyGoalProgress key={refreshKey} />
 
-          {/* Insight card */}
-          <div className="bg-surface-container-low/50 p-6 rounded-2xl border border-outline-variant/10 mt-auto relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
-            <div className="relative z-10">
-              <svg
-                className="w-5 h-5 text-primary/70 mb-3"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
-              </svg>
-              <p className="text-xs text-on-surface-variant italic leading-relaxed">
-                You&apos;re not lazy. You&apos;re blocked. Different problem.
-              </p>
-            </div>
-          </div>
         </aside>
       </div>
 

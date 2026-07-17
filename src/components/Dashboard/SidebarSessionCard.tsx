@@ -4,19 +4,17 @@ import { useActiveSession } from "@/components/ActiveSessionContext";
 
 interface SidebarSessionCardProps {
   currentTab: string;
-  onStartFocusDirectly: () => void;
   onResumeSession: () => void;
 }
 
 /**
  * Dynamic right-sidebar card with three visual states:
- * 1. Idle — "25:00 Start focus session" button (original design)
+ * 1. Idle — Motivational quote card
  * 2. Active + viewing session tab — Flow State Visualizer (bobbing bars + %)
  * 3. Active + on different tab — Mini ticking timer with resume link
  */
 export default function SidebarSessionCard({
   currentTab,
-  onStartFocusDirectly,
   onResumeSession,
 }: SidebarSessionCardProps) {
   const { session } = useActiveSession();
@@ -27,26 +25,26 @@ export default function SidebarSessionCard({
     ((session.sourceTab === "meditation" && currentTab === "meditation") ||
       (session.sourceTab === "breathing" && currentTab === "breathing"));
 
+  // ── State 1: No active session (idle) ──
   if (!session) {
     return (
-      <button
-        onClick={onStartFocusDirectly}
-        className="glass-panel rounded-2xl p-8 aspect-square flex flex-col items-center justify-center text-center relative overflow-hidden group hover:scale-[1.02] active:scale-95 transition-all duration-300 border border-outline-variant/10 w-full cursor-pointer"
-      >
-        <span className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-30 group-hover:opacity-40 transition-opacity pointer-events-none" />
+      <div className="glass-panel rounded-2xl p-8 aspect-square flex flex-col items-center justify-center text-center relative overflow-hidden border border-outline-variant/10 w-full">
+        <span className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-30 pointer-events-none" />
         <span className="relative z-10 flex flex-col items-center">
-          <span className="text-primary text-[10px] font-bold uppercase tracking-[0.2em] mb-4 group-hover:text-primary-container transition-colors block">
-            Focus Session
-          </span>
-          <span className="text-5xl font-light tracking-tighter text-on-surface mb-2 font-mono tabular-nums block">
-            25:00
-          </span>
-          <span className="text-on-surface-variant text-xs font-medium group-hover:text-on-surface transition-colors block">
-            Start focus session →
+          <svg
+            className="w-6 h-6 text-primary/80 mb-5"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+          </svg>
+          <span className="text-base md:text-lg font-light text-on-surface-variant italic leading-relaxed block">
+            <span className="block mb-2">You&apos;re not lazy.</span>
+            <span className="block mb-2">You&apos;re blocked.</span>
+            <span className="block">Different problem.</span>
           </span>
         </span>
-        <span className="absolute bottom-0 left-0 right-0 h-1 bg-surface-container-highest group-hover:bg-primary transition-colors block" />
-      </button>
+      </div>
     );
   }
 
