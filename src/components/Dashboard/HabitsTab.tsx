@@ -119,35 +119,35 @@ export default function HabitsTab({ onAddHabit }: HabitsTabProps) {
               <div key={habit.id} className="bg-surface-container-low rounded-xl overflow-hidden transition-colors">
                 {/* Habit Card Header */}
                 <div
-                  className="p-4 sm:p-5 flex items-center justify-between cursor-pointer hover:bg-surface-container transition-colors group"
+                  className="p-5 flex items-center justify-between cursor-pointer hover:bg-surface-container transition-colors group"
                   onClick={() => toggleExpand(habit.id)}
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-lg shadow-sm">
+                  <div className="flex items-center gap-4 min-w-0 flex-1">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-base sm:text-lg shadow-sm shrink-0">
                       {habit.emoji}
                     </div>
-                    <div>
-                      <h3 className="text-base font-semibold text-on-surface">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-sm sm:text-base font-semibold text-on-surface truncate">
                         {habit.name}
                       </h3>
-                      <div className="flex items-center gap-3 mt-0.5">
-                        <span className="text-primary text-xs font-medium uppercase tracking-widest">
+                      <div className="flex flex-wrap items-center gap-x-2 sm:gap-x-3 gap-y-0.5 mt-1 text-xs text-on-surface-variant">
+                        <span className="text-primary font-medium uppercase tracking-wider sm:tracking-widest whitespace-nowrap">
                           {habit.daily_goal_minutes >= 60 && habit.daily_goal_minutes % 60 === 0
                             ? `${habit.daily_goal_minutes / 60} HRS/DAY`
                             : `${habit.daily_goal_minutes} MINS/DAY`}
                         </span>
-                        <span className="text-on-surface-variant/40 text-xs">•</span>
-                        <span className="text-on-surface-variant text-xs">
+                        <span className="text-on-surface-variant/20 hidden sm:inline select-none">•</span>
+                        <span className="whitespace-nowrap">
                           {totalSessions} session{totalSessions !== 1 ? "s" : ""}
                         </span>
-                        <span className="text-on-surface-variant/40 text-xs">•</span>
-                        <span className="text-on-surface-variant text-xs">
+                        <span className="text-on-surface-variant/20 hidden sm:inline select-none">•</span>
+                        <span className="whitespace-nowrap hidden sm:inline">
                           {todayMins} min today
                         </span>
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 shrink-0 ml-4">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -189,15 +189,15 @@ export default function HabitsTab({ onAddHabit }: HabitsTabProps) {
                                 session.aborted ? "opacity-50" : "hover:bg-surface-container-highest/50"
                               } transition-colors`}
                             >
-                              <div className="flex items-center gap-4">
-                                <div className="text-on-surface-variant/50 font-mono text-xs w-20">
+                              <div className="flex items-center gap-4 min-w-0 flex-1">
+                                <div className="text-on-surface-variant/50 font-mono text-xs w-20 shrink-0">
                                   {formatDate(session.completed_at)} {formatTime(session.completed_at)}
                                 </div>
-                                <span className={`text-sm ${session.aborted ? "text-on-surface-variant line-through" : "text-on-surface"}`}>
+                                <span className={`text-sm ${session.aborted ? "text-on-surface-variant line-through" : "text-on-surface"} truncate`}>
                                   {session.intent}
                                 </span>
                               </div>
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 shrink-0 ml-4">
                                 {session.aborted && (
                                   <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-error/10 text-error">
                                     Ended early
@@ -220,24 +220,24 @@ export default function HabitsTab({ onAddHabit }: HabitsTabProps) {
 
           {/* Miscellaneous / Unlinked Sessions */}
           {miscSessions.length > 0 && (
-            <div className="bg-surface-container-low rounded-2xl overflow-hidden">
+            <div className="bg-surface-container-low rounded-xl overflow-hidden">
               <div
-                className="p-6 flex items-center justify-between cursor-pointer hover:bg-surface-container transition-colors"
+                className="p-5 flex items-center justify-between cursor-pointer hover:bg-surface-container transition-colors"
                 onClick={() => setShowMisc(!showMisc)}
               >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-surface-container-highest flex items-center justify-center text-xl shadow-md">
+                <div className="flex items-center gap-4 min-w-0 flex-1">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-base sm:text-lg shadow-sm shrink-0">
                     📂
                   </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-on-surface">Others</h3>
-                    <span className="text-on-surface-variant text-xs">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-sm sm:text-base font-semibold text-on-surface truncate">Others</h3>
+                    <p className="text-on-surface-variant text-xs truncate">
                       {miscSessions.length} unlinked session{miscSessions.length !== 1 ? "s" : ""}
-                    </span>
+                    </p>
                   </div>
                 </div>
                 <svg
-                  className={`w-5 h-5 text-on-surface-variant transition-transform duration-200 ${showMisc ? "rotate-180" : ""}`}
+                  className={`w-5 h-5 text-on-surface-variant transition-transform duration-200 shrink-0 ml-4 ${showMisc ? "rotate-180" : ""}`}
                   fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
@@ -258,15 +258,15 @@ export default function HabitsTab({ onAddHabit }: HabitsTabProps) {
                             session.aborted ? "opacity-50" : "hover:bg-surface-container-highest/50"
                           } transition-colors`}
                         >
-                          <div className="flex items-center gap-4">
-                            <div className="text-on-surface-variant/50 font-mono text-xs w-20">
+                          <div className="flex items-center gap-4 min-w-0 flex-1">
+                            <div className="text-on-surface-variant/50 font-mono text-xs w-20 shrink-0">
                               {formatDate(session.completed_at)} {formatTime(session.completed_at)}
                             </div>
-                            <span className={`text-sm ${session.aborted ? "text-on-surface-variant line-through" : "text-on-surface"}`}>
+                            <span className={`text-sm ${session.aborted ? "text-on-surface-variant line-through" : "text-on-surface"} truncate`}>
                               {session.intent}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 shrink-0 ml-4">
                             {session.aborted && (
                               <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-error/10 text-error">
                                 Ended early

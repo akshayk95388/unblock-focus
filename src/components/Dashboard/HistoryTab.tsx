@@ -181,7 +181,7 @@ export default function HistoryTab({ onReplaySession }: HistoryTabProps) {
                               {session.intent}
                             </h4>
                             {habit && (
-                              <p className="text-on-surface-variant text-xs mt-1">
+                              <p className="text-on-surface-variant text-xs mt-1 truncate">
                                 {habit.emoji} {habit.name}
                               </p>
                             )}
@@ -192,7 +192,7 @@ export default function HistoryTab({ onReplaySession }: HistoryTabProps) {
                           {canReplay(session) && (
                             <button
                               onClick={() => handleToggleFavorite(session.id)}
-                              className={`w-8 h-8 rounded-full flex items-center justify-center transition-all text-sm ${
+                              className={`hidden sm:flex w-8 h-8 rounded-full items-center justify-center transition-all text-sm ${
                                 session.is_favorite
                                   ? "bg-red-500/10 hover:bg-red-500/20"
                                   : "bg-transparent hover:bg-surface-container-highest"
@@ -229,14 +229,16 @@ export default function HistoryTab({ onReplaySession }: HistoryTabProps) {
                               </button>
                             )
                           )}
-                          {session.aborted && (
-                            <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tighter bg-error/10 text-error border border-error/10">
-                              Ended early
+                          <div className="flex flex-col items-end gap-1">
+                            {session.aborted && (
+                              <span className="px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-tighter bg-error/10 text-error border border-error/10 whitespace-nowrap">
+                                Ended early
+                              </span>
+                            )}
+                            <span className="px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-tighter bg-primary-container/10 text-primary border border-primary/10 whitespace-nowrap">
+                              {durationDisplay}
                             </span>
-                          )}
-                          <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tighter bg-primary-container/10 text-primary border border-primary/10">
-                            {durationDisplay}
-                          </span>
+                          </div>
                         </div>
                       </div>
                     );

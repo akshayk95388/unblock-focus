@@ -75,9 +75,9 @@ export default function FocusSetupModal({
       />
 
       {/* Modal Container */}
-      <div className="relative w-full max-w-md bg-surface-container-low border border-outline-variant/15 rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 z-10">
+      <div className="relative w-full max-w-md bg-surface-container-low border border-outline-variant/15 rounded-3xl shadow-2xl animate-in zoom-in-95 duration-200 z-10">
         {/* Obsidian Ember background glow */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-transparent to-secondary/5 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-transparent to-secondary/5 pointer-events-none rounded-3xl overflow-hidden" />
 
         {/* Content */}
         <div className="relative z-10 p-6 md:p-8 space-y-6">
