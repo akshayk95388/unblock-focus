@@ -173,7 +173,7 @@ export default function Breathing({
   }, [elapsed, onComplete]);
 
   return (
-    <main className="relative w-full min-h-[calc(100vh-8rem)] flex flex-col items-center justify-center overflow-hidden select-none bg-surface-container-low/50 rounded-2xl border border-outline-variant/10 py-12 px-6">
+    <main className="relative w-full min-h-[calc(100vh-8rem)] flex flex-col items-center justify-center overflow-hidden select-none bg-surface-container-low/40 backdrop-blur-md rounded-2xl border border-outline-variant/15 p-6 md:p-10">
       {/* Visual ring area with absolute centered overlays */}
       <div className="relative z-10 w-full flex-1 flex flex-col items-center justify-center">
         {/* Ready state overlay */}

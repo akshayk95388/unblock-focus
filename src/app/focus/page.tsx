@@ -626,6 +626,7 @@ function DashboardContent() {
               autoStartFocus={autoStartFocus}
               onClearAutoStart={handleClearAutoStart}
               restoreSnapshot={restoreSnapshot}
+              onOpenFocusSetup={() => setShowFocusSetupModal(true)}
             />
           </div>
         )}

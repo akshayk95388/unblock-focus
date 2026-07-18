@@ -11,6 +11,7 @@ import Confetti from "@/components/FocusEngine/Confetti";
 import CustomSelect from "@/components/ui/CustomSelect";
 import PaywallModal from "@/components/ui/PaywallModal";
 import { useActiveSession } from "@/components/ActiveSessionContext";
+import { createPortal } from "react-dom";
 import {
   ACTIVE_SESSION_KEY,
   createClientSessionId,
@@ -55,6 +56,7 @@ interface MeditationTabProps {
   onClearAutoStart?: () => void;
   /** Restore an in-progress guided/focus session after a page refresh. */
   restoreSnapshot?: GuidedSnapshot | null;
+  onOpenFocusSetup?: () => void;
 }
 
 // ===== Breathing Guide shown during AI generation =====
@@ -76,7 +78,7 @@ function GeneratingBreathingGuide({
   onCancel?: () => void;
 }) {
   return (
-    <div className="bg-surface-container-low/40 border border-outline-variant/10 rounded-2xl p-8 md:p-12 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[520px]">
+    <div className="bg-surface-container-low/40 backdrop-blur-md border border-outline-variant/15 rounded-2xl p-6 md:p-10 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[calc(100vh-8rem)]">
       {/* BreathingRing — 4-7-8 technique, compact, loops until audio is ready */}
       <div className="flex-1 flex items-center justify-center w-full py-4">
         <BreathingRing
@@ -165,6 +167,7 @@ export default function MeditationTab({
   autoStartFocus = false,
   onClearAutoStart,
   restoreSnapshot = null,
+  onOpenFocusSetup,
 }: MeditationTabProps) {
   // Input settings
   const [stressor, setStressor] = useState(restoreSnapshot?.stressor ?? initialStressor);
@@ -1105,18 +1108,7 @@ export default function MeditationTab({
   return (
     <div className="flex flex-col flex-1 p-6 md:p-12 space-y-10 overflow-y-auto">
       <div className="max-w-2xl w-full mx-auto space-y-10">
-        {status !== "focus_timer" && status !== "session_complete" && status !== "playing" && (
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight mb-2">
-              {status === "post_reset" && !resetDone ? "Start Focus Session" : "Guided Session"}
-            </h2>
-            <p className="text-on-surface-variant text-sm">
-              {status === "post_reset" && !resetDone
-                ? "Set your task and start a focus session."
-                : "A personalized guided session to clear what\u0027s blocking you."}
-            </p>
-          </div>
-        )}
+
 
         {/* ============ GENERATION STATE — 4-7-8 Breathing While Waiting ============ */}
         {status === "generating" && (
@@ -1136,7 +1128,7 @@ export default function MeditationTab({
 
         {/* ============ ERROR STATE ============ */}
         {status === "failed" && (
-          <div className="bg-surface-container-low border border-error/20 rounded-2xl p-12 text-center space-y-6 max-w-lg mx-auto">
+          <div className="bg-surface-container-low/40 backdrop-blur-md border border-outline-variant/15 rounded-2xl p-6 md:p-10 text-center space-y-6 max-w-lg mx-auto flex flex-col items-center justify-center min-h-[calc(100vh-8rem)] overflow-hidden">
             <div className="w-16 h-16 rounded-full bg-error/10 flex items-center justify-center text-2xl text-error mx-auto">
               ⚠️
             </div>
@@ -1156,7 +1148,7 @@ export default function MeditationTab({
         {/* ============ AUDIO PLAYER & SUBTITLES SCREEN ============ */}
         {/* ============ AUDIO PLAYER & SUBTITLES SCREEN ============ */}
         {status === "playing" && (
-          <div className="bg-surface-container-low p-5 md:px-8 md:pt-6 md:pb-5 rounded-3xl border border-outline-variant/15 relative overflow-hidden flex flex-col items-center min-h-[440px] w-full gap-6">
+          <div className="bg-surface-container-low/40 backdrop-blur-md p-6 md:p-10 rounded-2xl border border-outline-variant/15 relative overflow-hidden flex flex-col items-center min-h-[calc(100vh-8rem)] w-full gap-6">
             {/* Ambient breathing ring background */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div
@@ -1347,189 +1339,79 @@ export default function MeditationTab({
 
         {/* ============ POST-RESET CHOICE SCREEN ============ */}
         {status === "post_reset" && (
-          <div className="space-y-8">
-            {/* Success indicator (only if reset was done) */}
-            {resetDone && (
-              <div className="flex items-center gap-3 p-4 rounded-xl bg-green-500/5 border border-green-500/15">
-                <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0">
-                  <svg className="w-5 h-5 text-green-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+          <div className="bg-surface-container-low/40 backdrop-blur-md p-6 md:p-10 rounded-2xl border border-outline-variant/15 min-h-[calc(100vh-8rem)] flex flex-col items-center justify-center text-center relative overflow-hidden w-full">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
+
+            <div className="relative z-10 max-w-md mx-auto space-y-8 flex flex-col items-center">
+              {/* Success Checkmark Circle */}
+              {resetDone && (
+                <div className="w-20 h-20 rounded-full bg-green-500/10 flex items-center justify-center mb-2">
+                  <svg className="w-10 h-10 text-green-400" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                   </svg>
                 </div>
-                <div>
-                  <p className="text-sm font-bold text-on-surface">Guided session complete.</p>
-                  <p className="text-xs text-on-surface-variant">Take a moment. No rush.</p>
-                </div>
-              </div>
-            )}
+              )}
 
-            {/* Focus Timer Setup */}
-            <div className="bg-surface-container-low p-6 md:p-8 rounded-2xl border border-outline-variant/15 space-y-6 relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
-
-              <div className="space-y-1 relative z-10">
-                <h3 className="text-lg font-bold text-on-surface">
-                  {resetDone ? "Want to start a focus session?" : "Set up your focus session"}
+              {/* Text context */}
+              <div className="space-y-2">
+                <h3 className="text-3xl font-black tracking-tight text-on-surface">
+                  {resetDone ? "Ready to focus?" : "Start Focus Session"}
                 </h3>
-                <p className="text-xs text-on-surface-variant">
+                <p className="text-on-surface-variant text-sm leading-relaxed">
                   {resetDone
-                    ? "You're clear-headed now. Perfect time to start."
-                    : "Set your task, duration, and go."}
+                    ? "You are clear-headed and calm. Now is the perfect time to get to work."
+                    : "Configure your session and get straight into flow state."}
                 </p>
               </div>
 
-              {/* Work task */}
-              <div className="space-y-2 relative z-10">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                  What will you work on?
-                </label>
-                <input
-                  type="text"
-                  value={workTask}
-                  onChange={(e) => {
-                    setWorkTask(e.target.value);
-                    setCountdown(null);
-                  }}
-                  placeholder="e.g. Write the intro section of my pitch deck"
-                  className="w-full bg-surface-container-highest border-none rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50 text-on-surface placeholder:text-on-surface-variant/40"
-                  autoFocus
-                />
-              </div>
+              {/* Action Buttons */}
+              <div className="w-full space-y-4 pt-4">
+                <button
+                  onClick={onOpenFocusSetup}
+                  className="w-full glow-button py-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-95 transition-all cursor-pointer shadow-lg"
+                >
+                  ⚡ Set up Focus Session
+                </button>
 
-              {/* Duration + Habit */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 relative">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                    Focus session duration
-                  </label>
-                  <CustomSelect
-                    size="sm"
-                    value={showFocusCustom ? "custom" : focusDuration}
-                    onChange={(val) => {
-                      if (!canUseFocusDuration(planType, val)) {
-                        track("paywall_shown", { trigger: "duration" });
-                        setShowPaywall("duration");
-                        return;
-                      }
-                      if (val === "custom") {
-                        setShowFocusCustom(true);
-                        setFocusDuration(30);
-                      } else {
-                        setShowFocusCustom(false);
-                        setFocusDuration(Number(val));
-                      }
-                      setCountdown(null);
-                    }}
-                    options={[
-                      { value: 15, label: "15 min (Quick)" },
-                      { value: 25, label: "25 min (Classic)" },
-                      { value: 45, label: `45 min (Standard)${!userIsPro ? " \uD83D\uDD12" : ""}` },
-                      { value: 90, label: `90 min (Extended)${!userIsPro ? " \uD83D\uDD12" : ""}` },
-                      { value: "custom", label: `Custom...${!userIsPro ? " \uD83D\uDD12" : ""}` },
-                    ]}
-                  />
-                  {showFocusCustom && (
-                    <div className="mt-2.5 animate-in slide-in-from-top-1 duration-200 flex items-center gap-2">
-                      <input
-                        type="number"
-                        min={1}
-                        max={360}
-                        value={focusDuration}
-                        onChange={(e) => {
-                          const val = Math.max(1, Math.min(360, Number(e.target.value) || 1));
-                          setFocusDuration(val);
-                          setCountdown(null);
-                        }}
-                        className="w-24 bg-surface-container-highest border border-outline-variant/15 rounded-xl px-3.5 py-2 text-xs text-on-surface focus:outline-none focus:ring-1 focus:ring-primary/30 text-center font-mono font-bold"
-                      />
-                      <span className="text-xs text-on-surface-variant/70 font-medium">Minutes</span>
-                    </div>
-                  )}
-                </div>
-
-                {habits.length > 0 && (
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                      Track under goal (optional)
-                    </label>
-                    <CustomSelect
-                      size="sm"
-                      value={selectedHabitId}
-                      onChange={(val) => {
-                        setSelectedHabitId(val);
-                        setCountdown(null);
+                {resetDone && (
+                  <div className="flex flex-col items-center gap-3 pt-2">
+                    <button
+                      onClick={() => {
+                        handleLogSession();
+                        setStatus("session_complete");
                       }}
-                      options={[
-                        { value: "", label: "None" },
-                        ...habits.map((h) => ({ value: h.id, label: `${h.emoji} ${h.name}` })),
-                      ]}
-                    />
+                      className="text-sm font-medium text-on-surface-variant/60 hover:text-on-surface transition-colors cursor-pointer"
+                    >
+                      I feel better now. That&apos;s all I needed. &rarr;
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setStatus("playing");
+                        setTimeout(() => {
+                          if (audioRef.current) {
+                            audioRef.current.currentTime = 0;
+                            audioRef.current.play().catch(() => { });
+                          }
+                        }, 50);
+                      }}
+                      className="text-xs text-on-surface-variant/40 hover:text-on-surface-variant/75 transition-colors cursor-pointer"
+                    >
+                      ← Listen again
+                    </button>
                   </div>
                 )}
-              </div>
 
-              {/* Start Focus Timer Button */}
-              <button
-                onClick={countdown !== null ? () => setCountdown(null) : handleStartFocusTimer}
-                disabled={!workTask.trim()}
-                className={`w-full glow-button py-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 relative z-10 ${!workTask.trim() ? "opacity-50 pointer-events-none" : "hover:scale-[1.01] active:scale-95"
-                  }`}
-              >
-                {countdown !== null ? (
-                  <span className="flex items-center gap-2.5">
-                    <span className="animate-pulse">🚀 Starting Focus Session in {countdown}s...</span>
-                    <span className="text-[9px] uppercase bg-black/20 text-on-surface-variant/80 border border-outline-variant/10 px-2 py-0.5 rounded tracking-wide font-extrabold font-mono">
-                      Click to Pause
-                    </span>
-                  </span>
-                ) : (
-                  `Start Focus Session — ${focusDuration} min`
+                {!resetDone && (
+                  <button
+                    onClick={() => onSessionComplete?.()}
+                    className="text-sm text-on-surface-variant/60 hover:text-on-surface transition-colors cursor-pointer pt-2"
+                  >
+                    ← Back to guided session
+                  </button>
                 )}
-              </button>
+              </div>
             </div>
-
-            {/* Secondary: Done without focus timer */}
-            {resetDone && (
-              <div className="text-center flex flex-col items-center gap-3">
-                <button
-                  onClick={() => {
-                    handleLogSession();
-                    setStatus("session_complete");
-                  }}
-                  className="text-sm text-on-surface-variant/60 hover:text-on-surface-variant transition-colors"
-                >
-                  I feel better now. That&apos;s all I needed. →
-                </button>
-
-                <button
-                  onClick={() => {
-                    setStatus("playing");
-                    // Small delay to ensure audio element is mounted and ref is assigned
-                    setTimeout(() => {
-                      if (audioRef.current) {
-                        audioRef.current.currentTime = 0;
-                        audioRef.current.play().catch(() => { });
-                      }
-                    }, 50);
-                  }}
-                  className="text-xs text-on-surface-variant/40 hover:text-on-surface-variant/75 transition-colors"
-                >
-                  ← Listen again
-                </button>
-              </div>
-            )}
-
-            {/* Back button for direct-focus mode */}
-            {!resetDone && (
-              <div className="text-center">
-                <button
-                  onClick={() => onSessionComplete?.()}
-                  className="text-sm text-on-surface-variant/60 hover:text-on-surface transition-colors"
-                >
-                  ← Back to guided session
-                </button>
-              </div>
-            )}
           </div>
         )}
 
@@ -1546,7 +1428,7 @@ export default function MeditationTab({
             const dashOffset = circumference * (1 - progress);
 
             return (
-              <div className="flex flex-col items-center justify-center min-h-[600px] text-center relative overflow-hidden">
+              <div className="bg-surface-container-low/40 backdrop-blur-md border border-outline-variant/15 rounded-2xl p-6 md:p-10 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[calc(100vh-8rem)] w-full">
                 {/* Ambient glow */}
                 <div className="absolute inset-0 pointer-events-none overflow-hidden">
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary-container/5 rounded-full blur-[120px]" />
@@ -1612,7 +1494,7 @@ export default function MeditationTab({
                 </div>
 
                 {/* Quit Trap */}
-                {showQuitTrap && (
+                {showQuitTrap && typeof document !== "undefined" && createPortal(
                   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="max-w-md w-full mx-6 text-center bg-surface-container-low/95 border border-outline-variant/15 p-8 rounded-2xl shadow-2xl animate-in zoom-in-95 duration-200">
                       <div className="w-16 h-16 mx-auto mb-8 rounded-full bg-error-container/20 flex items-center justify-center">
@@ -1696,7 +1578,8 @@ export default function MeditationTab({
                         End focus session anyway
                       </button>
                     </div>
-                  </div>
+                  </div>,
+                  document.body
                 )}
               </div>
             );
@@ -1722,7 +1605,7 @@ export default function MeditationTab({
                   : `${totalMinutes} min focus session`;
 
             return (
-              <div className="flex flex-col items-center justify-center min-h-[500px] text-center space-y-8">
+              <div className="bg-surface-container-low/40 backdrop-blur-md border border-outline-variant/15 rounded-2xl p-6 md:p-10 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[calc(100vh-8rem)] w-full space-y-8">
                 {!isReplay && <Confetti />}
                 <div className="w-20 h-20 rounded-full bg-green-500/10 flex items-center justify-center">
                   <svg className="w-10 h-10 text-green-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
