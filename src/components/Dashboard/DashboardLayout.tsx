@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { getStreak } from "@/lib/sessions";
+import { useStreak } from "@/lib/queries";
 import { useAuth } from "@/components/AuthProvider";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { isPro } from "@/lib/plans";
+import Skeleton from "@/components/ui/Skeleton";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -22,11 +23,11 @@ export default function DashboardLayout({
   zenMode = false,
   rightSidebar,
 }: DashboardLayoutProps) {
-  const [streak, setStreak] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
   const router = useRouter();
+  const { streak } = useStreak();
   const { planType, credits, loading: planLoading } = useUserPlan();
   const userIsPro = isPro(planType);
 
@@ -57,14 +58,6 @@ export default function DashboardLayout({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [profileMenuOpen]);
-
-  useEffect(() => {
-    async function loadStreak() {
-      const s = await getStreak();
-      setStreak(s);
-    }
-    loadStreak();
-  }, []);
 
   const navItems = [
     { id: "dashboard", label: "Home", icon: "home" },
@@ -180,24 +173,35 @@ export default function DashboardLayout({
           })}
         </nav>
 
-        {/* Upgrade Banner (free users only) */}
-        {!planLoading && !userIsPro && (
+        {/* Upgrade Banner (free users only, with skeleton loading placeholder) */}
+        {planLoading ? (
           <div className="px-3 mt-6">
-            <a
-              href="/api/checkout?plan=pro_monthly"
-              className="block bg-gradient-to-br from-primary/8 to-primary-container/5 border border-primary/10 rounded-xl p-4 hover:border-primary/25 transition-all group"
-            >
-              <p className="text-[10px] font-bold uppercase tracking-widest text-primary-container mb-1">
-                Unlock Unlimited
-              </p>
-              <p className="text-[11px] text-on-surface-variant/70 leading-relaxed">
-                Get Pro for unlimited sessions, all durations, and advanced breathing.
-              </p>
-              <span className="inline-block mt-2 text-[10px] font-bold text-primary group-hover:text-primary-container transition-colors">
-                Upgrade to Pro →
-              </span>
-            </a>
+            <div className="bg-surface-container-low/50 border border-outline-variant/10 rounded-xl p-4 space-y-3">
+              <Skeleton className="h-3 w-24" />
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-3 w-4/5" />
+              <Skeleton className="h-3.5 w-20 mt-1" />
+            </div>
           </div>
+        ) : (
+          !userIsPro && (
+            <div className="px-3 mt-6">
+              <a
+                href="/api/checkout?plan=pro_monthly"
+                className="block bg-gradient-to-br from-primary/8 to-primary-container/5 border border-primary/10 rounded-xl p-4 hover:border-primary/25 transition-all group"
+              >
+                <p className="text-[10px] font-bold uppercase tracking-widest text-primary-container mb-1">
+                  Unlock Unlimited
+                </p>
+                <p className="text-[11px] text-on-surface-variant/70 leading-relaxed">
+                  Get Pro for unlimited sessions, all durations, and advanced breathing.
+                </p>
+                <span className="inline-block mt-2 text-[10px] font-bold text-primary group-hover:text-primary-container transition-colors">
+                  Upgrade to Pro →
+                </span>
+              </a>
+            </div>
+          )
         )}
 
         {/* Desktop Footer (Streak + Profile) */}
@@ -212,15 +216,21 @@ export default function DashboardLayout({
                   <span className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/60">
                     Plan
                   </span>
-                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                    userIsPro
-                      ? "bg-primary/10 text-primary"
-                      : "bg-surface-container-highest text-on-surface-variant"
-                  }`}>
-                    {userIsPro ? "Pro" : "Free"}
-                  </span>
+                  {planLoading ? (
+                    <Skeleton className="h-4 w-10" rounded="full" />
+                  ) : (
+                    <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                      userIsPro
+                        ? "bg-primary/10 text-primary"
+                        : "bg-surface-container-highest text-on-surface-variant"
+                    }`}>
+                      {userIsPro ? "Pro" : "Free"}
+                    </span>
+                  )}
                 </div>
-                {!planLoading && (
+                {planLoading ? (
+                  <Skeleton className="h-3 w-32 mt-2" />
+                ) : (
                   <p className="text-[10px] text-on-surface-variant/50 mt-1">
                     {userIsPro
                       ? `${credits} resets remaining this month`
@@ -294,11 +304,15 @@ export default function DashboardLayout({
               <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider truncate">
                 {firstName}
               </span>
-              <span className={`text-[9px] truncate ${
-                userIsPro ? "text-primary/60" : "text-on-surface-variant/50"
-              }`}>
-                {userIsPro ? "Pro" : `${credits} resets left`}
-              </span>
+              {planLoading ? (
+                <Skeleton className="h-2.5 w-16 mt-0.5" />
+              ) : (
+                <span className={`text-[9px] truncate ${
+                  userIsPro ? "text-primary/60" : "text-on-surface-variant/50"
+                }`}>
+                  {userIsPro ? "Pro" : `${credits} resets left`}
+                </span>
+              )}
             </div>
           </button>
         </div>

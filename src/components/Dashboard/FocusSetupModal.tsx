@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getHabits, type Habit } from "@/lib/habits";
+import { useHabits } from "@/lib/queries";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { isPro, canUseFocusDuration } from "@/lib/plans";
 import { track } from "@/lib/mixpanel";
@@ -22,32 +22,25 @@ export default function FocusSetupModal({
   const [workTask, setWorkTask] = useState("");
   const [focusDuration, setFocusDuration] = useState(25);
   const [showFocusCustom, setShowFocusCustom] = useState(false);
-  const [habits, setHabits] = useState<Habit[]>([]);
+  const { habits } = useHabits();
   const [selectedHabitId, setSelectedHabitId] = useState("");
   const [showPaywall, setShowPaywall] = useState<"duration" | null>(null);
 
   const { planType } = useUserPlan();
   const userIsPro = isPro(planType);
 
-  // Load habits on mount
+  // Auto-select a relevant habit when the modal opens and habits are available
   useEffect(() => {
-    if (isOpen) {
-      async function loadHabits() {
-        const list = await getHabits();
-        setHabits(list);
-        if (list.length > 0) {
-          const found = list.find(
-            (h) =>
-              h.name.toLowerCase().includes("focus") ||
-              h.name.toLowerCase().includes("work") ||
-              h.name.toLowerCase().includes("study")
-          );
-          setSelectedHabitId(found ? found.id : list[0].id);
-        }
-      }
-      loadHabits();
+    if (isOpen && habits.length > 0 && !selectedHabitId) {
+      const found = habits.find(
+        (h) =>
+          h.name.toLowerCase().includes("focus") ||
+          h.name.toLowerCase().includes("work") ||
+          h.name.toLowerCase().includes("study")
+      );
+      setSelectedHabitId(found ? found.id : habits[0].id);
     }
-  }, [isOpen]);
+  }, [isOpen, habits, selectedHabitId]);
 
   // Reset local state when opening
   useEffect(() => {

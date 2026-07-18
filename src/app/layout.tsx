@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import MixpanelInit from "@/components/MixpanelInit";
 import AuthProvider from "@/components/AuthProvider";
+import { UserPlanProvider } from "@/hooks/useUserPlan";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -39,8 +40,10 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} dark`}>
       <body className="min-h-screen font-sans">
         <AuthProvider>
-          <MixpanelInit />
-          {children}
+          <UserPlanProvider>
+            <MixpanelInit />
+            {children}
+          </UserPlanProvider>
         </AuthProvider>
       </body>
     </html>

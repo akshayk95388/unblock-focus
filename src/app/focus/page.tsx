@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
 import DashboardLayout from "@/components/Dashboard/DashboardLayout";
 import DailyGoalProgress from "@/components/Dashboard/DailyGoalProgress";
 import HabitManager from "@/components/Dashboard/HabitManager";
@@ -22,10 +21,11 @@ import {
   clearAllActiveSessions,
   type GuidedSnapshot,
 } from "@/lib/active-session-storage";
-import { getHabits, addHabit } from "@/lib/habits";
+import { addHabit, type Habit } from "@/lib/habits";
 import { track } from "@/lib/mixpanel";
 import { useUserPlan } from "@/hooks/useUserPlan";
-import { isPro, canUseBreathingTechnique, hasCredits } from "@/lib/plans";
+import { isPro, hasCredits } from "@/lib/plans";
+import { habitsResource, refreshQueryCaches } from "@/lib/queries";
 
 export default function DashboardPage() {
   return (
@@ -45,7 +45,6 @@ function DashboardContent() {
   const [showProSuccess, setShowProSuccess] = useState(false);
   const { planType, credits, refetch: refetchPlan } = useUserPlan();
   const userIsPro = isPro(planType);
-  const router = useRouter();
 
   // Zen Mode states
   const [isMeditationZen, setIsMeditationZen] = useState(false);
@@ -216,6 +215,10 @@ function DashboardContent() {
   }, []);
 
   const handleSessionComplete = useCallback(() => {
+    // Refresh the shared sessions/habits/streak caches in the background so
+    // History, Goals, and the daily progress sidebar pick up the new session
+    // without a visible reload.
+    refreshQueryCaches();
     setRefreshKey((k) => k + 1);
     setPendingStressor("");
     setDirectFocusMode(false);
@@ -285,8 +288,8 @@ function DashboardContent() {
   const handleBreathingComplete = useCallback(async (durationSeconds: number) => {
     setSession(null); // Clear active session from context
     if (durationSeconds > 0) {
-      const habits = await getHabits();
-      const breathingHabit = habits.find((h) => h.name.toLowerCase().includes("breath"));
+      const cachedHabits = await habitsResource.load();
+      const breathingHabit = cachedHabits.find((h) => h.name.toLowerCase().includes("breath"));
 
       const resolvedHabit = breathingHabit || await addHabit("Breathing Exercise", "🫁", "primary", 15);
 
@@ -298,6 +301,7 @@ function DashboardContent() {
           goal_name: resolvedHabit.name,
         });
       }
+      refreshQueryCaches();
       setRefreshKey((k) => k + 1);
     }
     
@@ -370,7 +374,7 @@ function DashboardContent() {
             currentTab={currentTab}
             onResumeSession={handleResumeSession}
           />
-          <DailyGoalProgress key={refreshKey} />
+          <DailyGoalProgress />
         </>
       }
     >
@@ -573,7 +577,7 @@ function DashboardContent() {
 
                 {/* Mobile-only inline widgets */}
                 <div className="lg:hidden mt-12 pt-8 border-t border-outline-variant/10 space-y-8">
-                  <DailyGoalProgress key={refreshKey} />
+                  <DailyGoalProgress />
                   
                   {/* Insight card */}
                   <div className="bg-surface-container-low/50 p-6 rounded-2xl border border-outline-variant/10 relative overflow-hidden">
@@ -670,7 +674,7 @@ function DashboardContent() {
       {showHabitManager && (
         <HabitManager
           onClose={() => setShowHabitManager(false)}
-          onCreated={() => setRefreshKey((k) => k + 1)}
+          onCreated={(habit: Habit) => habitsResource.mutate((prev) => [...(prev ?? []), habit])}
         />
       )}
 

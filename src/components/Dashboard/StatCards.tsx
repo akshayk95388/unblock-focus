@@ -1,26 +1,39 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getStreak, getSessions, getCompletionRate } from "@/lib/sessions";
+import { useMemo } from "react";
+import { useSessions, useStreak } from "@/lib/queries";
+import Skeleton from "@/components/ui/Skeleton";
 
 export default function StatCards() {
-  const [streak, setStreak] = useState(0);
-  const [totalSessions, setTotalSessions] = useState(0);
-  const [completionRate, setCompletionRate] = useState(0);
+  const { streak, loading: streakLoading } = useStreak();
+  const { sessions, loading: sessionsLoading } = useSessions();
+  const loading = streakLoading || sessionsLoading;
 
-  useEffect(() => {
-    async function loadStats() {
-      const [streakVal, sessions, rate] = await Promise.all([
-        getStreak(),
-        getSessions(),
-        getCompletionRate(),
-      ]);
-      setStreak(streakVal);
-      setTotalSessions(sessions.length);
-      setCompletionRate(rate);
-    }
-    loadStats();
-  }, []);
+  const totalSessions = sessions.length;
+  const completionRate = useMemo(() => {
+    if (sessions.length === 0) return 0;
+    const completed = sessions.filter((s) => !s.aborted).length;
+    return Math.round((completed / sessions.length) * 100);
+  }, [sessions]);
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
+        {[0, 1, 2].map((i) => (
+          <div
+            key={i}
+            className="bg-surface-container-low p-6 md:p-8 rounded-xl relative overflow-hidden flex flex-col justify-between h-[150px]"
+          >
+            <div>
+              <Skeleton className="h-3 w-24 mb-4" />
+              <Skeleton className="h-9 w-20" />
+            </div>
+            <Skeleton className="h-4 w-full mt-4" />
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   const cards = [
     {

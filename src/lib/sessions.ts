@@ -126,26 +126,6 @@ export async function toggleFavorite(
   return true;
 }
 
-// Get favorite guided sessions for replay
-export async function getFavoriteSessions(): Promise<SessionRecord[]> {
-  const supabase = createClient();
-
-  const { data, error } = await supabase
-    .from("sessions")
-    .select("*")
-    .eq("is_favorite", true)
-    .eq("session_type", "guided")
-    .not("audio_url", "is", null)
-    .order("completed_at", { ascending: false });
-
-  if (error) {
-    console.error("Error fetching favorite sessions:", error);
-    return [];
-  }
-
-  return (data ?? []) as SessionRecord[];
-}
-
 // Get all sessions (reverse chronological)
 export async function getSessions(): Promise<SessionRecord[]> {
   const supabase = createClient();
@@ -157,26 +137,6 @@ export async function getSessions(): Promise<SessionRecord[]> {
 
   if (error) {
     console.error("Error fetching sessions:", error);
-    return [];
-  }
-
-  return (data ?? []) as SessionRecord[];
-}
-
-// Get today's sessions
-export async function getTodaySessions(): Promise<SessionRecord[]> {
-  const supabase = createClient();
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-
-  const { data, error } = await supabase
-    .from("sessions")
-    .select("*")
-    .gte("completed_at", todayStart.toISOString())
-    .order("completed_at", { ascending: false });
-
-  if (error) {
-    console.error("Error fetching today sessions:", error);
     return [];
   }
 
@@ -201,35 +161,6 @@ export async function getSessionsByHabit(
   }
 
   return (data ?? []) as SessionRecord[];
-}
-
-// Get today's minutes for a specific habit
-export async function getDailyGoalProgress(
-  habitId: string
-): Promise<number> {
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-
-  const supabase = createClient();
-
-  const { data, error } = await supabase
-    .from("sessions")
-    .select("duration_seconds")
-    .eq("habit_id", habitId)
-    .gte("completed_at", todayStart.toISOString());
-
-  if (error) {
-    console.error("Error fetching daily goal progress:", error);
-    return 0;
-  }
-
-  return Math.round(
-    (data ?? []).reduce(
-      (sum: number, s: { duration_seconds: number }) =>
-        sum + s.duration_seconds,
-      0
-    ) / 60
-  );
 }
 
 // Calculate current streak (consecutive days with at least one completed session)
@@ -277,39 +208,4 @@ export async function getStreak(): Promise<number> {
   }
 
   return streak;
-}
-
-// Get total focus minutes
-export async function getTotalMinutes(): Promise<number> {
-  const supabase = createClient();
-
-  const { data, error } = await supabase
-    .from("sessions")
-    .select("duration_seconds");
-
-  if (error) return 0;
-
-  return Math.round(
-    (data ?? []).reduce(
-      (sum: number, s: { duration_seconds: number }) =>
-        sum + s.duration_seconds,
-      0
-    ) / 60
-  );
-}
-
-// Get completion rate (sessions completed / sessions total)
-export async function getCompletionRate(): Promise<number> {
-  const supabase = createClient();
-
-  const { data, error } = await supabase
-    .from("sessions")
-    .select("aborted");
-
-  if (error || !data || data.length === 0) return 0;
-
-  const completed = data.filter(
-    (s: { aborted: boolean }) => !s.aborted
-  ).length;
-  return Math.round((completed / data.length) * 100);
 }

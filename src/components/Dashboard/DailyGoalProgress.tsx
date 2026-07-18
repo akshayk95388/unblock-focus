@@ -1,13 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getHabits, type Habit } from "@/lib/habits";
-import { getDailyGoalProgress } from "@/lib/sessions";
-
-interface ProgressItem {
-  habit: Habit;
-  minutesDone: number;
-}
+import { useMemo } from "react";
+import { useHabits, useSessions } from "@/lib/queries";
+import Skeleton from "@/components/ui/Skeleton";
 
 const colorMap: Record<string, string> = {
   primary: "bg-primary-container",
@@ -16,21 +11,42 @@ const colorMap: Record<string, string> = {
 };
 
 export default function DailyGoalProgress() {
-  const [items, setItems] = useState<ProgressItem[]>([]);
+  const { habits, loading: habitsLoading } = useHabits();
+  const { sessions, loading: sessionsLoading } = useSessions();
+  const loading = habitsLoading || sessionsLoading;
 
-  useEffect(() => {
-    async function loadProgress() {
-      const habits = await getHabits();
-      const progress = await Promise.all(
-        habits.map(async (habit) => ({
-          habit,
-          minutesDone: await getDailyGoalProgress(habit.id),
-        }))
+  const items = useMemo(() => {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    return habits.map((habit) => {
+      const minutesDone = Math.round(
+        sessions
+          .filter((s) => s.habit_id === habit.id && new Date(s.completed_at) >= todayStart)
+          .reduce((sum, s) => sum + s.duration_seconds, 0) / 60
       );
-      setItems(progress);
-    }
-    loadProgress();
-  }, []);
+      return { habit, minutesDone };
+    });
+  }, [habits, sessions]);
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-4 w-36" />
+        <div className="space-y-5">
+          {[0, 1].map((i) => (
+            <div key={i} className="flex flex-col gap-2">
+              <div className="flex justify-between">
+                <Skeleton className="h-3 w-24" />
+                <Skeleton className="h-3 w-20" />
+              </div>
+              <Skeleton className="h-1.5 w-full" rounded="full" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   if (items.length === 0) return null;
 

@@ -1,7 +1,8 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { resetQueryCaches } from "@/lib/queries";
 import type { User, Session } from "@supabase/supabase-js";
 
 interface AuthContextType {
@@ -30,6 +31,7 @@ export default function AuthProvider({
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const lastUserId = useRef<string | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -38,6 +40,7 @@ export default function AuthProvider({
     supabase.auth.getSession().then(({ data: { session: s } }) => {
       setSession(s);
       setUser(s?.user ?? null);
+      lastUserId.current = s?.user?.id ?? null;
       setLoading(false);
     });
 
@@ -45,6 +48,13 @@ export default function AuthProvider({
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, s) => {
+      // Clear cached sessions/habits data when signing out or switching accounts
+      // so a different user never briefly sees a previous user's cached data.
+      const nextUserId = s?.user?.id ?? null;
+      if (lastUserId.current !== nextUserId) {
+        resetQueryCaches();
+        lastUserId.current = nextUserId;
+      }
       setSession(s);
       setUser(s?.user ?? null);
       setLoading(false);

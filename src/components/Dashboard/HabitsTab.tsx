@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getHabits, deleteHabit, type Habit } from "@/lib/habits";
-import { getSessions, getSessionsByHabit, getDailyGoalProgress, type SessionRecord } from "@/lib/sessions";
+import { useEffect, useMemo, useState } from "react";
+import { deleteHabit } from "@/lib/habits";
+import Skeleton from "@/components/ui/Skeleton";
+import type { SessionRecord } from "@/lib/sessions";
+import { useHabits, useSessions, habitsResource } from "@/lib/queries";
 
 interface ExpandedSessionsListProps {
   sessions: SessionRecord[];
@@ -104,12 +106,11 @@ interface HabitsTabProps {
 }
 
 export default function HabitsTab({ onAddHabit }: HabitsTabProps) {
-  const [habits, setHabits] = useState<Habit[]>([]);
+  const { habits, loading: habitsLoading } = useHabits();
+  const { sessions, loading: sessionsLoading } = useSessions();
+  const loading = habitsLoading || sessionsLoading;
   const [expandedHabitId, setExpandedHabitId] = useState<string | null>(null);
-  const [habitSessions, setHabitSessions] = useState<SessionRecord[]>([]);
-  const [miscSessions, setMiscSessions] = useState<SessionRecord[]>([]);
   const [showMisc, setShowMisc] = useState(false);
-  const [habitStats, setHabitStats] = useState<Record<string, { todayMins: number; totalSessions: number }>>({});
 
   const [currentGoalsPage, setCurrentGoalsPage] = useState(1);
   const GOALS_PER_PAGE = 10;
@@ -121,53 +122,57 @@ export default function HabitsTab({ onAddHabit }: HabitsTabProps) {
     }
   }, [habits, currentGoalsPage]);
 
-  useEffect(() => {
-    async function loadData() {
-      const [habitsData, allSessions] = await Promise.all([
-        getHabits(),
-        getSessions(),
-      ]);
-      setHabits(habitsData);
-      setMiscSessions(
-        allSessions.filter((s) => !s.habit_id).sort((a, b) => new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime())
-      );
+  // Sessions unlinked to any habit ("Others" bucket)
+  const miscSessions = useMemo(
+    () =>
+      sessions
+        .filter((s) => !s.habit_id)
+        .sort((a, b) => new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime()),
+    [sessions]
+  );
 
-      // Load per-habit stats
-      const stats: Record<string, { todayMins: number; totalSessions: number }> = {};
-      await Promise.all(
-        habitsData.map(async (habit) => {
-          const [todayMins, sessions] = await Promise.all([
-            getDailyGoalProgress(habit.id),
-            getSessionsByHabit(habit.id),
-          ]);
-          stats[habit.id] = { todayMins, totalSessions: sessions.length };
-        })
-      );
-      setHabitStats(stats);
+  // Sessions for the currently expanded habit
+  const habitSessions = useMemo(() => {
+    if (!expandedHabitId) return [] as SessionRecord[];
+    return sessions
+      .filter((s) => s.habit_id === expandedHabitId)
+      .sort((a, b) => new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime());
+  }, [sessions, expandedHabitId]);
+
+  // Per-habit stats derived from the already-fetched sessions list — avoids
+  // an extra round trip per habit just to compute today's minutes/total count.
+  const habitStats = useMemo(() => {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const stats: Record<string, { todayMins: number; totalSessions: number }> = {};
+    for (const habit of habits) {
+      let todaySeconds = 0;
+      let totalSessions = 0;
+      for (const s of sessions) {
+        if (s.habit_id !== habit.id) continue;
+        totalSessions++;
+        if (new Date(s.completed_at) >= todayStart) {
+          todaySeconds += s.duration_seconds;
+        }
+      }
+      stats[habit.id] = { todayMins: Math.round(todaySeconds / 60), totalSessions };
     }
-    loadData();
-  }, []);
+    return stats;
+  }, [habits, sessions]);
 
   const handleDelete = async (id: string, name: string) => {
     if (confirm(`Are you sure you want to delete "${name}"?`)) {
-      if (await deleteHabit(id)) {
-        setHabits(await getHabits());
+      // Optimistic update — remove immediately, then confirm with the server
+      habitsResource.mutate((prev) => (prev ?? []).filter((h) => h.id !== id));
+      if (!(await deleteHabit(id))) {
+        habitsResource.revalidate();
       }
     }
   };
 
-  const toggleExpand = async (habitId: string) => {
-    if (expandedHabitId === habitId) {
-      setExpandedHabitId(null);
-      return;
-    }
-    setExpandedHabitId(habitId);
-    const sessions = await getSessionsByHabit(habitId);
-    setHabitSessions(
-      sessions.sort(
-        (a, b) => new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime()
-      )
-    );
+  const toggleExpand = (habitId: string) => {
+    setExpandedHabitId((prev) => (prev === habitId ? null : habitId));
   };
 
   const formatTime = (iso: string) =>
@@ -204,7 +209,21 @@ export default function HabitsTab({ onAddHabit }: HabitsTabProps) {
         </button>
       </div>
 
-      {habits.length === 0 ? (
+      {loading ? (
+        /* Skeleton loading state — matches goal card dimensions */
+        <div className="space-y-4">
+          {[0, 1].map((i) => (
+            <div key={i} className="bg-surface-container-low rounded-xl p-5 flex items-center gap-4">
+              <Skeleton className="w-10 h-10 shrink-0" rounded="lg" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-36" />
+                <Skeleton className="h-3 w-52" />
+              </div>
+              <Skeleton className="w-5 h-5 shrink-0" rounded="full" />
+            </div>
+          ))}
+        </div>
+      ) : habits.length === 0 ? (
         <div className="bg-surface-container-low p-12 rounded-2xl text-center">
           <p className="text-on-surface-variant mb-6 text-lg">
             No goals created yet. Start tracking your focused work.

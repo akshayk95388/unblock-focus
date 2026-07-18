@@ -1,22 +1,32 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getSessions, toggleFavorite, type SessionRecord } from "@/lib/sessions";
-import { getHabits, type Habit } from "@/lib/habits";
+import { useEffect, useMemo, useState } from "react";
+import { toggleFavorite, type SessionRecord } from "@/lib/sessions";
+import type { Habit } from "@/lib/habits";
+import { useSessions, useHabits, sessionsResource } from "@/lib/queries";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { isPro, FREE_REPLAY_LIMIT } from "@/lib/plans";
 import StatCards from "@/components/Dashboard/StatCards";
 import ActivityHeatmap from "@/components/Dashboard/ActivityHeatmap";
 import PaywallModal from "@/components/ui/PaywallModal";
 import { track } from "@/lib/mixpanel";
+import Skeleton from "@/components/ui/Skeleton";
 
 interface HistoryTabProps {
   onReplaySession?: (session: SessionRecord) => void;
 }
 
 export default function HistoryTab({ onReplaySession }: HistoryTabProps) {
-  const [sessions, setSessions] = useState<SessionRecord[]>([]);
-  const [habitsMap, setHabitsMap] = useState<Record<string, Habit>>({});
+  const { sessions, loading: sessionsLoading } = useSessions();
+  const { habits, loading: habitsLoading } = useHabits();
+  const loading = sessionsLoading || habitsLoading;
+  const habitsMap = useMemo(() => {
+    const map: Record<string, Habit> = {};
+    habits.forEach((h) => {
+      map[h.id] = h;
+    });
+    return map;
+  }, [habits]);
   const [filter, setFilter] = useState<"all" | "favorites">("all");
   const [showPaywall, setShowPaywall] = useState(false);
   const { planType } = useUserPlan();
@@ -30,31 +40,14 @@ export default function HistoryTab({ onReplaySession }: HistoryTabProps) {
     setCurrentPage(1);
   }, [filter]);
 
-  useEffect(() => {
-    async function loadData() {
-      const [sessionsData, habitsData] = await Promise.all([
-        getSessions(),
-        getHabits(),
-      ]);
-      setSessions(sessionsData);
-      // Build a lookup map for habits
-      const map: Record<string, Habit> = {};
-      habitsData.forEach((h) => {
-        map[h.id] = h;
-      });
-      setHabitsMap(map);
-    }
-    loadData();
-  }, []);
-
   const handleToggleFavorite = async (sessionId: string) => {
     const session = sessions.find((s) => s.id === sessionId);
     if (!session) return;
 
     const newState = !session.is_favorite;
-    // Optimistic update
-    setSessions((prev) =>
-      prev.map((s) => (s.id === sessionId ? { ...s, is_favorite: newState } : s))
+    // Optimistic update — shared across every component reading the sessions cache
+    sessionsResource.mutate((prev) =>
+      (prev ?? []).map((s) => (s.id === sessionId ? { ...s, is_favorite: newState } : s))
     );
     await toggleFavorite(sessionId, newState);
   };
@@ -162,7 +155,30 @@ export default function HistoryTab({ onReplaySession }: HistoryTabProps) {
       {/* Activity calendar */}
       <ActivityHeatmap />
 
-      {filteredSessions.length === 0 ? (
+      {loading ? (
+        /* Skeleton loading state */
+        <div className="space-y-12">
+          {/* Skeleton session rows */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between border-b border-surface-container-highest pb-2 px-2">
+              <Skeleton className="h-3 w-40" />
+              <Skeleton className="h-3 w-24" />
+            </div>
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="bg-surface-container-low p-5 rounded-xl flex items-center justify-between">
+                <div className="flex items-center gap-4 md:gap-6 min-w-0 flex-1">
+                  <Skeleton className="h-3 w-12 shrink-0" />
+                  <div className="space-y-2 flex-1">
+                    <Skeleton className="h-4 w-48" />
+                    <Skeleton className="h-3 w-28" />
+                  </div>
+                </div>
+                <Skeleton className="h-5 w-14 shrink-0" rounded="full" />
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : filteredSessions.length === 0 ? (
         <div className="bg-surface-container-low p-12 rounded-2xl text-center">
           <p className="text-on-surface-variant text-lg">
             {filter === "favorites"

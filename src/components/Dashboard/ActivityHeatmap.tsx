@@ -2,8 +2,8 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { getSessions, getSessionsByHabit } from "@/lib/sessions";
-import { getHabits, type Habit } from "@/lib/habits";
+import { getSessionsByHabit } from "@/lib/sessions";
+import { useHabits, useSessions } from "@/lib/queries";
 
 interface ActivityHeatmapProps {
   year?: number;
@@ -25,26 +25,18 @@ export default function ActivityHeatmap({ year = new Date().getFullYear() }: Act
     setMounted(true);
   }, []);
 
-  const [habits, setHabits] = useState<Habit[]>([]);
-  const [sessions, setSessions] = useState<{ completed_at: string; duration_seconds: number }[]>([]);
+  const { habits } = useHabits();
+  const { sessions: allSessions } = useSessions();
+  const [habitSessions, setHabitSessions] = useState<{ completed_at: string; duration_seconds: number }[]>([]);
 
-  // Load habits
+  // Only fetch a per-habit filtered list on demand — the "All" view reuses the
+  // already-cached full sessions list instead of a fresh network round trip.
   useEffect(() => {
-    if (!mounted) return;
-    getHabits().then(setHabits);
-  }, [mounted]);
-
-  // Load sessions based on filter
-  useEffect(() => {
-    if (!mounted) return;
-    const loadSessions = async () => {
-      const data = selectedHabitId
-        ? await getSessionsByHabit(selectedHabitId)
-        : await getSessions();
-      setSessions(data);
-    };
-    loadSessions();
+    if (!mounted || !selectedHabitId) return;
+    getSessionsByHabit(selectedHabitId).then(setHabitSessions);
   }, [mounted, selectedHabitId]);
+
+  const sessions = selectedHabitId ? habitSessions : allSessions;
 
   const data = useMemo(() => {
     if (!mounted || sessions.length === 0 && !mounted) return { grid: [], totalDays: 0, totalMinutes: 0 };

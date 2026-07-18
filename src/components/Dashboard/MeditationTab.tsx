@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { getHabits, type Habit } from "@/lib/habits";
+import { useHabits } from "@/lib/queries";
 import { saveSession, toggleFavorite, type SubtitleEntry } from "@/lib/sessions";
 import { track } from "@/lib/mixpanel";
 import { useUserPlan } from "@/hooks/useUserPlan";
@@ -193,7 +193,7 @@ export default function MeditationTab({
   }, [llmFocusTask]);
 
   // App state
-  const [habits, setHabits] = useState<Habit[]>([]);
+  const { habits } = useHabits();
   const [status, setStatus] = useState<
     "idle" | "generating" | "playing" | "post_reset" | "focus_timer" | "session_complete" | "failed"
   >(
@@ -279,24 +279,19 @@ export default function MeditationTab({
   // ── Active session context (for sidebar persistence) ──
   const { setSession, updateTimer } = useActiveSession();
 
-  // Load habits
+  // Auto-select a relevant habit once the cached habits are available
   useEffect(() => {
-    async function loadHabits() {
-      const list = await getHabits();
-      setHabits(list);
-      if (list.length > 0) {
-        const found = list.find(
-          (h) =>
-            h.name.toLowerCase().includes("meditation") ||
-            h.name.toLowerCase().includes("breath") ||
-            h.name.toLowerCase().includes("focus")
-        );
-        // Don't clobber a habit already chosen (e.g. restored from a saved session).
-        setSelectedHabitId((prev) => prev || (found ? found.id : list[0].id));
-      }
+    if (habits.length > 0) {
+      const found = habits.find(
+        (h) =>
+          h.name.toLowerCase().includes("meditation") ||
+          h.name.toLowerCase().includes("breath") ||
+          h.name.toLowerCase().includes("focus")
+      );
+      // Don't clobber a habit already chosen (e.g. restored from a saved session).
+      setSelectedHabitId((prev) => prev || (found ? found.id : habits[0].id));
     }
-    loadHabits();
-  }, []);
+  }, [habits]);
 
   // When pre-filled from the dashboard, skip the setup form and generate immediately.
   // A ref guard prevents a duplicate job (e.g. React strict-mode double effects).
