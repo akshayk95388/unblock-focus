@@ -22,6 +22,14 @@ export default function HistoryTab({ onReplaySession }: HistoryTabProps) {
   const { planType } = useUserPlan();
   const userIsPro = isPro(planType);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
+
+  // Reset page when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filter]);
+
   useEffect(() => {
     async function loadData() {
       const [sessionsData, habitsData] = await Promise.all([
@@ -57,14 +65,44 @@ export default function HistoryTab({ onReplaySession }: HistoryTabProps) {
       ? sessions.filter((s) => s.is_favorite)
       : sessions;
 
-  // Group by date string
-  const groupedSessions = filteredSessions.reduce((acc, session) => {
+  // Group by date string first so a single day's sessions are never split
+  // across two pages (which would make the per-day "total mins" inaccurate).
+  const groupedByDate = filteredSessions.reduce((acc, session) => {
     const d = new Date(session.completed_at);
     const dateKey = d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
     if (!acc[dateKey]) acc[dateKey] = [];
     acc[dateKey].push(session);
     return acc;
   }, {} as Record<string, SessionRecord[]>);
+  const dateEntries = Object.entries(groupedByDate);
+
+  // Bucket whole date-groups into pages, filling each page to roughly
+  // ITEMS_PER_PAGE sessions without splitting a day across pages.
+  const pages: Array<Array<[string, SessionRecord[]]>> = [];
+  let pageEntries: Array<[string, SessionRecord[]]> = [];
+  let pageCount = 0;
+  for (const entry of dateEntries) {
+    const [, daySessions] = entry;
+    if (pageCount > 0 && pageCount + daySessions.length > ITEMS_PER_PAGE) {
+      pages.push(pageEntries);
+      pageEntries = [];
+      pageCount = 0;
+    }
+    pageEntries.push(entry);
+    pageCount += daySessions.length;
+  }
+  if (pageEntries.length > 0) pages.push(pageEntries);
+
+  const totalPages = pages.length;
+  const safeCurrentPage = Math.min(currentPage, Math.max(totalPages, 1));
+  const groupedSessions = pages[safeCurrentPage - 1] ?? [];
+
+  // Clamp page if data shrinks (e.g. a filter change reduces the page count)
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalPages, currentPage]);
 
   // Track the replay index for guided sessions (for free-tier gating)
   // Build a separate counter for guided sessions with audio
@@ -139,7 +177,7 @@ export default function HistoryTab({ onReplaySession }: HistoryTabProps) {
         </div>
       ) : (
         <div className="space-y-12">
-          {Object.entries(groupedSessions).map(([dateLabel, daySessions]) => {
+          {groupedSessions.map(([dateLabel, daySessions]) => {
             const totalMins = Math.round(
               daySessions.reduce((sum, s) => sum + s.duration_seconds, 0) / 60
             );
@@ -247,6 +285,35 @@ export default function HistoryTab({ onReplaySession }: HistoryTabProps) {
               </div>
             );
           })}
+
+          {/* Pagination controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-6 border-t border-outline-variant/10">
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={safeCurrentPage === 1}
+                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider bg-surface-container-low text-on-surface border border-outline-variant/10 hover:bg-surface-container hover:border-outline-variant/35 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                </svg>
+                <span>Previous</span>
+              </button>
+              <span className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">
+                Page {safeCurrentPage} of {totalPages}
+              </span>
+              <button
+                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                disabled={safeCurrentPage === totalPages}
+                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider bg-surface-container-low text-on-surface border border-outline-variant/10 hover:bg-surface-container hover:border-outline-variant/35 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+              >
+                <span>Next</span>
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                </svg>
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
