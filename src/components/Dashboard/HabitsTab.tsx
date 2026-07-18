@@ -166,7 +166,7 @@ export default function HabitsTab({ onAddHabit }: HabitsTabProps) {
       // Optimistic update — remove immediately, then confirm with the server
       habitsResource.mutate((prev) => (prev ?? []).filter((h) => h.id !== id));
       if (!(await deleteHabit(id))) {
-        habitsResource.revalidate();
+        habitsResource.revalidate(true);
       }
     }
   };

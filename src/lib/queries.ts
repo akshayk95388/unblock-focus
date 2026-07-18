@@ -8,9 +8,9 @@ import { createResource, useResource } from "@/lib/resourceStore";
 import { getSessions, getStreak, type SessionRecord } from "@/lib/sessions";
 import { getHabits, type Habit } from "@/lib/habits";
 
-export const sessionsResource = createResource<SessionRecord[]>(getSessions);
-export const habitsResource = createResource<Habit[]>(getHabits);
-export const streakResource = createResource<number>(getStreak);
+export const sessionsResource = createResource<SessionRecord[]>(getSessions, 600000); // 10m TTL
+export const habitsResource = createResource<Habit[]>(getHabits, 600000); // 10m TTL
+export const streakResource = createResource<number>(getStreak, 600000); // 10m TTL
 
 /** Clears all cached data — call on sign-out so the next user never sees a stale session's data. */
 export function resetQueryCaches() {
@@ -21,9 +21,9 @@ export function resetQueryCaches() {
 
 /** Revalidates all resources in the background — call after a mutation (new session, habit change) so every consumer picks up the change without a full reload. */
 export function refreshQueryCaches() {
-  sessionsResource.revalidate();
-  habitsResource.revalidate();
-  streakResource.revalidate();
+  sessionsResource.revalidate(true);
+  habitsResource.revalidate(true);
+  streakResource.revalidate(true);
 }
 
 export function useSessions() {

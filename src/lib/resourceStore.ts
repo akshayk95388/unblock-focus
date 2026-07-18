@@ -24,17 +24,18 @@ export interface Resource<T> {
   isLoading: () => boolean;
   /** Fetch if not already cached; returns the in-flight/cached promise otherwise. */
   load: () => Promise<T>;
-  /** Re-fetch in the background without clearing the currently cached value. */
-  revalidate: () => Promise<T>;
+  /** Re-fetch in the background without clearing the currently cached value. Set force=true to bypass TTL. */
+  revalidate: (force?: boolean) => Promise<T>;
   /** Directly update the cached value (e.g. after an optimistic mutation). */
   mutate: (updater: T | ((prev: T | undefined) => T)) => void;
   /** Clear the cache entirely (e.g. on sign-out). */
   reset: () => void;
 }
 
-export function createResource<T>(fetcher: Fetcher<T>): Resource<T> {
+export function createResource<T>(fetcher: Fetcher<T>, ttlMs?: number): Resource<T> {
   let data: T | undefined;
   let loading = true;
+  let lastFetched = 0;
   let inFlight: Promise<T> | null = null;
   const listeners = new Set<Listener>();
 
@@ -46,6 +47,7 @@ export function createResource<T>(fetcher: Fetcher<T>): Resource<T> {
     const promise = fetcher()
       .then((result) => {
         data = result;
+        lastFetched = Date.now();
         loading = false;
         inFlight = null;
         notify();
@@ -73,17 +75,22 @@ export function createResource<T>(fetcher: Fetcher<T>): Resource<T> {
       if (inFlight) return inFlight;
       return runFetch();
     },
-    revalidate() {
+    revalidate(force = false) {
+      if (!force && data !== undefined && Date.now() - lastFetched < (ttlMs ?? 0)) {
+        return Promise.resolve(data);
+      }
       if (inFlight) return inFlight;
       return runFetch();
     },
     mutate(updater) {
       data = typeof updater === "function" ? (updater as (prev: T | undefined) => T)(data) : updater;
+      lastFetched = Date.now(); // Mutated data is fresh
       notify();
     },
     reset() {
       data = undefined;
       loading = true;
+      lastFetched = 0;
       inFlight = null;
       notify();
     },
@@ -103,7 +110,7 @@ export function useResource<T>(resource: Resource<T>) {
     }
   }, [resource]);
 
-  const refetch = useCallback(() => resource.revalidate(), [resource]);
+  const refetch = useCallback(() => resource.revalidate(true), [resource]);
 
   return { data, loading: isLoading && data === undefined, refetch } as const;
 }
