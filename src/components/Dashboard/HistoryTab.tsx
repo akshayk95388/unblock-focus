@@ -65,41 +65,36 @@ export default function HistoryTab({ onReplaySession }: HistoryTabProps) {
       ? sessions.filter((s) => s.is_favorite)
       : sessions;
 
-  // Group by date string first so a single day's sessions are never split
-  // across two pages (which would make the per-day "total mins" inaccurate).
-  const groupedByDate = filteredSessions.reduce((acc, session) => {
-    const d = new Date(session.completed_at);
-    const dateKey = d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+  // Flat pagination — exactly ITEMS_PER_PAGE sessions per page (a date's
+  // sessions can span two pages).
+  const totalPages = Math.ceil(filteredSessions.length / ITEMS_PER_PAGE) || 1;
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const startIndex = (safeCurrentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedSessions = filteredSessions.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+  const dateKeyFor = (iso: string) =>
+    new Date(iso).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+
+  // Full per-day totals computed over ALL filtered sessions (not just the
+  // current page) so the "total mins" shown stays accurate even when a
+  // day's sessions are split across two pages.
+  const dayTotalSecondsMap = filteredSessions.reduce((acc, session) => {
+    const dateKey = dateKeyFor(session.completed_at);
+    acc[dateKey] = (acc[dateKey] || 0) + session.duration_seconds;
+    return acc;
+  }, {} as Record<string, number>);
+
+  // Group the current page's sessions by date for display
+  const groupedSessions = paginatedSessions.reduce((acc, session) => {
+    const dateKey = dateKeyFor(session.completed_at);
     if (!acc[dateKey]) acc[dateKey] = [];
     acc[dateKey].push(session);
     return acc;
   }, {} as Record<string, SessionRecord[]>);
-  const dateEntries = Object.entries(groupedByDate);
-
-  // Bucket whole date-groups into pages, filling each page to roughly
-  // ITEMS_PER_PAGE sessions without splitting a day across pages.
-  const pages: Array<Array<[string, SessionRecord[]]>> = [];
-  let pageEntries: Array<[string, SessionRecord[]]> = [];
-  let pageCount = 0;
-  for (const entry of dateEntries) {
-    const [, daySessions] = entry;
-    if (pageCount > 0 && pageCount + daySessions.length > ITEMS_PER_PAGE) {
-      pages.push(pageEntries);
-      pageEntries = [];
-      pageCount = 0;
-    }
-    pageEntries.push(entry);
-    pageCount += daySessions.length;
-  }
-  if (pageEntries.length > 0) pages.push(pageEntries);
-
-  const totalPages = pages.length;
-  const safeCurrentPage = Math.min(currentPage, Math.max(totalPages, 1));
-  const groupedSessions = pages[safeCurrentPage - 1] ?? [];
 
   // Clamp page if data shrinks (e.g. a filter change reduces the page count)
   useEffect(() => {
-    if (totalPages > 0 && currentPage > totalPages) {
+    if (currentPage > totalPages) {
       setCurrentPage(totalPages);
     }
   }, [totalPages, currentPage]);
@@ -177,10 +172,8 @@ export default function HistoryTab({ onReplaySession }: HistoryTabProps) {
         </div>
       ) : (
         <div className="space-y-12">
-          {groupedSessions.map(([dateLabel, daySessions]) => {
-            const totalMins = Math.round(
-              daySessions.reduce((sum, s) => sum + s.duration_seconds, 0) / 60
-            );
+          {Object.entries(groupedSessions).map(([dateLabel, daySessions]) => {
+            const totalMins = Math.round((dayTotalSecondsMap[dateLabel] ?? 0) / 60);
 
             return (
               <div key={dateLabel} className="space-y-4">
