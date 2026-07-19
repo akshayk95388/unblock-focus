@@ -44,11 +44,32 @@ export async function seedDefaults(): Promise<void> {
   await supabase.from("habits").insert(habitsToInsert);
 }
 
+export async function seedCustomHabits(
+  habitsList: { name: string; emoji: string; color: string; daily_goal_minutes: number }[]
+): Promise<void> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return;
+
+  const habitsToInsert = habitsList.map((h) => ({
+    ...h,
+    user_id: user.id,
+  }));
+
+  const { error } = await supabase.from("habits").insert(habitsToInsert);
+  if (error) {
+    console.error("Error seeding custom habits:", error);
+  }
+}
+
 export async function getHabits(): Promise<Habit[]> {
   const supabase = createClient();
 
-  // Seed defaults on first call
-  await seedDefaults();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
 
   const { data, error } = await supabase
     .from("habits")

@@ -11,6 +11,7 @@ interface CachedPlan {
   subscriptionStatus: string | null;
   subscriptionId: string | null;
   polarCustomerId: string | null;
+  preferences: Record<string, any>;
 }
 
 interface UserPlan extends CachedPlan {
@@ -48,6 +49,7 @@ const DEFAULT_PLAN: CachedPlan = {
   subscriptionStatus: null,
   subscriptionId: null,
   polarCustomerId: null,
+  preferences: {},
 };
 
 const UserPlanContext = createContext<UserPlan>({
@@ -67,7 +69,7 @@ export function UserPlanProvider({ children }: { children: React.ReactNode }) {
       const supabase = createClient();
       const { data, error } = await supabase
         .from("profiles")
-        .select("plan_type, credits, subscription_status, subscription_id, polar_customer_id")
+        .select("plan_type, credits, subscription_status, subscription_id, polar_customer_id, preferences")
         .eq("id", userId)
         .single();
 
@@ -85,6 +87,7 @@ export function UserPlanProvider({ children }: { children: React.ReactNode }) {
           subscriptionStatus: data.subscription_status ?? null,
           subscriptionId: data.subscription_id ?? null,
           polarCustomerId: data.polar_customer_id ?? null,
+          preferences: (data.preferences as Record<string, any>) ?? {},
         };
         setPlan(next);
         writeCachedPlan(userId, next);

@@ -26,6 +26,8 @@ import { track } from "@/lib/mixpanel";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { isPro, hasCredits } from "@/lib/plans";
 import { habitsResource, refreshQueryCaches } from "@/lib/queries";
+import { useAuth } from "@/components/AuthProvider";
+import OnboardingWizard from "@/components/Dashboard/OnboardingWizard";
 
 export default function DashboardPage() {
   return (
@@ -36,6 +38,17 @@ export default function DashboardPage() {
 }
 
 function DashboardContent() {
+  const { user, loading: authLoading } = useAuth();
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      setShowOnboarding(!user.user_metadata?.onboarding_completed);
+    } else {
+      setShowOnboarding(false);
+    }
+  }, [user, authLoading]);
+
   const [currentTab, setCurrentTab] = useState("dashboard");
   const [showHabitManager, setShowHabitManager] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -228,7 +241,7 @@ function DashboardContent() {
     setModalFocusDuration(25);
     setModalSelectedHabitId("");
     setAutoStartFocus(false);
-    
+
     // If replaying, return to the tab they came from
     if (pendingReplay) {
       setCurrentTab(pendingReplay.returnTab);
@@ -304,7 +317,7 @@ function DashboardContent() {
       refreshQueryCaches();
       setRefreshKey((k) => k + 1);
     }
-    
+
     // Go back to the dashboard/home tab upon completion/exit
     if (currentTab === "breathing") {
       setCurrentTab("dashboard");
@@ -374,7 +387,7 @@ function DashboardContent() {
             currentTab={currentTab}
             onResumeSession={handleResumeSession}
           />
-          <DailyGoalProgress />
+          <DailyGoalProgress onViewMore={() => setCurrentTab("goals")} />
         </>
       }
     >
@@ -577,8 +590,8 @@ function DashboardContent() {
 
                 {/* Mobile-only inline widgets */}
                 <div className="lg:hidden mt-12 pt-8 border-t border-outline-variant/10 space-y-8">
-                  <DailyGoalProgress />
-                  
+                  <DailyGoalProgress onViewMore={() => setCurrentTab("goals")} />
+
                   {/* Insight card */}
                   <div className="bg-surface-container-low/50 p-6 rounded-2xl border border-outline-variant/10 relative overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
@@ -752,8 +765,8 @@ function DashboardContent() {
                 {session.type === "guided"
                   ? "Guided Session Active"
                   : session.type === "focus"
-                  ? "Focus Session Active"
-                  : "Breathing Active"}
+                    ? "Focus Session Active"
+                    : "Breathing Active"}
               </span>
               {!session.isGenerating && (
                 <span className="text-sm font-medium font-mono text-on-surface tabular-nums">
@@ -773,6 +786,11 @@ function DashboardContent() {
             Return →
           </span>
         </button>
+      )}
+
+      {/* Onboarding Wizard for new users */}
+      {showOnboarding && (
+        <OnboardingWizard onComplete={() => setShowOnboarding(false)} />
       )}
 
     </DashboardLayout>

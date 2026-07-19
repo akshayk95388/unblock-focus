@@ -84,7 +84,7 @@ export default function HabitManager({ onClose, onCreated }: HabitManagerProps) 
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Reading, Building App, Tweeting..."
+            placeholder="e.g. Coding, Writing, Studying, Planning, Fitness..."
             className="w-full bg-surface-container-highest border-0 rounded-xl px-4 py-3 text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none focus:ring-2 focus:ring-primary-container/50 text-sm"
             autoFocus
           />

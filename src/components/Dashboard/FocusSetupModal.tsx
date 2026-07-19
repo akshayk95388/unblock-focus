@@ -7,6 +7,7 @@ import { isPro, canUseFocusDuration } from "@/lib/plans";
 import { track } from "@/lib/mixpanel";
 import CustomSelect from "@/components/ui/CustomSelect";
 import PaywallModal from "@/components/ui/PaywallModal";
+import { useAuth } from "@/components/AuthProvider";
 
 interface FocusSetupModalProps {
   isOpen: boolean;
@@ -28,6 +29,17 @@ export default function FocusSetupModal({
 
   const { planType } = useUserPlan();
   const userIsPro = isPro(planType);
+  const { user } = useAuth();
+
+  const getPlaceholderText = () => {
+    const role = user?.user_metadata?.role?.toLowerCase();
+    if (role === "developer") return "e.g. Debug the auth middleware callback";
+    if (role === "writer") return "e.g. Write 500 words of my new blog post";
+    if (role === "student") return "e.g. Read Chapter 4 of my Biology textbook";
+    if (role === "designer") return "e.g. Design login layout with glassmorphic borders";
+    if (role === "founder") return "e.g. Refine sales pitch presentation for investors";
+    return "e.g. Write the intro section of my pitch deck";
+  };
 
   // Auto-select a relevant habit when the modal opens and habits are available
   useEffect(() => {
@@ -105,7 +117,7 @@ export default function FocusSetupModal({
                 type="text"
                 value={workTask}
                 onChange={(e) => setWorkTask(e.target.value)}
-                placeholder="e.g. Write the intro section of my pitch deck"
+                placeholder={getPlaceholderText()}
                 className="w-full bg-surface-container-highest border-none rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50 text-on-surface placeholder:text-on-surface-variant/40"
                 autoFocus
               />

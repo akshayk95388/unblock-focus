@@ -130,6 +130,9 @@ export async function toggleFavorite(
 export async function getSessions(): Promise<SessionRecord[]> {
   const supabase = createClient();
 
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
   const { data, error } = await supabase
     .from("sessions")
     .select("*")
@@ -149,6 +152,9 @@ export async function getSessionsByHabit(
 ): Promise<SessionRecord[]> {
   const supabase = createClient();
 
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
   const { data, error } = await supabase
     .from("sessions")
     .select("*")
@@ -166,6 +172,9 @@ export async function getSessionsByHabit(
 // Calculate current streak (consecutive days with at least one completed session)
 export async function getStreak(): Promise<number> {
   const supabase = createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return 0;
 
   const { data, error } = await supabase
     .from("sessions")
