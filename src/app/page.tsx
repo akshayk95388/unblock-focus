@@ -629,9 +629,9 @@ export default function Home() {
       {/* ===== Footer ===== */}
       <footer className="border-t border-outline-variant/10">
         <div className="max-w-7xl mx-auto px-6 md:px-12 py-12">
-          {/* Top row: Brand + Main Nav */}
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 mb-8">
-            {/* Brand */}
+          {/* Top row: Brand (Left) + Nav Links (Middle) */}
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 mb-8 relative">
+            {/* Brand (Left) */}
             <div className="space-y-2">
               <span className="text-lg font-bold tracking-tighter text-primary-container">
                 Unblock
@@ -641,27 +641,30 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Nav Links */}
-            <nav className="flex flex-wrap items-center gap-x-8 gap-y-3">
+            {/* Nav Links (Middle) */}
+            <nav className="flex items-center gap-8 md:absolute md:left-1/2 md:-translate-x-1/2">
               <a
                 href="#protocol"
-                className="text-xs font-medium text-on-surface-variant hover:text-on-surface transition-colors"
+                className="text-xs font-medium text-on-surface-variant hover:text-on-surface transition-colors duration-300"
               >
                 How it works
               </a>
               <a
                 href="#features"
-                className="text-xs font-medium text-on-surface-variant hover:text-on-surface transition-colors"
+                className="text-xs font-medium text-on-surface-variant hover:text-on-surface transition-colors duration-300"
               >
                 Features
               </a>
               <a
                 href="mailto:support@unblockfocus.com"
-                className="text-xs font-medium text-on-surface-variant hover:text-on-surface transition-colors"
+                className="text-xs font-medium text-on-surface-variant hover:text-on-surface transition-colors duration-300"
               >
                 Contact
               </a>
             </nav>
+
+            {/* Empty right placeholder for flex balance on desktop */}
+            <div className="hidden md:block w-48" />
           </div>
 
           {/* Gradient Divider */}

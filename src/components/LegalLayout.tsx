@@ -74,8 +74,8 @@ export default function LegalLayout({
       {/* ===== Footer ===== */}
       <footer className="border-t border-outline-variant/10">
         <div className="max-w-7xl mx-auto px-6 md:px-12 py-12">
-          {/* Top row: Brand + Nav */}
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 mb-8">
+          {/* Top row: Brand (Left) + Nav Links (Middle) */}
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 mb-8 relative">
             {/* Brand */}
             <div className="space-y-2">
               <Link
@@ -89,27 +89,30 @@ export default function LegalLayout({
               </p>
             </div>
 
-            {/* Nav Links */}
-            <nav className="flex flex-wrap items-center gap-x-8 gap-y-3">
+            {/* Nav Links (Middle) */}
+            <nav className="flex items-center gap-8 md:absolute md:left-1/2 md:-translate-x-1/2">
               <Link
                 href="/#protocol"
-                className="text-xs font-medium text-on-surface-variant hover:text-on-surface transition-colors"
+                className="text-xs font-medium text-on-surface-variant hover:text-on-surface transition-colors duration-300"
               >
                 How it works
               </Link>
               <Link
                 href="/#features"
-                className="text-xs font-medium text-on-surface-variant hover:text-on-surface transition-colors"
+                className="text-xs font-medium text-on-surface-variant hover:text-on-surface transition-colors duration-300"
               >
                 Features
               </Link>
               <a
                 href="mailto:support@unblockfocus.com"
-                className="text-xs font-medium text-on-surface-variant hover:text-on-surface transition-colors"
+                className="text-xs font-medium text-on-surface-variant hover:text-on-surface transition-colors duration-300"
               >
                 Contact
               </a>
             </nav>
+
+            {/* Empty right placeholder for flex balance on desktop */}
+            <div className="hidden md:block w-48" />
           </div>
 
           {/* Divider */}
