@@ -196,6 +196,11 @@ MOCK_PROSE_MAP = {
     "anxiety": MOCK_PROSE_ANXIETY,
     "sleep": MOCK_PROSE_SLEEP,
     "focus": MOCK_PROSE_FOCUS,
+    "presentation": MOCK_PROSE_ANXIETY,
+    "burnout": MOCK_PROSE_SLEEP,
+    "distraction": MOCK_PROSE_FOCUS,
+    "deadline": MOCK_PROSE_ANXIETY,
+    "general": MOCK_PROSE_FOCUS,
 }
 
 
@@ -204,15 +209,15 @@ MOCK_PROSE_MAP = {
 def make_mock_classifier(expected_type: str):
     """Create a mock classifier that returns the given type."""
     import json
-    async def mock_classifier_node(state):
+    async def mock_classifier_node(state, config=None):
         from engine.nodes.n01_classifier import scale_sections
         from engine.profiles.pacing import PACING_PROFILES, SPEECH_DENSITY
         from engine.profiles.section_templates import SECTION_TEMPLATES
 
         meditation_type = expected_type
-        template = SECTION_TEMPLATES[meditation_type]
-        pacing = PACING_PROFILES[meditation_type]
-        density = SPEECH_DENSITY[meditation_type]
+        template = SECTION_TEMPLATES.get(meditation_type, SECTION_TEMPLATES["general"])
+        pacing = PACING_PROFILES.get(meditation_type, PACING_PROFILES["general"])
+        density = SPEECH_DENSITY.get(meditation_type, SPEECH_DENSITY["general"])
         total_s = state["duration_mins"] * 60
         target_speech_s = total_s * density
         target_words = int((target_speech_s / 60) * pacing["wpm"])
@@ -230,9 +235,9 @@ def make_mock_classifier(expected_type: str):
 
 def make_mock_script_generator(med_type: str):
     """Create a mock script generator that returns pre-built prose."""
-    async def mock_script_generator_node(state):
+    async def mock_script_generator_node(state, config=None):
         from engine.nodes.n02_script_generator import build_timeline_from_prose
-        prose = MOCK_PROSE_MAP[med_type]
+        prose = MOCK_PROSE_MAP.get(med_type, MOCK_PROSE_ANXIETY)
         timeline = build_timeline_from_prose(prose, state)
         return {
             "timeline": timeline,
@@ -246,9 +251,9 @@ def make_mock_script_generator(med_type: str):
 # ── E2E tests with mocked LLM ─────────────────────────────────────
 
 E2E_CASES = [
-    ("anxiety before a job interview", 3, "anxiety"),
-    ("racing thoughts before bed",     5, "sleep"),
-    ("can't focus while working",      3, "focus"),
+    ("presentation before a job interview", 3, "presentation"),
+    ("racing thoughts before bed",         5, "burnout"),
+    ("can't focus while working",          3, "distraction"),
 ]
 
 
@@ -263,8 +268,8 @@ async def test_full_pipeline_mock_llm(stressor, duration_mins, expected_type):
     mock_classifier = make_mock_classifier(expected_type)
     mock_script_gen = make_mock_script_generator(expected_type)
 
-    with patch("engine.pipeline.classifier_node", mock_classifier), \
-         patch("engine.pipeline.script_generator_node", mock_script_gen):
+    with patch("engine.graphs.script_generator.classifier_node", mock_classifier), \
+         patch("engine.graphs.script_generator.script_generator_node", mock_script_gen):
 
         result = await run_full_pipeline(
             stressor=stressor,
@@ -306,8 +311,8 @@ async def test_pipeline_produces_valid_mp3():
     mock_classifier = make_mock_classifier("anxiety")
     mock_script_gen = make_mock_script_generator("anxiety")
 
-    with patch("engine.pipeline.classifier_node", mock_classifier), \
-         patch("engine.pipeline.script_generator_node", mock_script_gen):
+    with patch("engine.graphs.script_generator.classifier_node", mock_classifier), \
+         patch("engine.graphs.script_generator.script_generator_node", mock_script_gen):
 
         result = await run_full_pipeline(
             stressor="test anxiety",
@@ -339,8 +344,8 @@ async def test_pipeline_subtitles_have_timing():
     mock_classifier = make_mock_classifier("focus")
     mock_script_gen = make_mock_script_generator("focus")
 
-    with patch("engine.pipeline.classifier_node", mock_classifier), \
-         patch("engine.pipeline.script_generator_node", mock_script_gen):
+    with patch("engine.graphs.script_generator.classifier_node", mock_classifier), \
+         patch("engine.graphs.script_generator.script_generator_node", mock_script_gen):
 
         result = await run_full_pipeline(
             stressor="need to focus",
@@ -370,7 +375,7 @@ async def test_pipeline_error_handling():
     async def failing_classifier(state):
         raise RuntimeError("Simulated classifier failure")
 
-    with patch("engine.pipeline.classifier_node", failing_classifier):
+    with patch("engine.graphs.script_generator.classifier_node", failing_classifier):
         result = await run_full_pipeline(
             stressor="test",
             duration_mins=3,

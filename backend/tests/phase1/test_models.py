@@ -99,15 +99,15 @@ def test_section_template_weights_sum_to_one():
 
 
 def test_section_templates_cover_all_meditation_types():
-    """Templates must exist for all three meditation types."""
-    for med_type in ["anxiety", "sleep", "focus"]:
+    """Templates must exist for all valid stressor categories."""
+    for med_type in ["deadline", "presentation", "burnout", "distraction", "overthinking", "imposter", "exam", "general"]:
         assert med_type in SECTION_TEMPLATES, f"Missing template for '{med_type}'"
 
 
 def test_section_templates_have_arrival_and_closing():
-    """Every meditation type starts with 'arrival' and ends with 'closing'."""
+    """Every meditation type starts with grounding/arrival and ends with closing."""
     for med_type, sections in SECTION_TEMPLATES.items():
-        assert sections[0].name == "arrival", f"{med_type} doesn't start with 'arrival'"
+        assert sections[0].name in ["grounding", "arrival"], f"{med_type} doesn't start with 'grounding' or 'arrival'"
         assert sections[-1].name == "closing", f"{med_type} doesn't end with 'closing'"
 
 
@@ -141,7 +141,7 @@ def test_speech_density_values_in_range():
 
 def test_pacing_profiles_cover_all_types():
     """Pacing profiles and speech density must exist for all types."""
-    for med_type in ["anxiety", "sleep", "focus"]:
+    for med_type in ["deadline", "presentation", "burnout", "distraction"]:
         assert med_type in PACING_PROFILES
         assert med_type in SPEECH_DENSITY
 

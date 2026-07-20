@@ -53,7 +53,18 @@ implementation_plan.md
 venv
 __pycache__/
 *.py[cod]
+media/
 backend/media/
+meditation.db
+*.db
 backend/meditation.db
 backend/.pytest_cache/
 docs
+
+# benchmark & temporary comparison artifacts
+script_comparison.csv
+old_results.json
+updated_results.json
+run_comparison_experiment.py
+compile_comparison_csv.py
+build_side_by_side_report.py

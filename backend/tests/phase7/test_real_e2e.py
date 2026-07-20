@@ -16,6 +16,9 @@ from pathlib import Path
 from pydub import AudioSegment
 
 from engine.pipeline import run_full_pipeline
+from engine.prompts.classifier_prompts import VALID_TYPES
+
+pytestmark = pytest.mark.real_e2e
 
 
 @pytest.mark.asyncio
@@ -81,7 +84,7 @@ async def test_real_e2e_anxiety_3min():
     print(f"{'='*60}\n")
 
     # Assertions
-    assert result["meditation_type"] in ("anxiety", "sleep", "focus")
+    assert result["meditation_type"] in VALID_TYPES
     assert delta_s <= 30.0, f"Duration error {delta_s:.1f}s exceeds ±30s tolerance"
     assert result.get("total_segments", 0) >= 8, "Too few segments"
     assert 150 <= bitrate <= 220, f"Bitrate {bitrate}kbps out of range"
@@ -121,5 +124,5 @@ async def test_real_e2e_sleep_5min():
     print(f"{'='*60}\n")
 
     assert result["status"] == "complete"
-    assert result.get("meditation_type") in ("anxiety", "sleep", "focus")
+    assert result.get("meditation_type") in VALID_TYPES
     assert delta_s <= 30.0, f"Duration error {delta_s:.1f}s exceeds ±30s tolerance"

@@ -45,36 +45,17 @@ async def run_full_pipeline(
     }
 
     try:
-        # Step 1: Classify
-        logger.info(f"[{job_id[:8]}] Classifying: '{stressor[:50]}'")
-        result = await classifier_node(state)
-        state.update(result)
-        logger.info(f"[{job_id[:8]}] Type: {state['meditation_type']}")
-
-        # Step 2: Generate script (with validation retry loop)
-        for attempt in range(3):
-            logger.info(f"[{job_id[:8]}] Generating script (attempt {attempt + 1})")
-            result = await script_generator_node(state)
-            state.update(result)
-
-            # Step 3: Validate
-            result = await validator_node(state)
-            state.update(result)
-
-            issues = state.get("validation_issues", [])
-            if not issues:
-                logger.info(f"[{job_id[:8]}] Script validated OK")
-                break
-
-            route = validator_router(state)
-            if route == "tts_generator":
-                logger.warning(
-                    f"[{job_id[:8]}] Proceeding with {len(issues)} issues "
-                    f"after {state.get('fix_attempts', 0)} attempts"
-                )
-                break
-
-            logger.warning(f"[{job_id[:8]}] Retrying: {issues}")
+        # Steps 1-3: Execute LangGraph Script Generator Agent (Classifier -> Script Generator -> Validator)
+        logger.info(f"[{job_id[:8]}] Running Script Generator Graph Agent for: '{stressor[:50]}'")
+        from engine.graphs.script_generator import run_script_generator_agent
+        script_agent_result = await run_script_generator_agent(
+            stressor=stressor,
+            duration_mins=duration_mins,
+            voice_key=voice_key,
+            music_key=music_key,
+            job_id=job_id,
+        )
+        state.update(script_agent_result)
 
         timeline = state["timeline"]
         speech_count = sum(1 for e in timeline.events

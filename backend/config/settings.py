@@ -62,5 +62,15 @@ class Settings(BaseSettings):
         return Path(self.assets_dir)
 
 
+import os
+from functools import lru_cache
+
+
+@lru_cache()
 def get_settings() -> Settings:
-    return Settings()
+    settings = Settings()
+    if settings.langchain_api_key:
+        os.environ["LANGCHAIN_API_KEY"] = settings.langchain_api_key
+        os.environ["LANGCHAIN_TRACING_V2"] = "true" if settings.langchain_tracing_v2 else "false"
+        os.environ["LANGCHAIN_PROJECT"] = settings.langchain_project
+    return settings

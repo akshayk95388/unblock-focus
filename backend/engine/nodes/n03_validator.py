@@ -28,8 +28,8 @@ def validate_timeline(timeline: MeditationTimeline) -> List[str]:
         words = event.text.split()
 
         # Check sentence length
-        if len(words) > 20:
-            issues.append(f"Line {i}: {len(words)} words (max 20): '{event.text[:50]}'")
+        if len(words) > 18:
+            issues.append(f"Line {i}: {len(words)} words (max 18): '{event.text[:50]}'")
 
         # Check for forbidden punctuation
         if re.search(r'[:;]', event.text):

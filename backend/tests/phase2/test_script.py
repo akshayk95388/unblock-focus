@@ -128,29 +128,29 @@ SAMPLE_PROSE = {
 
 
 def test_parse_type_valid_json():
-    assert parse_type('{"type": "anxiety"}') == "anxiety"
-    assert parse_type('{"type": "sleep"}') == "sleep"
-    assert parse_type('{"type": "focus"}') == "focus"
+    assert parse_type('{"type": "deadline"}') == "deadline"
+    assert parse_type('{"type": "burnout"}') == "burnout"
+    assert parse_type('{"type": "distraction"}') == "distraction"
 
 
 def test_parse_type_fallback_keyword():
-    assert parse_type("The type is sleep based on the stressor") == "sleep"
-    assert parse_type("This is focus related") == "focus"
+    assert parse_type("The type is burnout based on the stressor") == "burnout"
+    assert parse_type("This is distraction related") == "distraction"
 
 
-def test_parse_type_default_to_anxiety():
-    assert parse_type("gibberish response") == "anxiety"
-    assert parse_type("") == "anxiety"
+def test_parse_type_default_to_general():
+    assert parse_type("gibberish response") == "general"
+    assert parse_type("") == "general"
 
 
 def test_scale_sections_produces_correct_count():
-    template = SECTION_TEMPLATES["anxiety"]
+    template = SECTION_TEMPLATES["deadline"]
     plans = scale_sections(template, 300)
     assert len(plans) == len(template)
 
 
 def test_scale_sections_durations_sum_to_total():
-    template = SECTION_TEMPLATES["anxiety"]
+    template = SECTION_TEMPLATES["deadline"]
     plans = scale_sections(template, 300)
     total = sum(p["duration_s"] for p in plans)
     assert abs(total - 300) < 1.0
