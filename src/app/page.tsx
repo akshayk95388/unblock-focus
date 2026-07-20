@@ -116,9 +116,12 @@ export default function Home() {
       {/* ===== Header ===== */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-6 md:px-12 h-16 flex items-center justify-between">
-          <span className="text-xl font-bold tracking-tighter text-primary-container">
+          <Link
+            href="/"
+            className="text-xl font-bold tracking-tighter text-primary-container hover:opacity-80 transition-opacity"
+          >
             Unblock
-          </span>
+          </Link>
           <nav className="hidden md:flex items-center gap-8">
             <a
               href="#protocol"
@@ -133,16 +136,10 @@ export default function Home() {
               Features
             </a>
             <a
-              href="#pricing"
+              href="mailto:support@unblockfocus.com"
               className="text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors duration-300"
             >
-              Pricing
-            </a>
-            <a
-              href="#faq"
-              className="text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors duration-300"
-            >
-              FAQ
+              Contact
             </a>
           </nav>
           <div className="flex items-center gap-3">
@@ -630,33 +627,67 @@ export default function Home() {
       </main>
 
       {/* ===== Footer ===== */}
-      <footer className="py-8 px-6 md:px-12 max-w-7xl mx-auto w-full flex flex-col sm:flex-row items-center justify-between gap-4">
-        <span className="text-sm font-bold tracking-tighter text-primary-container">
-          Unblock
-        </span>
-        <nav className="flex items-center gap-6">
-          <a
-            href="#"
-            className="text-[11px] font-bold uppercase tracking-[0.15em] text-on-surface-variant hover:text-on-surface transition-colors"
-          >
-            Privacy
-          </a>
-          <a
-            href="#"
-            className="text-[11px] font-bold uppercase tracking-[0.15em] text-on-surface-variant hover:text-on-surface transition-colors"
-          >
-            How it works
-          </a>
-          <a
-            href="#"
-            className="text-[11px] font-bold uppercase tracking-[0.15em] text-on-surface-variant hover:text-on-surface transition-colors"
-          >
-            Contact
-          </a>
-        </nav>
-        <span className="text-[10px] text-on-surface-variant/50">
-          © 2026 Unblock
-        </span>
+      <footer className="border-t border-outline-variant/10">
+        <div className="max-w-7xl mx-auto px-6 md:px-12 py-12">
+          {/* Top row: Brand + Main Nav */}
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 mb-8">
+            {/* Brand */}
+            <div className="space-y-2">
+              <span className="text-lg font-bold tracking-tighter text-primary-container">
+                Unblock
+              </span>
+              <p className="text-xs text-on-surface-variant/50 max-w-xs">
+                Break through mental blocks. Get to deep work.
+              </p>
+            </div>
+
+            {/* Nav Links */}
+            <nav className="flex flex-wrap items-center gap-x-8 gap-y-3">
+              <a
+                href="#protocol"
+                className="text-xs font-medium text-on-surface-variant hover:text-on-surface transition-colors"
+              >
+                How it works
+              </a>
+              <a
+                href="#features"
+                className="text-xs font-medium text-on-surface-variant hover:text-on-surface transition-colors"
+              >
+                Features
+              </a>
+              <a
+                href="mailto:support@unblockfocus.com"
+                className="text-xs font-medium text-on-surface-variant hover:text-on-surface transition-colors"
+              >
+                Contact
+              </a>
+            </nav>
+          </div>
+
+          {/* Gradient Divider */}
+          <div className="h-px bg-gradient-to-r from-transparent via-outline-variant/20 to-transparent mb-6" />
+
+          {/* Bottom row: Copyright + Legal Links */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <span className="text-xs text-on-surface-variant/40">
+              &copy; 2026 Unblock. All rights reserved.
+            </span>
+            <div className="flex items-center gap-6">
+              <Link
+                href="/privacy-policy"
+                className="text-xs text-on-surface-variant/50 hover:text-on-surface transition-colors"
+              >
+                Privacy Policy
+              </Link>
+              <Link
+                href="/tos"
+                className="text-xs text-on-surface-variant/50 hover:text-on-surface transition-colors"
+              >
+                Terms of Service
+              </Link>
+            </div>
+          </div>
+        </div>
       </footer>
     </div>
   );
