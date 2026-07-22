@@ -4,6 +4,8 @@ from pathlib import Path
 
 from engine.tts.base import TTSProvider
 
+from typing import Optional
+
 logger = logging.getLogger(__name__)
 
 
@@ -24,7 +26,16 @@ class EdgeTTSProvider(TTSProvider):
     def voice_map(self) -> dict[str, str]:
         return self.VOICE_MAP
 
-    async def generate(self, text: str, voice_id: str, output_path: str) -> None:
+    async def generate(
+        self,
+        text: str,
+        voice_id: str,
+        output_path: str,
+        rate: str = "+0%",
+        speed: float = 1.0,
+        previous_text: Optional[str] = None,
+        next_text: Optional[str] = None,
+    ) -> None:
         import edge_tts
 
         # Resolve voice key to Edge TTS voice name
@@ -33,7 +44,7 @@ class EdgeTTSProvider(TTSProvider):
         path = Path(output_path)
         path.parent.mkdir(parents=True, exist_ok=True)
 
-        communicate = edge_tts.Communicate(text, resolved_voice)
+        communicate = edge_tts.Communicate(text, resolved_voice, rate=rate)
         await communicate.save(str(path))
 
-        logger.debug(f"Edge TTS generated: {output_path}")
+        logger.debug(f"Edge TTS generated ({rate}): {output_path}")

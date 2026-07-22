@@ -69,3 +69,5 @@ run_comparison_experiment.py
 compile_comparison_csv.py
 build_side_by_side_report.py
 notebooks/script_generator_agent.ipynb
+backend/scripts/run_prompt_experiment.py
+backend/pacing_prompt_experiment_results.md

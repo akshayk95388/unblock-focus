@@ -4,6 +4,8 @@ from pathlib import Path
 
 from engine.tts.base import TTSProvider
 
+from typing import Optional
+
 logger = logging.getLogger(__name__)
 
 
@@ -19,7 +21,16 @@ class GTTSProvider(TTSProvider):
         # gTTS doesn't have voice selection
         return {}
 
-    async def generate(self, text: str, voice_id: str, output_path: str) -> None:
+    async def generate(
+        self,
+        text: str,
+        voice_id: str,
+        output_path: str,
+        rate: str = "+0%",
+        speed: float = 1.0,
+        previous_text: Optional[str] = None,
+        next_text: Optional[str] = None,
+    ) -> None:
         from gtts import gTTS
         import asyncio
 
