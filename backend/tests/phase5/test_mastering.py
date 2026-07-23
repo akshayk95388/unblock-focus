@@ -105,7 +105,7 @@ def test_build_command_with_music():
 
 
 def test_build_command_fade_positions():
-    """Fade out should start 5s before duration end."""
+    """Fade out should start 3s before duration end for voice-only mastering."""
     cmd = build_mastering_command(
         voice_path="/tmp/voice.wav",
         music_path=None,
@@ -113,8 +113,19 @@ def test_build_command_fade_positions():
         duration_s=60.0,
     )
     filter_str = " ".join(cmd)
-    assert "afade=t=in:d=3" in filter_str
-    assert "afade=t=out:st=55.0:d=5" in filter_str
+    assert "afade=t=out:st=57.0:d=3" in filter_str
+
+    # Test fade in when music track is provided
+    cmd_music = build_mastering_command(
+        voice_path="/tmp/voice.wav",
+        music_path="/tmp/music.mp3",
+        output_path="/tmp/out.mp3",
+        duration_s=60.0,
+    )
+    filter_music_str = " ".join(cmd_music)
+    assert "afade=t=in:d=3" in filter_music_str
+    assert "afade=t=out:st=57.0:d=3" in filter_music_str
+
 
 
 # ── Mastering pipeline tests ───────────────────────────────────────
@@ -211,3 +222,28 @@ def test_select_music_fallback_to_synthetic():
     result = select_music_track("anxiety", "ambient", "/tmp/no_assets_here_12345")
     assert result is not None
     assert Path(result).exists()
+
+
+def test_select_music_from_assets_directory(tmp_path):
+    """When music files exist in assets_dir/music/{meditation_type}, select one."""
+    type_dir = tmp_path / "music" / "anxiety"
+    type_dir.mkdir(parents=True)
+    track1 = type_dir / "ambient1.mp3"
+    create_test_music(track1, duration_s=5)
+
+    selected = select_music_track("anxiety", "ambient", str(tmp_path))
+    assert selected == str(track1)
+
+
+def test_populate_and_verify_real_assets(tmp_path):
+    """Verify track selection works with music tracks in assets directory structure."""
+    music_dir = tmp_path / "music"
+    music_dir.mkdir(parents=True)
+    track_file = music_dir / "meditation_impromptu.mp3"
+    create_test_music(track_file, duration_s=5)
+
+    selected = select_music_track(meditation_type="anxiety", music_key="meditation_impromptu", assets_dir=str(tmp_path))
+    assert selected == str(track_file)
+
+
+

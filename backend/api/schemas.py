@@ -7,7 +7,7 @@ class GenerateRequest(BaseModel):
     stressor: str = Field(..., min_length=3, max_length=500)
     duration_mins: int = Field(..., ge=1, le=30)
     voice: str = Field(default="gentle_female")
-    music: str = Field(default="ambient")
+    music: str = Field(default="none")
 
 
 class GenerateResponse(BaseModel):

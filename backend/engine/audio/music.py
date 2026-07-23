@@ -1,7 +1,6 @@
 """Music track selection and synthetic ambient generation."""
 import logging
 import random
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
@@ -11,16 +10,6 @@ from pydub import AudioSegment
 logger = logging.getLogger(__name__)
 
 
-@dataclass
-class MusicTrack:
-    file: str
-    type: str           # anxiety | sleep | focus
-    energy: float       # 0.0-1.0
-    loopable: bool
-    loop_start_s: float = 0.0
-    loop_end_s: float = 0.0
-
-
 def select_music_track(
     meditation_type: str,
     music_key: str,
@@ -28,16 +17,38 @@ def select_music_track(
 ) -> Optional[str]:
     """Select a music track for the meditation.
 
-    Returns path to the music file, or None if no music.
+    Supports flat assets/music/ directory with direct music keys,
+    subfolder lookup for backward compatibility, and synthetic fallback.
     """
-    if music_key == "none":
+    if music_key in ("none", "", None):
         return None
 
-    type_dir = Path(assets_dir) / "music" / meditation_type
-    if type_dir.exists():
-        tracks = list(type_dir.glob("*.mp3"))
+    music_root = Path(assets_dir) / "music"
+    if not music_root.exists():
+        return generate_synthetic_ambient_to_file(meditation_type)
+
+    # 1. Direct file match in music_root (e.g. music_key="meditation_impromptu" -> assets/music/meditation_impromptu.mp3)
+    for ext in (".mp3", ".wav"):
+        direct_file = music_root / f"{music_key}{ext}"
+        if direct_file.exists():
+            return str(direct_file)
+
+    # 2. Substring match in music_root
+    for track in music_root.glob("*.mp3"):
+        if music_key.lower() in track.stem.lower():
+            return str(track)
+
+    # 3. Subfolder match if subfolders exist
+    sub_dir = music_root / music_key
+    if sub_dir.is_dir():
+        tracks = list(sub_dir.glob("*.mp3"))
         if tracks:
             return str(random.choice(tracks))
+
+    # 4. Fallback to any available MP3 file in music_root or subfolders
+    all_tracks = list(music_root.glob("*.mp3")) + list(music_root.glob("**/*.mp3"))
+    if all_tracks:
+        return str(random.choice(all_tracks))
 
     # Synthetic fallback
     return generate_synthetic_ambient_to_file(meditation_type)

@@ -510,7 +510,8 @@ function DashboardContent() {
                                 onChange={setMusic}
                                 options={[
                                   { value: "none", label: "Voice Only" },
-                                  { value: "ambient", label: "Calm Ambient" },
+                                  { value: "meditation_impromptu", label: "Calm Ambient Synth" },
+                                  { value: "flute", label: "Serene Flute Meditation" },
                                 ]}
                               />
                             </div>
