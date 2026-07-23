@@ -16,23 +16,24 @@ def build_mastering_command(
     """Builds an FFmpeg command that:
     1. Mixes voice + music (music at -20dB)
     2. Normalizes loudness to -14 LUFS (streaming standard)
-    3. Applies 3s fade in, 5s fade out
-    4. Exports 192kbps MP3
+    3. Applies 3s fade-in on background music only (voice stays at full volume)
+    4. Applies 3s fade-out on the master track
+    5. Exports 192kbps MP3
     """
-    fade_out_start = max(0, duration_s - 5)
+    fade_out_start = max(0, duration_s - 3)
 
     if music_path:
         filter_graph = (
-            f"[1:a]volume={music_db}dB,aloop=loop=-1:size=2000000000[music];"
+            f"[1:a]volume={music_db}dB,afade=t=in:d=3,aloop=loop=-1:size=2000000000[music];"
             f"[0:a][music]amix=inputs=2:duration=first:weights=1 1[mixed];"
             f"[mixed]loudnorm=I=-14:TP=-1.5:LRA=7[normed];"
-            f"[normed]afade=t=in:d=3,afade=t=out:st={fade_out_start:.1f}:d=5[final]"
+            f"[normed]afade=t=out:st={fade_out_start:.1f}:d=3[final]"
         )
         inputs = ["-i", voice_path, "-i", music_path]
     else:
         filter_graph = (
             f"[0:a]loudnorm=I=-14:TP=-1.5:LRA=7[normed];"
-            f"[normed]afade=t=in:d=3,afade=t=out:st={fade_out_start:.1f}:d=5[final]"
+            f"[normed]afade=t=out:st={fade_out_start:.1f}:d=3[final]"
         )
         inputs = ["-i", voice_path]
 

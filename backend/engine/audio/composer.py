@@ -29,8 +29,8 @@ async def audio_composer_node(state: MeditationEngineState) -> dict:
     # Step 1: Resolve pause durations (duration control)
     timeline = calculate_budget(timeline, segments)
 
-    # Step 2: Assemble audio
-    voice_track = AudioSegment.empty()
+    # Step 2: Assemble audio with 1500ms (1.5s) leading silence (gives listener time to settle & wakes BT headphones)
+    voice_track = AudioSegment.silent(duration=1500)
 
     for event in timeline.events:
         if isinstance(event, SpeechEvent):
@@ -55,6 +55,9 @@ async def audio_composer_node(state: MeditationEngineState) -> dict:
                     breath_cues=state.get("breath_cues", {}),
                 )
                 voice_track += breath_audio
+
+    # Add 2.0s trailing tail room + 500ms smooth fade out for natural completion
+    voice_track = voice_track.fade_out(500) + AudioSegment.silent(duration=2000)
 
     # Step 3: Export assembled track
     job_id = state.get("job_id", "default")

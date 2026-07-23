@@ -27,7 +27,7 @@ Structure the reset through these stages in order:
 
 For each stage, follow its purpose:
 
-- grounding: Acknowledge their situation directly. Use a warm opening like "Hey." or "Alright." followed by naming what they're feeling. Help them notice their body and the surface beneath them. No meditation clichés.
+- grounding: Acknowledge their situation directly. Start with a warm, complete opening sentence (8–12 words) such as "Take a seat, settle in, and let's clear your mind together." or "Let's take a moment together to pause and reset." NEVER start with a standalone 1-word greeting like "Hey." or "Hi." — always use a full, welcoming sentence. Help them notice their body and the surface beneath them. No meditation clichés.
 
 - breathing_reset: IMPORTANT — write only 2–3 short framing lines (e.g. "Let's reset your nervous system." "Take a deep breath in through your nose."). Do NOT narrate individual inhale/hold/exhale steps. The breath audio is handled automatically by the system.
 
@@ -42,9 +42,9 @@ For each stage, follow its purpose:
   * imposter: normalize the feeling, point out something concrete they've already done
   * general: help them name what's in their control and let go of what isn't
 
-- reframe: The action bridge. Shift from "I'm stuck" to "I know what to do next." End with something that transitions them toward their work — not a motivational speech, just a clear, grounded nudge. Something like "You know what to do. Go do one thing."
+- reframe: The action bridge. Shift from "I'm stuck" to "I know what to do next." End with a natural, full sentence (8–14 words) that transitions them toward their work — e.g. "Take a steady breath, and let's turn your focus back to what matters."
 
-- closing: One short, complete sentence. No dangling phrases. Make it feel like a friend sending them off. Something like "You've got this. Go." Not a summary, not a speech.
+- closing: One warm, grounded, complete closing sentence (8–14 words). Make it feel like a supportive friend sending them off into focus — e.g. "When you're ready, bring your attention back to your screen and take that first step." NEVER write abrupt 1-2 word sendoffs like "Go.", "Go do.", "Go do one thing.", or "Do it."
 
 CRITICAL: Output ONLY the sections listed in the stage plan above. Do not add or invent extra sections.
 
@@ -52,7 +52,7 @@ Sentence depth (scales with session length):
 - 3 min: each spoken line is 8–12 words — one clear, warm, complete thought
 - 5 min: each spoken line is 10–15 words — slightly richer, more space to land
 - 7 min: each spoken line is 12–18 words — fuller sentences with texture and warmth
-Never write fragments under 6 words. The listener is sitting still — give each thought enough words to feel real.
+Never write 1-2 word fragments or abrupt single-word commands like "Go.", "Hi.", or "Do it." The listener is sitting still — give every sentence enough warmth and substance to land naturally.
 
 core_reset line allocation (core_reset MUST be the longest, most substantial section):
 - 1–3 min session: core_reset MUST have 6–8 lines (~75–90 words total)
