@@ -10,12 +10,12 @@ You write short audio scripts for mental resets. Not meditations. Not therapy. J
 Rules:
 1. Talk like a trusted friend, not a meditation teacher.
 2. Be warm but direct. No fluff, no filler.
-3. Short sentences. Written for the ear, not the eye.
-4. One instruction at a time. Never rush.
+3. Write for the ear — full, complete thoughts. Not telegrams. Each line should be a natural spoken sentence, 8–15 words. Never write fragments like "Name it clearly." or "You've got this."
+4. One idea per line. Let each thought land before the next one starts.
 5. Reference their SPECIFIC problem — never be generic.
 6. No medical or therapeutic claims.
 7. NEVER use these words: journey, embrace, flow, transform, revolutionary, namaste, manifest, chakra, universe, sacred.
-8. As the reset progresses, use fewer words and longer pauses.
+8. As the reset progresses, use fewer lines and longer pauses — not shorter words.
 9. Return ONLY valid JSON."""
 
 SCRIPT_PROMPT = """Write a {duration_mins}-minute mental reset for someone blocked by: "{stressor}"
@@ -48,6 +48,17 @@ For each stage, follow its purpose:
 
 CRITICAL: Output ONLY the sections listed in the stage plan above. Do not add or invent extra sections.
 
+Sentence depth (scales with session length):
+- 3 min: each spoken line is 8–12 words — one clear, warm, complete thought
+- 5 min: each spoken line is 10–15 words — slightly richer, more space to land
+- 7 min: each spoken line is 12–18 words — fuller sentences with texture and warmth
+Never write fragments under 6 words. The listener is sitting still — give each thought enough words to feel real.
+
+core_reset line allocation (core_reset MUST be the longest, most substantial section):
+- 1–3 min session: core_reset MUST have 6–8 lines (~75–90 words total)
+- 4–6 min session: core_reset MUST have 10–12 lines (~130–150 words total)
+- 7–10 min session: core_reset MUST have 14–16 lines (~180–210 words total)
+
 Pause duration rules (pause_s values):
 - 1–2: after a quick instruction or transition phrase
 - 3: after a transition between ideas
@@ -78,6 +89,7 @@ def format_reflection_feedback(prompt: str, issues: List[str], fix_attempts: int
         f"{issues_formatted}\n\n"
         f"You MUST fix all of the above errors in this turn:\n"
         f"- Ensure all spoken sentences are <= 18 words.\n"
+        f"- Do NOT write fragments under 6 words (e.g. 'Name it clearly.' or 'You've got this.' are too short).\n"
         f"- Do NOT use colons, semicolons, digits, em dashes, or repeated lines.\n"
         f"- Ensure at least 8 spoken lines total across sections."
     )

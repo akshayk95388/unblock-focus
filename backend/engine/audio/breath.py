@@ -32,6 +32,8 @@ def render_breath_cycle(
         cue_path = cues.get(phase.phase)
         if cue_path and Path(cue_path).exists():
             cue_audio = AudioSegment.from_file(cue_path)
+            if len(cue_audio) > 150:
+                cue_audio = cue_audio.fade_in(50).fade_out(100)
             cue_duration_ms = len(cue_audio)
 
             # Pad with silence to fill the full phase duration

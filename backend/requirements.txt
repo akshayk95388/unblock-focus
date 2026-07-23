@@ -22,9 +22,6 @@ pydub==0.25.1
 numpy==1.26.4
 # ffmpeg: system install (brew install ffmpeg)
 
-# Cache + Redis
-redis==5.0.8
-
 # Storage
 boto3==1.35.0
 

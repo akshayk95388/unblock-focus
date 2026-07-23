@@ -11,7 +11,6 @@ from engine.state import MeditationEngineState
 from engine.models.events import SpeechEvent, BreathEvent, SectionMarkerEvent
 from engine.models.job import SpeechSegment
 from engine.tts.base import TTSProvider
-from engine.tts.cache import TTSCache
 from engine.tts.factory import build_provider_chain
 from engine.profiles.breath_patterns import BREATH_PATTERNS
 from config.settings import get_settings
@@ -29,70 +28,48 @@ async def generate_one_segment(
     text: str,
     voice_key: str,
     output_path: str,
-    cache: TTSCache,
-    provider_chain: List[TTSProvider],
+    provider: TTSProvider,
     rate: str = "+0%",
     speed: float = 1.0,
     previous_text: Optional[str] = None,
     next_text: Optional[str] = None,
 ) -> float:
-    """Generate TTS for a single text segment. Returns actual audio duration in seconds.
+    """Generate TTS for a single text segment using the specified provider with retry logic.
 
-    Tries each provider in the chain with retry logic.
+    Returns actual audio duration in seconds.
     """
-    # Use first provider's ID for cache key
-    primary_provider_id = provider_chain[0].provider_id if provider_chain else "unknown"
-
-    # Cache check (incorporating context into key if present)
-    if previous_text or next_text:
-        cache_key_text = f"{previous_text or ''}||{text}||{next_text or ''}"
-    else:
-        cache_key_text = text
-
-    cached = cache.get(cache_key_text, voice_key, primary_provider_id)
-    if cached:
-        Path(output_path).parent.mkdir(parents=True, exist_ok=True)
-        Path(output_path).write_bytes(cached)
-        logger.debug(f"Cache hit for: '{text[:40]}...'")
-        return get_audio_duration_s(output_path)
-
-    # Try providers in order
     last_error = None
-    for provider in provider_chain:
-        for attempt in range(3):
-            try:
-                await provider.generate(
-                    text=text,
-                    voice_id=voice_key,
-                    output_path=output_path,
-                    rate=rate,
-                    speed=speed,
-                    previous_text=previous_text,
-                    next_text=next_text,
-                )
-                audio_bytes = Path(output_path).read_bytes()
-                cache.set(cache_key_text, voice_key, primary_provider_id, audio_bytes)
-                logger.debug(f"Generated via {provider.provider_id} (ctx={bool(previous_text)}): '{text[:40]}...'")
-                return get_audio_duration_s(output_path)
-            except Exception as e:
-                last_error = e
-                logger.warning(
-                    f"TTS attempt {attempt + 1}/3 failed ({provider.provider_id}): {e}"
-                )
-                if attempt < 2:
-                    await asyncio.sleep(2 ** attempt)
+    for attempt in range(3):
+        try:
+            await provider.generate(
+                text=text,
+                voice_id=voice_key,
+                output_path=output_path,
+                rate=rate,
+                speed=speed,
+                previous_text=previous_text,
+                next_text=next_text,
+            )
+            logger.debug(f"Generated via {provider.provider_id} (ctx={bool(previous_text)}): '{text[:40]}...'")
+            return get_audio_duration_s(output_path)
+        except Exception as e:
+            last_error = e
+            logger.warning(
+                f"TTS attempt {attempt + 1}/3 failed ({provider.provider_id}): {e}"
+            )
+            if attempt < 2:
+                await asyncio.sleep(2 ** attempt)
 
-    raise RuntimeError(f"All TTS providers failed for: '{text[:40]}' — last error: {last_error}")
+    raise RuntimeError(f"TTS provider '{provider.provider_id}' failed for: '{text[:40]}' — last error: {last_error}")
 
 
 async def generate_breath_cues(
     timeline,
     voice_key: str,
     tmp_dir: Path,
-    cache: TTSCache,
-    provider_chain: List[TTSProvider],
+    provider: TTSProvider,
 ) -> Dict[str, Dict[str, str]]:
-    """Generate TTS audio for all breath cue texts.
+    """Generate TTS audio for all breath cue texts using the active session provider.
 
     Returns: {pattern_id: {phase_name: audio_path}}
     """
@@ -116,8 +93,7 @@ async def generate_breath_cues(
                     text=phase.cue_text,
                     voice_key=voice_key,
                     output_path=str(cue_path),
-                    cache=cache,
-                    provider_chain=provider_chain,
+                    provider=provider,
                 )
             cues[phase.phase] = str(cue_path)
 
@@ -159,22 +135,58 @@ def extract_section_phases(timeline) -> List[SectionPhase]:
     return phases
 
 
+@dataclass
+class ScriptItem:
+    kind: str  # "speech" or "breath_cue"
+    item_id: str  # segment_id if speech, phase_name if breath_cue
+    pattern: Optional[str]  # pattern_id if breath_cue
+    text: str
+
+
 async def _generate_single_shot_session(
-    all_speech: List[SpeechEvent],
+    timeline,
     voice_key: str,
     tmp_dir: Path,
     provider: TTSProvider,
 ) -> Optional[List[SpeechSegment]]:
-    """Single continuous call for scripts <= 1,800 characters (0 seams)."""
+    """Single continuous call for script and in-context breath cues (0 seams)."""
     import io
+
+    items: List[ScriptItem] = []
+    seen_breath_patterns = set()
+
+    for event in timeline.events:
+        if isinstance(event, SpeechEvent):
+            items.append(ScriptItem(
+                kind="speech",
+                item_id=event.segment_id,
+                pattern=None,
+                text=event.text.strip(),
+            ))
+        elif isinstance(event, BreathEvent):
+            if event.pattern not in seen_breath_patterns:
+                pattern = BREATH_PATTERNS.get(event.pattern)
+                if pattern:
+                    for phase in pattern.phases:
+                        items.append(ScriptItem(
+                            kind="breath_cue",
+                            item_id=phase.phase,
+                            pattern=event.pattern,
+                            text=phase.cue_text.strip(),
+                        ))
+                    seen_breath_patterns.add(event.pattern)
+
+    if not items:
+        return None
+
     full_script = ""
     offsets = []
-    for i, event in enumerate(all_speech):
+    for i, item in enumerate(items):
         start = len(full_script)
-        full_script += event.text.strip()
+        full_script += item.text
         end = len(full_script)
-        offsets.append((start, end, event.segment_id))
-        if i < len(all_speech) - 1:
+        offsets.append((start, end, item))
+        if i < len(items) - 1:
             full_script += " "
 
     ts_res = await provider.generate_with_timestamps(
@@ -194,7 +206,7 @@ async def _generate_single_shot_session(
     num_chars = len(char_end)
     speech_segments: List[SpeechSegment] = []
 
-    for start_c, end_c, segment_id in offsets:
+    for start_c, end_c, item in offsets:
         s_idx = min(start_c, num_chars - 1)
         e_idx = min(end_c - 1, num_chars - 1)
 
@@ -208,16 +220,23 @@ async def _generate_single_shot_session(
             end_ms = start_ms + 500
 
         slice_clip = full_audio[start_ms:end_ms]
-        path = tmp_dir / f"{segment_id}.mp3"
-        slice_clip.export(str(path), format="mp3", bitrate="128k")
 
-        speech_segments.append(SpeechSegment(
-            segment_id=segment_id,
-            path=str(path),
-            duration_s=len(slice_clip) / 1000.0,
-        ))
+        if item.kind == "speech":
+            path = tmp_dir / f"{item.item_id}.mp3"
+            slice_clip.export(str(path), format="mp3", bitrate="128k")
+            speech_segments.append(SpeechSegment(
+                segment_id=item.item_id,
+                path=str(path),
+                duration_s=len(slice_clip) / 1000.0,
+            ))
+        elif item.kind == "breath_cue":
+            path = tmp_dir / f"breath_{item.pattern}_{item.item_id}.mp3"
+            slice_clip.export(str(path), format="mp3", bitrate="128k")
 
-    logger.info(f"Single-Shot Session successful! Sliced {len(speech_segments)} segments from 1 continuous request (0 seams).")
+    logger.info(
+        f"Single-Shot Session successful! Sliced {len(speech_segments)} speech segments "
+        f"and in-context breath cues from 1 continuous request."
+    )
     return speech_segments
 
 
@@ -318,16 +337,15 @@ async def try_generate_adaptive_tts(
     timeline,
     voice_key: str,
     tmp_dir: Path,
-    provider_chain: List[TTSProvider],
+    provider: TTSProvider,
 ) -> Optional[List[SpeechSegment]]:
-    """Smart Length-Adaptive TTS Generation.
+    """Smart Length-Adaptive TTS Generation for a specific provider.
 
     - Scripts <= 1,800 chars (3-min & 5-min sessions): 1 single continuous call (0 seams).
     - Scripts > 1,800 chars (10-min sessions): Phase-merged chunks <= 1,500 chars with context stitching.
     - Slices segment MP3 files via character alignment timestamps.
     """
-    primary_provider = provider_chain[0] if provider_chain else None
-    if not hasattr(primary_provider, "generate_with_timestamps"):
+    if not hasattr(provider, "generate_with_timestamps"):
         return None
 
     phases = extract_section_phases(timeline)
@@ -342,28 +360,28 @@ async def try_generate_adaptive_tts(
 
     try:
         if total_chars <= 1800:
-            logger.info(f"Length-Adaptive TTS: Script length ({total_chars} chars) <= 1,800. Executing Single-Shot Call (0 seams)...")
+            logger.info(f"Length-Adaptive TTS ({provider.provider_id}): Script length ({total_chars} chars) <= 1,800. Executing Single-Shot Call...")
             return await _generate_single_shot_session(
-                all_speech=all_speech,
+                timeline=timeline,
                 voice_key=voice_key,
                 tmp_dir=tmp_dir,
-                provider=primary_provider,
+                provider=provider,
             )
         else:
-            logger.info(f"Length-Adaptive TTS: Script length ({total_chars} chars) > 1,800. Executing Phase-Chunked Stitching...")
+            logger.info(f"Length-Adaptive TTS ({provider.provider_id}): Script length ({total_chars} chars) > 1,800. Executing Phase-Chunked Stitching...")
             return await _generate_chunked_session(
                 phases=phases,
                 voice_key=voice_key,
                 tmp_dir=tmp_dir,
-                provider=primary_provider,
+                provider=provider,
             )
     except Exception as e:
-        logger.warning(f"Length-Adaptive TTS failed ({e}). Falling back to per-segment generation.")
+        logger.warning(f"Length-Adaptive TTS failed on {provider.provider_id}: {e}")
         return None
 
 
 async def tts_generator_node(state: MeditationEngineState) -> dict:
-    """Generate TTS audio for all speech events and breath cues."""
+    """Generate TTS audio for all speech events and breath cues with session-level provider fallback."""
     settings = get_settings()
     timeline = state["timeline"]
     job_id = state.get("job_id", "default")
@@ -371,88 +389,109 @@ async def tts_generator_node(state: MeditationEngineState) -> dict:
     tmp_dir = Path(f"/tmp/meditation_{job_id}/segments")
     tmp_dir.mkdir(parents=True, exist_ok=True)
 
-    # Build provider chain and cache
     provider_chain = build_provider_chain(settings)
-    cache = TTSCache(redis_url=settings.redis_url, ttl_days=settings.tts_cache_ttl_days)
 
     speech_events = [e for e in timeline.events if isinstance(e, SpeechEvent)]
     total_segments = len(speech_events)
     voice_key = state.get("voice_key", "gentle_female")
 
-    # Attempt Smart Length-Adaptive single-take generation first
-    phase_segments = await try_generate_adaptive_tts(
+    winning_provider: Optional[TTSProvider] = None
+    speech_segments: List[SpeechSegment] = []
+    total_speech_s = 0.0
+
+    # Iterate over provider_chain at session level
+    for provider in provider_chain:
+        logger.info(f"Attempting session audio generation with provider: {provider.provider_id}")
+
+        # Clean any partial audio files in tmp_dir before trying this provider
+        for f in tmp_dir.glob("*.mp3"):
+            try:
+                f.unlink()
+            except Exception:
+                pass
+
+        # 1. Attempt adaptive continuous pass if supported
+        phase_segments = await try_generate_adaptive_tts(
+            timeline=timeline,
+            voice_key=voice_key,
+            tmp_dir=tmp_dir,
+            provider=provider,
+        )
+
+        if phase_segments:
+            speech_segments = phase_segments
+            total_speech_s = sum(s.duration_s for s in speech_segments)
+            winning_provider = provider
+            logger.info(f"Session audio successfully generated via adaptive single-pass using {provider.provider_id}")
+            break
+
+        # 2. Attempt per-segment pass using ONLY this provider
+        try:
+            temp_speech_segments: List[SpeechSegment] = []
+            temp_total_speech_s = 0.0
+            current_section = "grounding"
+            speech_idx = 0
+
+            for event in timeline.events:
+                if isinstance(event, SectionMarkerEvent):
+                    current_section = event.section_name
+                    continue
+                if not isinstance(event, SpeechEvent):
+                    continue
+
+                prev_event = speech_events[speech_idx - 1] if speech_idx > 0 else None
+                next_event = speech_events[speech_idx + 1] if speech_idx < total_segments - 1 else None
+                speech_idx += 1
+
+                prev_text = prev_event.text if prev_event else None
+                next_text = next_event.text if next_event else None
+
+                if current_section in ("breathing_reset", "body_release", "core_reset", "breathing"):
+                    rate = "-6%"
+                    speed = 0.94
+                elif current_section in ("reframe", "closing"):
+                    rate = "+4%"
+                    speed = 1.04
+                else:
+                    rate = "+0%"
+                    speed = 1.0
+
+                path = tmp_dir / f"{event.segment_id}.mp3"
+                duration = await generate_one_segment(
+                    text=event.text,
+                    voice_key=voice_key,
+                    output_path=str(path),
+                    provider=provider,
+                    rate=rate,
+                    speed=speed,
+                    previous_text=prev_text,
+                    next_text=next_text,
+                )
+
+                temp_speech_segments.append(SpeechSegment(
+                    segment_id=event.segment_id,
+                    path=str(path),
+                    duration_s=duration,
+                ))
+                temp_total_speech_s += duration
+
+            speech_segments = temp_speech_segments
+            total_speech_s = temp_total_speech_s
+            winning_provider = provider
+            logger.info(f"Session audio successfully generated per-segment using {provider.provider_id}")
+            break
+        except Exception as e:
+            logger.warning(f"Session audio generation failed for provider {provider.provider_id}: {e}. Retrying with next provider in chain...")
+
+    if not winning_provider:
+        raise RuntimeError("All TTS providers in the fallback chain failed to generate session audio.")
+
+    # Generate breath cues using winning_provider
+    breath_cues = await generate_breath_cues(
         timeline=timeline,
         voice_key=voice_key,
         tmp_dir=tmp_dir,
-        provider_chain=provider_chain,
-    )
-
-    if phase_segments:
-        speech_segments = phase_segments
-        total_speech_s = sum(s.duration_s for s in speech_segments)
-    else:
-        # Fallback per-segment generation loop with context stitching (previous_text / next_text)
-        speech_segments: List[SpeechSegment] = []
-        total_speech_s = 0.0
-        current_section = "grounding"
-        speech_idx = 0
-
-        for event in timeline.events:
-            if isinstance(event, SectionMarkerEvent):
-                current_section = event.section_name
-                continue
-            if not isinstance(event, SpeechEvent):
-                continue
-
-            prev_event = speech_events[speech_idx - 1] if speech_idx > 0 else None
-            next_event = speech_events[speech_idx + 1] if speech_idx < total_segments - 1 else None
-            speech_idx += 1
-
-            prev_text = prev_event.text if prev_event else None
-            next_text = next_event.text if next_event else None
-
-            if current_section in ("breathing_reset", "body_release", "core_reset", "breathing"):
-                rate = "-6%"
-                speed = 0.94
-            elif current_section in ("reframe", "closing"):
-                rate = "+4%"
-                speed = 1.04
-            else:
-                rate = "+0%"
-                speed = 1.0
-
-            path = tmp_dir / f"{event.segment_id}.mp3"
-            duration = await generate_one_segment(
-                text=event.text,
-                voice_key=voice_key,
-                output_path=str(path),
-                cache=cache,
-                provider_chain=provider_chain,
-                rate=rate,
-                speed=speed,
-                previous_text=prev_text,
-                next_text=next_text,
-            )
-
-            speech_segments.append(SpeechSegment(
-                segment_id=event.segment_id,
-                path=str(path),
-                duration_s=duration,
-            ))
-            total_speech_s += duration
-
-            logger.info(
-                f"TTS [{len(speech_segments)}/{total_segments}] "
-                f"'{event.text[:30]}...' → {duration:.1f}s"
-            )
-
-    # Generate breath cues
-    breath_cues = await generate_breath_cues(
-        timeline=timeline,
-        voice_key=state.get("voice_key", "gentle_female"),
-        tmp_dir=tmp_dir,
-        cache=cache,
-        provider_chain=provider_chain,
+        provider=winning_provider,
     )
 
     return {
@@ -462,3 +501,4 @@ async def tts_generator_node(state: MeditationEngineState) -> dict:
         "current_stage": "tts_complete",
         "progress_pct": 60.0,
     }
+

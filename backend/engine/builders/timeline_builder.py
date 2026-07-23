@@ -75,6 +75,11 @@ def build_timeline_from_prose(prose: dict, state: Dict[str, Any]) -> MeditationT
         ))
 
         lines = section.get("lines", [])
+        # Add breath cycle if specified
+        breath_cycle = section.get("breath_cycle")
+        breath_reps = section.get("breath_repetitions", 0)
+        has_breath = bool(breath_cycle and breath_reps > 0 and breath_cycle in BREATH_PATTERNS)
+
         for j, line in enumerate(lines):
             segment_id = f"seg_{speech_count:03d}"
             speech_count += 1
@@ -97,11 +102,9 @@ def build_timeline_from_prose(prose: dict, state: Dict[str, Any]) -> MeditationT
                 if pause_type_str not in PAUSE_WEIGHTS:
                     pause_type_str = DEFAULT_PAUSE_TYPE
 
-            # Always apply section_end on the last line of each section.
-            # This ensures proper spacing between sections regardless of
-            # what the LLM specified — section boundaries need room to breathe.
+            # Apply reflection pause (5s) before breath cycles, section_end on standard section ends
             if j == len(lines) - 1:
-                pause_type_str = "section_end"
+                pause_type_str = "reflection" if has_breath else "section_end"
 
             events.append(PauseEvent(
                 pause_type=PauseType(pause_type_str),
@@ -109,10 +112,7 @@ def build_timeline_from_prose(prose: dict, state: Dict[str, Any]) -> MeditationT
                 minimum_ms=PAUSE_WEIGHTS[pause_type_str]["minimum_ms"],
             ))
 
-        # Add breath cycle if specified
-        breath_cycle = section.get("breath_cycle")
-        breath_reps = section.get("breath_repetitions", 0)
-        if breath_cycle and breath_reps > 0 and breath_cycle in BREATH_PATTERNS:
+        if has_breath:
             pattern = BREATH_PATTERNS[breath_cycle]
             cycle_s = pattern.cycle_duration_s * breath_reps
             events.append(BreathEvent(

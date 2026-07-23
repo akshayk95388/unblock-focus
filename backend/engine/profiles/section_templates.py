@@ -19,24 +19,24 @@ class SectionTemplate:
 # The script generator prompt adapts the *content* per stressor category.
 
 _SHORT_RESET = [
-    SectionTemplate("grounding",        0.25, None,       0),
-    SectionTemplate("breathing_reset",  0.40, "calm_46",  2),
-    SectionTemplate("reframe",          0.35, None,       0),
+    SectionTemplate("grounding",        0.15, None,       0),
+    SectionTemplate("breathing_reset",  0.25, "calm_46",  2),
+    SectionTemplate("core_reset",       0.40, None,       0),
+    SectionTemplate("reframe",          0.20, None,       0),
 ]
 
 _STANDARD_RESET = [
-    SectionTemplate("grounding",        0.15, None,       0),
-    SectionTemplate("breathing_reset",  0.25, "calm_46",  3),
-    SectionTemplate("core_reset",       0.30, None,       0),
+    SectionTemplate("grounding",        0.10, None,       0),
+    SectionTemplate("breathing_reset",  0.20, "calm_46",  3),
+    SectionTemplate("core_reset",       0.40, None,       0),
     SectionTemplate("reframe",          0.20, None,       0),
     SectionTemplate("closing",          0.10, None,       0),
 ]
 
 _LONG_RESET = [
     SectionTemplate("grounding",        0.10, None,       0),
-    SectionTemplate("breathing_reset",  0.20, "calm_46",  3),
-    SectionTemplate("body_release",     0.15, None,       0),
-    SectionTemplate("core_reset",       0.25, None,       0),
+    SectionTemplate("breathing_reset",  0.20, "calm_46",  4),
+    SectionTemplate("core_reset",       0.40, None,       0),
     SectionTemplate("reframe",          0.20, None,       0),
     SectionTemplate("closing",          0.10, None,       0),
 ]

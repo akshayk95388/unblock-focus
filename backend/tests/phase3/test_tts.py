@@ -1,6 +1,6 @@
-"""Phase 3 Tests — TTS Generation + Caching
+"""Phase 3 Tests — TTS Generation
 
-Tests provider abstraction, cache hit/miss, fallback chain, and segment generation.
+Tests provider abstraction, segment generation, and adaptive timestamp slicing.
 Uses edge_tts for real generation tests (no API key needed).
 """
 import pytest
@@ -9,7 +9,6 @@ from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from engine.tts.base import TTSProvider
-from engine.tts.cache import TTSCache
 from engine.tts.edge_tts_provider import EdgeTTSProvider
 from engine.tts.gtts_provider import GTTSProvider
 from engine.tts.factory import build_provider_chain
@@ -64,38 +63,12 @@ class MockFailingProvider(TTSProvider):
         raise RuntimeError("This provider always fails")
 
 
-# ── Cache tests ─────────────────────────────────────────────────────
-
-
-def test_cache_miss_returns_none():
-    cache = TTSCache()  # no redis, uses in-memory fallback
-    result = cache.get("hello", "voice", "provider")
-    assert result is None
-
-
-def test_cache_set_and_get():
-    cache = TTSCache()
-    audio_bytes = b"fake audio data"
-    cache.set("hello", "voice", "provider", audio_bytes)
-    result = cache.get("hello", "voice", "provider")
-    assert result == audio_bytes
-
-
-def test_cache_different_keys():
-    cache = TTSCache()
-    cache.set("hello", "voice1", "provider", b"audio1")
-    cache.set("hello", "voice2", "provider", b"audio2")
-    assert cache.get("hello", "voice1", "provider") == b"audio1"
-    assert cache.get("hello", "voice2", "provider") == b"audio2"
-
-
 # ── generate_one_segment tests ──────────────────────────────────────
 
 
 @pytest.mark.asyncio
 async def test_generate_segment_with_mock_provider(tmp_path):
     """Mock provider should produce a valid audio file."""
-    cache = TTSCache()
     provider = MockTTSProvider()
     out = tmp_path / "test.mp3"
 
@@ -103,8 +76,7 @@ async def test_generate_segment_with_mock_provider(tmp_path):
         text="Find a comfortable position.",
         voice_key="gentle_female",
         output_path=str(out),
-        cache=cache,
-        provider_chain=[provider],
+        provider=provider,
     )
 
     assert out.exists()
@@ -114,56 +86,15 @@ async def test_generate_segment_with_mock_provider(tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_cache_returns_hit_on_second_call(tmp_path):
-    """Second call for same text must use cache, not call provider again."""
-    cache = TTSCache()
-    provider = MockTTSProvider()
-
-    out1 = tmp_path / "seg1.mp3"
-    out2 = tmp_path / "seg2.mp3"
-
-    await generate_one_segment(
-        "Allow your eyes to gently close.",
-        "gentle_female", str(out1), cache, [provider],
-    )
-    await generate_one_segment(
-        "Allow your eyes to gently close.",
-        "gentle_female", str(out2), cache, [provider],
-    )
-
-    assert provider.call_count == 1  # second call used cache
-    assert out2.exists()
-
-
-@pytest.mark.asyncio
-async def test_fallback_provider_on_primary_failure(tmp_path):
-    """When primary fails, fallback provider must produce audio."""
-    cache = TTSCache()
-    failing = MockFailingProvider()
-    fallback = MockTTSProvider()
-    out = tmp_path / "fallback.mp3"
-
-    duration = await generate_one_segment(
-        "Take a slow breath in.",
-        "gentle_female", str(out), cache, [failing, fallback],
-    )
-
-    assert out.exists()
-    assert duration > 0
-    assert fallback.call_count == 1
-
-
-@pytest.mark.asyncio
-async def test_all_providers_fail_raises(tmp_path):
-    """When all providers fail, must raise RuntimeError."""
-    cache = TTSCache()
+async def test_provider_failure_raises(tmp_path):
+    """When a provider fails all retries, must raise RuntimeError."""
     out = tmp_path / "fail.mp3"
 
-    with pytest.raises(RuntimeError, match="All TTS providers failed"):
+    with pytest.raises(RuntimeError, match="TTS provider 'failing' failed"):
         await generate_one_segment(
             "This will fail.",
-            "gentle_female", str(out), cache,
-            [MockFailingProvider(), MockFailingProvider()],
+            "gentle_female", str(out),
+            provider=MockFailingProvider(),
         )
 
 
@@ -191,7 +122,6 @@ async def test_edge_tts_generates_real_audio(tmp_path):
 @pytest.mark.asyncio
 async def test_edge_tts_full_segment_flow(tmp_path):
     """Full generate_one_segment flow with Edge TTS."""
-    cache = TTSCache()
     provider = EdgeTTSProvider()
     out = tmp_path / "full_test.mp3"
 
@@ -199,17 +129,11 @@ async def test_edge_tts_full_segment_flow(tmp_path):
         text="Allow your body to relax.",
         voice_key="gentle_female",
         output_path=str(out),
-        cache=cache,
-        provider_chain=[provider],
+        provider=provider,
     )
 
     assert out.exists()
     assert duration > 0
-
-    # Verify cache was populated
-    cached = cache.get("Allow your body to relax.", "gentle_female", "edge_tts")
-    assert cached is not None
-    assert len(cached) > 0
 
 
 # ── Factory tests ───────────────────────────────────────────────────
@@ -284,7 +208,7 @@ async def test_try_generate_adaptive_tts(tmp_path):
         timeline=timeline,
         voice_key="calm_male",
         tmp_dir=tmp_path,
-        provider_chain=[provider],
+        provider=provider,
     )
 
     assert segments is not None

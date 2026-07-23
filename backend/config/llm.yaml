@@ -20,6 +20,3 @@ tts:
     - gtts
   retry_attempts: 3
   retry_delay_s: 2
-
-cache:
-  tts_ttl_days: 30

@@ -34,16 +34,12 @@ class Settings(BaseSettings):
         alias="DATABASE_URL",
     )
 
-    # Redis
-    redis_url: str = Field(default="redis://localhost:6379/0", alias="REDIS_URL")
-
     # Server
     host: str = Field(default="0.0.0.0", alias="HOST")
     port: int = Field(default=8000, alias="PORT")
 
     # TTS
     tts_primary: str = Field(default="edge_tts", alias="TTS_PRIMARY")
-    tts_cache_ttl_days: int = Field(default=30, alias="TTS_CACHE_TTL_DAYS")
 
     model_config = {
         "env_file": ".env",
