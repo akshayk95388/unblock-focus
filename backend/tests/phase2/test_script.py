@@ -249,6 +249,45 @@ def test_build_timeline_segment_ids_are_unique():
     assert len(ids) == len(set(ids)), f"Duplicate segment IDs: {ids}"
 
 
+def test_build_timeline_section_end_on_last_line():
+    """The last line of every section must always get section_end pause type."""
+    state = {"job_id": "test", "meditation_type": "anxiety", "duration_mins": 5}
+    # Use prose with pause_s to verify section_end is applied even when pause_s is present
+    prose_with_pause_s = {
+        "title": "Test",
+        "sections": [
+            {
+                "name": "grounding",
+                "lines": [
+                    {"text": "Line one.", "pause_s": 3},
+                    {"text": "Line two.", "pause_s": 4},  # last line, should be section_end
+                ],
+            },
+            {
+                "name": "core_reset",
+                "lines": [
+                    {"text": "Line three.", "pause_s": 6},
+                    {"text": "Line four.", "pause_s": 2},  # last line, should be section_end
+                ],
+            },
+        ],
+    }
+    timeline = build_timeline_from_prose(prose_with_pause_s, state)
+
+    # Find pause events that follow the last speech in each section
+    pause_events = [e for e in timeline.events if isinstance(e, PauseEvent)]
+    section_markers = [e for e in timeline.events if isinstance(e, SectionMarkerEvent)]
+
+    # With 2 sections of 2 lines each → 4 pause events
+    # Pause at index 1 (after line 2) and index 3 (after line 4) should be section_end
+    assert pause_events[1].pause_type == PauseType.SECTION_END, (
+        f"Last line of section 1: expected section_end, got {pause_events[1].pause_type.value}"
+    )
+    assert pause_events[3].pause_type == PauseType.SECTION_END, (
+        f"Last line of section 2: expected section_end, got {pause_events[3].pause_type.value}"
+    )
+
+
 # ── Validator unit tests ────────────────────────────────────────────
 
 

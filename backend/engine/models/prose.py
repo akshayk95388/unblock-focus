@@ -1,11 +1,13 @@
 from dataclasses import dataclass, field
 from typing import Optional, List
 
+from engine.profiles.pacing import DEFAULT_PAUSE_TYPE
+
 
 @dataclass
 class ProseLine:
     text: str = ""
-    pause_after: str = "reflection"  # short | transition | reflection | deep_reflection | section_end
+    pause_after: str = DEFAULT_PAUSE_TYPE  # short | transition | reflection | deep_reflection | section_end
 
 
 @dataclass

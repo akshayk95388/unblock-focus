@@ -40,12 +40,14 @@ def test_pause_weights_cover_all_pause_types():
 
 
 def test_pause_weights_have_required_keys():
-    """Each pause weight entry must have 'weight' and 'minimum_ms'."""
+    """Each pause weight entry must have 'weight', 'minimum_ms', and 'max_prompt_s'."""
     for name, pw in PAUSE_WEIGHTS.items():
         assert "weight" in pw, f"{name} missing 'weight'"
         assert "minimum_ms" in pw, f"{name} missing 'minimum_ms'"
+        assert "max_prompt_s" in pw, f"{name} missing 'max_prompt_s'"
         assert isinstance(pw["weight"], int) and pw["weight"] > 0
         assert isinstance(pw["minimum_ms"], int) and pw["minimum_ms"] > 0
+        assert isinstance(pw["max_prompt_s"], int) and pw["max_prompt_s"] > 0
 
 
 # ── Breath pattern tests ────────────────────────────────────────────

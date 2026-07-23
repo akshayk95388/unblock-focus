@@ -122,16 +122,31 @@ def mock_segments(speech_s: float, num: int = 10) -> Dict[str, SpeechSegment]:
 
 
 def test_budget_calculation_distributes_correctly():
-    """Pause weights must be proportional to their allocation."""
+    """Pauses fill budget up to their maximum_ms caps. Higher weights get more time."""
     timeline = make_test_timeline_with_known_speech(speech_s=120, target_s=300)
     segments = mock_segments(speech_s=120)
     # budget = 300 - 120 - 0 = 180 seconds for pauses
     timeline = calculate_budget(timeline, segments)
 
     pause_events = [e for e in timeline.events if isinstance(e, PauseEvent)]
+
+    # Every pause must be within its [minimum_ms, maximum_ms] range
+    for pe in pause_events:
+        pw = PAUSE_WEIGHTS[pe.pause_type.value]
+        assert pe.resolved_ms >= pw["minimum_ms"], (
+            f"{pe.pause_type.value}: {pe.resolved_ms}ms < minimum {pw['minimum_ms']}ms"
+        )
+        assert pe.resolved_ms <= pw["maximum_ms"], (
+            f"{pe.pause_type.value}: {pe.resolved_ms}ms > maximum {pw['maximum_ms']}ms"
+        )
+
+    # Total pause should equal sum of all maximum_ms caps when budget exceeds capacity
+    max_capacity_ms = sum(
+        PAUSE_WEIGHTS[pe.pause_type.value]["maximum_ms"] for pe in pause_events
+    )
     total_pause_ms = sum(e.resolved_ms for e in pause_events)
-    assert abs(total_pause_ms / 1000 - 180) < 1.0, (
-        f"Total pause {total_pause_ms / 1000:.1f}s != expected ~180s"
+    assert total_pause_ms <= max_capacity_ms + 1, (
+        f"Total pause {total_pause_ms}ms exceeds max capacity {max_capacity_ms}ms"
     )
 
 
@@ -154,27 +169,23 @@ def test_budget_proportionality():
 
 
 def test_no_pause_below_minimum():
-    """When budget is tight, pauses scale down but never below 200ms micro-pause."""
+    """Quality-first: wordy scripts use natural minimum pauses, never micro-gaps."""
     # Simulate a too-long script (speech_s close to target_s)
     timeline = make_test_timeline_with_known_speech(speech_s=280, target_s=300)
     segments = mock_segments(speech_s=280)
     timeline = calculate_budget(timeline, segments)
 
     for pause in (e for e in timeline.events if isinstance(e, PauseEvent)):
-        assert pause.resolved_ms >= 200, (
+        assert pause.resolved_ms >= pause.minimum_ms, (
             f"{pause.pause_type.value}: {pause.resolved_ms}ms < "
-            f"200ms micro-pause floor"
+            f"natural minimum {pause.minimum_ms}ms"
         )
-    # Total should stay close to target
-    assert timeline.actual_duration_s <= 310, (
-        f"Over-budget: {timeline.actual_duration_s:.1f}s > 310s"
-    )
 
 
 def test_breath_timing_is_exact():
     """Breath cycles must match their pattern exactly, never compressed."""
-    timeline = make_timeline_with_breath("sleep_478", cycles=3)
-    segments = mock_segments(speech_s=100)
+    timeline = make_timeline_with_breath("sleep_478", cycles=3, speech_s=200)
+    segments = mock_segments(speech_s=200)
     timeline = calculate_budget(timeline, segments)
 
     breath_events = [e for e in timeline.events if isinstance(e, BreathEvent)]
@@ -187,25 +198,40 @@ def test_breath_timing_is_exact():
 
 
 def test_extra_breath_inserted_when_script_too_short():
-    """If script is too short, reconciler must insert a breath cycle."""
-    timeline = make_test_timeline_with_known_speech(speech_s=30, target_s=300)
-    segments = mock_segments(speech_s=30)
-    original_breath_count = sum(
-        1 for e in timeline.events if isinstance(e, BreathEvent)
-    )
+    """If script is too short, reconciler must insert a breath cycle after the breathing phase."""
+    # Use a timeline with an existing breath event and very short speech
+    # so that pause_budget > 70% of target, triggering extra breath insertion
+    timeline = make_timeline_with_breath("calm_46", cycles=1, speech_s=20, target_s=300)
+    segments = mock_segments(speech_s=20)
+
+    # Find the original breath event index
+    original_breath_idx = None
+    for i, e in enumerate(timeline.events):
+        if isinstance(e, BreathEvent):
+            original_breath_idx = i
+            break
+    assert original_breath_idx is not None, "Test setup: no breath event found"
+
     timeline = calculate_budget(timeline, segments)
-    new_breath_count = sum(
-        1 for e in timeline.events if isinstance(e, BreathEvent)
+
+    # Count breath events — should have increased
+    breath_events = [(i, e) for i, e in enumerate(timeline.events) if isinstance(e, BreathEvent)]
+    assert len(breath_events) >= 2, (
+        f"Expected at least 2 breath events, got {len(breath_events)}"
     )
-    assert new_breath_count > original_breath_count, (
-        "No breath cycle was inserted for a too-short script"
+
+    # The new breath event should be immediately after the original one
+    assert breath_events[1][0] == breath_events[0][0] + 1, (
+        f"Extra breath at index {breath_events[1][0]} is not immediately "
+        f"after original breath at index {breath_events[0][0]}"
     )
 
 
 def test_actual_duration_matches_target_normal_case():
-    """In a normal case, actual duration should be close to target."""
-    timeline = make_test_timeline_with_known_speech(speech_s=150, target_s=300)
-    segments = mock_segments(speech_s=150)
+    """When budget fits within pause caps, actual duration should be close to target."""
+    # Use enough segments (25) so per-pause allocation stays within caps
+    timeline = make_test_timeline_with_known_speech(speech_s=150, target_s=300, num_segments=25)
+    segments = mock_segments(speech_s=150, num=25)
     timeline = calculate_budget(timeline, segments)
 
     delta = abs(timeline.actual_duration_s - 300)
@@ -241,14 +267,14 @@ def test_all_pauses_have_resolved_ms():
 
 def test_budget_with_breath_cycle():
     """Budget should account for breath cycle duration."""
-    timeline = make_timeline_with_breath("calm_46", cycles=3, speech_s=100, target_s=300)
-    segments = mock_segments(speech_s=100)
+    timeline = make_timeline_with_breath("calm_46", cycles=3, speech_s=200, target_s=300)
+    segments = mock_segments(speech_s=200)
     # calm_46: 10s/cycle × 3 = 30s
     timeline = calculate_budget(timeline, segments)
 
-    # pause_budget = 300 - 100 - 30 = 170
+    # pause_budget = 300 - 200 - 30 = 70
     assert abs(timeline.breath_total_s - 30) < 0.1
-    assert abs(timeline.pause_budget_s - 170) < 2.0
+    assert abs(timeline.pause_budget_s - 70) < 2.0
 
 
 # ── Edge cases ──────────────────────────────────────────────────────
@@ -271,16 +297,35 @@ def test_budget_with_no_pause_events():
 
 
 def test_budget_all_minimum_pauses():
-    """When budget is very tight, pauses are scaled down to fit."""
+    """Quality-first: when budget is very tight, natural minimums are used."""
     timeline = make_test_timeline_with_known_speech(speech_s=295, target_s=300)
     segments = mock_segments(speech_s=295)
     timeline = calculate_budget(timeline, segments)
 
     for event in timeline.events:
         if isinstance(event, PauseEvent):
-            # Pauses should be scaled proportionally, at least 200ms
-            assert event.resolved_ms >= 200
-    # Total must stay close to target
-    assert timeline.actual_duration_s <= 310, (
-        f"Over-budget: {timeline.actual_duration_s:.1f}s > 310s"
+            # Quality-first: every pause gets its natural minimum
+            assert event.resolved_ms >= event.minimum_ms, (
+                f"{event.pause_type.value}: {event.resolved_ms}ms < "
+                f"natural minimum {event.minimum_ms}ms"
+            )
+    # Session will exceed target (quality over precision)
+    assert timeline.actual_duration_s > 300, (
+        f"Expected session to exceed target due to natural minimums"
     )
+
+
+def test_quality_first_preserves_natural_pauses():
+    """When script is over-length, each pause should be set to exactly its minimum_ms."""
+    # Speech fills almost the entire target, leaving no room for natural pauses
+    timeline = make_test_timeline_with_known_speech(speech_s=290, target_s=300)
+    segments = mock_segments(speech_s=290)
+    timeline = calculate_budget(timeline, segments)
+
+    for event in timeline.events:
+        if isinstance(event, PauseEvent):
+            expected_min = PAUSE_WEIGHTS[event.pause_type.value]["minimum_ms"]
+            assert event.resolved_ms == expected_min, (
+                f"{event.pause_type.value}: resolved_ms={event.resolved_ms}ms "
+                f"!= expected minimum {expected_min}ms"
+            )

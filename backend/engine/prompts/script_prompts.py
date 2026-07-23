@@ -49,10 +49,10 @@ For each stage, follow its purpose:
 CRITICAL: Output ONLY the sections listed in the stage plan above. Do not add or invent extra sections.
 
 Pause duration rules (pause_s values):
-- 2–3: after a quick instruction or transition
+- 1–2: after a quick instruction or transition phrase
+- 3: after a transition between ideas
 - 4–6: after grounding or body awareness cues
-- 7–10: during core_reset, giving them space to process
-- 10–15: in reframe, letting the shift land
+- 7–15: during core_reset, giving them space to process
 - Use 5–8s on the final closing line.
 
 "breath_cycle" must be null or one of: box_4, sleep_478, calm_46, focus_44

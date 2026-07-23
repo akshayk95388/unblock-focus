@@ -2,6 +2,8 @@ from dataclasses import dataclass, field
 from typing import Optional, Literal, Union
 from enum import Enum
 
+from engine.profiles.pacing import PAUSE_WEIGHTS, DEFAULT_PAUSE_TYPE
+
 
 class PauseType(str, Enum):
     SHORT = "short"
@@ -19,6 +21,10 @@ class DeliveryStyle(str, Enum):
     BREATH_GUIDANCE = "breath_guidance"
 
 
+# Derive defaults from pacing config so they stay in sync
+_DEFAULT_PAUSE = PAUSE_WEIGHTS[DEFAULT_PAUSE_TYPE]
+
+
 @dataclass
 class SpeechEvent:
     type: Literal["speech"] = "speech"
@@ -31,8 +37,8 @@ class SpeechEvent:
 class PauseEvent:
     type: Literal["pause"] = "pause"
     pause_type: PauseType = PauseType.REFLECTION
-    weight: int = 4           # derived from pause_type at build time
-    minimum_ms: int = 4000    # derived from pause_type at build time
+    weight: int = _DEFAULT_PAUSE["weight"]           # derived from pacing config
+    minimum_ms: int = _DEFAULT_PAUSE["minimum_ms"]   # derived from pacing config
     resolved_ms: int = 0      # set by reconciler after TTS
 
 

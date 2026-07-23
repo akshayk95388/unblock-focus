@@ -1,6 +1,7 @@
 """Timeline Builder: Converts raw prose dict into MeditationTimeline DSL."""
 
 import json
+import logging
 from typing import List, Dict, Any
 
 from engine.models.events import (
@@ -11,22 +12,31 @@ from engine.models.events import (
     SectionMarkerEvent,
 )
 from engine.models.timeline import MeditationTimeline
-from engine.profiles.pacing import PAUSE_WEIGHTS
+from engine.profiles.pacing import PAUSE_WEIGHTS, DEFAULT_PAUSE_TYPE
 from engine.profiles.breath_patterns import BREATH_PATTERNS
+
+logger = logging.getLogger(__name__)
+
+# Build sorted threshold list from PAUSE_WEIGHTS config.
+# Each entry is (max_prompt_s, pause_type_key), sorted ascending.
+# This drives _pause_s_to_type dynamically — no hardcoded thresholds.
+_PAUSE_THRESHOLDS = sorted(
+    [(cfg["max_prompt_s"], key) for key, cfg in PAUSE_WEIGHTS.items()],
+    key=lambda t: t[0],
+)
 
 
 def _pause_s_to_type(seconds: int) -> str:
-    """Map explicit pause seconds from LLM to pause-type enum string."""
-    if seconds <= 2:
-        return "short"
-    elif seconds <= 4:
-        return "transition"
-    elif seconds <= 9:
-        return "reflection"
-    elif seconds <= 18:
-        return "deep_reflection"
-    else:
-        return "section_end"
+    """Map explicit pause seconds from LLM to pause-type string.
+
+    Thresholds are driven by PAUSE_WEIGHTS[...]["max_prompt_s"]
+    so they stay in sync with the centralized pacing config.
+    """
+    for max_s, pause_key in _PAUSE_THRESHOLDS:
+        if seconds <= max_s:
+            return pause_key
+    # Beyond all thresholds → section_end
+    return "section_end"
 
 
 def format_sections_for_prompt(section_plan: list) -> str:
@@ -74,15 +84,24 @@ def build_timeline_from_prose(prose: dict, state: Dict[str, Any]) -> MeditationT
                 text=line["text"],
             ))
 
-            # Use explicit pause_s from LLM if present, else fallback
-            if "pause_s" in line:
-                pause_type_str = _pause_s_to_type(int(line["pause_s"]))
+            # Determine pause type from LLM output
+            raw_pause = line.get("pause_s")
+            if raw_pause is not None:
+                try:
+                    pause_type_str = _pause_s_to_type(int(float(raw_pause)))
+                except (ValueError, TypeError):
+                    logger.warning(f"Invalid pause_s value '{raw_pause}', using default")
+                    pause_type_str = DEFAULT_PAUSE_TYPE
             else:
-                pause_type_str = line.get("pause_after", "reflection")
+                pause_type_str = line.get("pause_after", DEFAULT_PAUSE_TYPE)
                 if pause_type_str not in PAUSE_WEIGHTS:
-                    pause_type_str = "reflection"
-                if j == len(lines) - 1:
-                    pause_type_str = "section_end"
+                    pause_type_str = DEFAULT_PAUSE_TYPE
+
+            # Always apply section_end on the last line of each section.
+            # This ensures proper spacing between sections regardless of
+            # what the LLM specified — section boundaries need room to breathe.
+            if j == len(lines) - 1:
+                pause_type_str = "section_end"
 
             events.append(PauseEvent(
                 pause_type=PauseType(pause_type_str),
