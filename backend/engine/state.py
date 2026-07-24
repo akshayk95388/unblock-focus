@@ -17,6 +17,7 @@ class MeditationEngineState(TypedDict, total=False):
     # ── Input ──
     job_id: str
     stressor: str
+    duration_category: str        # quick | deep
     duration_mins: int
     voice_key: str
     music_key: str

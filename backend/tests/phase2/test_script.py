@@ -23,7 +23,7 @@ from engine.nodes.n02_script_generator import (
 from engine.nodes.n03_validator import validate_timeline, validator_router
 from engine.profiles.pacing import PAUSE_WEIGHTS
 from engine.profiles.breath_patterns import BREATH_PATTERNS
-from engine.profiles.section_templates import SECTION_TEMPLATES
+from engine.profiles.section_templates import QUICK_RESET
 
 
 # ── Helpers ──────────────────────────────────────────────────────────
@@ -144,13 +144,13 @@ def test_parse_type_default_to_general():
 
 
 def test_scale_sections_produces_correct_count():
-    template = SECTION_TEMPLATES["deadline"]
+    template = QUICK_RESET
     plans = scale_sections(template, 300)
     assert len(plans) == len(template)
 
 
 def test_scale_sections_durations_sum_to_total():
-    template = SECTION_TEMPLATES["deadline"]
+    template = QUICK_RESET
     plans = scale_sections(template, 300)
     total = sum(p["duration_s"] for p in plans)
     assert abs(total - 300) < 1.0

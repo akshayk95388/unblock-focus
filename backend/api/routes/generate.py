@@ -42,10 +42,12 @@ async def run_pipeline_task(job_id: str, request: GenerateRequest):
     from engine.nodes.n06_mastering import mastering_node
     from engine.nodes.n07_storage_notify import storage_notify_node
 
+    category = request.duration_category or ("deep" if request.duration_mins and request.duration_mins > 5 else "quick")
     state = {
         "job_id": job_id,
         "stressor": request.stressor,
-        "duration_mins": request.duration_mins,
+        "duration_category": category,
+        "duration_mins": request.duration_mins or (7 if category == "deep" else 3),
         "voice_key": request.voice,
         "music_key": request.music,
         "fix_attempts": 0,

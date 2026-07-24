@@ -172,6 +172,7 @@ export default function MeditationTab({
   // Input settings
   const [stressor, setStressor] = useState(restoreSnapshot?.stressor ?? initialStressor);
   const [durationMins, setDurationMins] = useState(restoreSnapshot?.durationMins ?? initialDurationMins);
+  const durationCategory = durationMins > 5 ? "deep" : "quick";
   const [voice, setVoice] = useState(restoreSnapshot?.voice ?? initialVoice);
   const [music, setMusic] = useState(restoreSnapshot?.music ?? initialMusic);
 
@@ -718,6 +719,7 @@ export default function MeditationTab({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           stressor: text,
+          duration_category: durationCategory,
           duration_mins: durationMins,
           voice,
           music,

@@ -7,7 +7,7 @@ from engine.profiles.pacing import (
     SHORT_SCRIPT_PAUSE_THRESHOLD,
 )
 from engine.profiles.breath_patterns import BreathPhase, BreathPattern, BREATH_PATTERNS
-from engine.profiles.section_templates import SectionTemplate, SECTION_TEMPLATES
+from engine.profiles.section_templates import SectionTemplate, QUICK_RESET, DEEP_RESET, get_template_for_category
 
 __all__ = [
     "PAUSE_WEIGHTS",
@@ -20,5 +20,7 @@ __all__ = [
     "BreathPattern",
     "BREATH_PATTERNS",
     "SectionTemplate",
-    "SECTION_TEMPLATES",
+    "QUICK_RESET",
+    "DEEP_RESET",
+    "get_template_for_category",
 ]

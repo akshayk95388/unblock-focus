@@ -52,7 +52,7 @@ export default function Home() {
   const [pricingCycle, setPricingCycle] = useState<"monthly" | "yearly">("monthly");
   const [stressor, setStressor] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [durationMins, setDurationMins] = useState(5);
+  const [durationMins, setDurationMins] = useState(3);
   const [voice, setVoice] = useState("gentle_female");
   const [music, setMusic] = useState("none");
 
@@ -208,12 +208,11 @@ export default function Home() {
                     </label>
                     <CustomSelect
                       size="sm"
-                      value={durationMins}
-                      onChange={(val) => setDurationMins(Number(val))}
+                      value={durationMins > 5 ? "deep" : "quick"}
+                      onChange={(val) => setDurationMins(val === "deep" ? 7 : 3)}
                       options={[
-                        { value: 2, label: "2 Minutes (Quick)" },
-                        { value: 5, label: "5 Minutes (Standard)" },
-                        { value: 10, label: "10 Minutes (Deep)" },
+                        { value: "quick", label: "Quick (2–5 min)" },
+                        { value: "deep", label: "Deep (5–10 min)" },
                       ]}
                     />
                   </div>

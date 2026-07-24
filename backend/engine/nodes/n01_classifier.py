@@ -6,7 +6,7 @@ from typing import List, Optional
 
 from engine.state import MeditationEngineState, SectionPlan
 from engine.profiles.pacing import PACING_PROFILES, SPEECH_DENSITY
-from engine.profiles.section_templates import get_template_for_duration
+from engine.profiles.section_templates import get_template_for_category
 from engine.utils.llm_factory import get_chat_model
 from engine.models.schemas import ClassifierResponseSchema
 from engine.prompts.classifier_prompts import (
@@ -64,16 +64,26 @@ async def classifier_node(state: MeditationEngineState, config: Optional[dict] =
         raw_res = await llm.ainvoke(messages, config=config)
         meditation_type = parse_type(str(raw_res.content))
 
-    duration_mins = state["duration_mins"]
-    template = get_template_for_duration(meditation_type, duration_mins)
+    duration_category = state.get("duration_category")
+    duration_mins = state.get("duration_mins")
+
+    if not duration_category:
+        if duration_mins and duration_mins > 5:
+            duration_category = "deep"
+        else:
+            duration_category = "quick"
+
+    template = get_template_for_category(duration_category)
     pacing = PACING_PROFILES[meditation_type]
     density = SPEECH_DENSITY[meditation_type]
 
-    total_s = duration_mins * 60
+    # Target anchor midpoints: Quick = 3.5m (210s), Deep = 7.5m (450s)
+    total_s = 450.0 if duration_category == "deep" else 210.0
     target_speech_s = total_s * density
     target_words = int((target_speech_s / 60) * pacing["wpm"])
 
     return {
+        "duration_category": duration_category,
         "meditation_type": meditation_type,
         "section_plan": scale_sections(template, total_s),
         "pacing_profile": pacing["profile"],

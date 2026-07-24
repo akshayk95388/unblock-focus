@@ -49,15 +49,13 @@ For each stage, follow its purpose:
 CRITICAL: Output ONLY the sections listed in the stage plan above. Do not add or invent extra sections.
 
 Sentence depth (scales with session length):
-- 3 min: each spoken line is 8–12 words — one clear, warm, complete thought
-- 5 min: each spoken line is 10–15 words — slightly richer, more space to land
-- 7 min: each spoken line is 12–18 words — fuller sentences with texture and warmth
+- Quick (3 min): each spoken line is 8–12 words — one clear, warm, complete thought
+- Deep (7 min): each spoken line is 12–18 words — fuller sentences with texture and warmth
 Never write fragments under 6 words (e.g. "Go.", "Hi.", "Do it.", "Name it clearly."). The listener is sitting still — give every sentence enough warmth and substance to land naturally.
 
 core_reset line allocation (core_reset MUST be the longest, most substantial section):
-- 1–3 min session: core_reset MUST have 6–8 lines (~75–90 words total)
-- 4–6 min session: core_reset MUST have 10–12 lines (~130–150 words total)
-- 7–10 min session: core_reset MUST have 14–16 lines (~180–210 words total)
+- Quick (3 min): core_reset MUST have 6–8 lines (~75–90 words total)
+- Deep (7 min): core_reset MUST have 14–16 lines (~180–210 words total)
 
 Pause duration rules (pause_s values):
 - 1–2: after a quick instruction or transition phrase

@@ -18,7 +18,7 @@ from engine.models.prose import ProseLine, ProseSection, ProseScript
 from engine.models.job import SpeechSegment, SubtitleEntry
 from engine.profiles.pacing import PAUSE_WEIGHTS, PACING_PROFILES, SPEECH_DENSITY
 from engine.profiles.breath_patterns import BREATH_PATTERNS, BreathPhase, BreathPattern
-from engine.profiles.section_templates import SECTION_TEMPLATES, SectionTemplate
+from engine.profiles.section_templates import QUICK_RESET, DEEP_RESET, SectionTemplate
 
 
 # ── Pause weight tests ──────────────────────────────────────────────
@@ -94,32 +94,26 @@ def test_all_four_breath_patterns_present():
 
 
 def test_section_template_weights_sum_to_one():
-    """Section duration weights must sum to 1.0 for each meditation type."""
-    for med_type, sections in SECTION_TEMPLATES.items():
+    """Section duration weights must sum to 1.0 for each template."""
+    for name, sections in [("QUICK_RESET", QUICK_RESET), ("DEEP_RESET", DEEP_RESET)]:
         total = sum(s.duration_weight for s in sections)
-        assert abs(total - 1.0) < 0.001, f"{med_type} weights sum to {total}"
+        assert abs(total - 1.0) < 0.001, f"{name} weights sum to {total}"
 
 
-def test_section_templates_cover_all_meditation_types():
-    """Templates must exist for all valid stressor categories."""
-    for med_type in ["deadline", "presentation", "burnout", "distraction", "overthinking", "imposter", "exam", "general"]:
-        assert med_type in SECTION_TEMPLATES, f"Missing template for '{med_type}'"
-
-
-def test_section_templates_have_arrival_and_closing():
-    """Every meditation type starts with grounding/arrival and ends with closing."""
-    for med_type, sections in SECTION_TEMPLATES.items():
-        assert sections[0].name in ["grounding", "arrival"], f"{med_type} doesn't start with 'grounding' or 'arrival'"
-        assert sections[-1].name == "closing", f"{med_type} doesn't end with 'closing'"
+def test_section_templates_structure():
+    """Quick starts with grounding; Deep starts with grounding and ends with closing."""
+    assert QUICK_RESET[0].name == "grounding"
+    assert DEEP_RESET[0].name == "grounding"
+    assert DEEP_RESET[-1].name == "closing"
 
 
 def test_section_breath_patterns_reference_valid_patterns():
     """Any breath pattern referenced in a section must exist in BREATH_PATTERNS."""
-    for med_type, sections in SECTION_TEMPLATES.items():
+    for name, sections in [("QUICK_RESET", QUICK_RESET), ("DEEP_RESET", DEEP_RESET)]:
         for section in sections:
             if section.default_breath_pattern is not None:
                 assert section.default_breath_pattern in BREATH_PATTERNS, (
-                    f"{med_type}/{section.name} references unknown pattern "
+                    f"{name}/{section.name} references unknown pattern "
                     f"'{section.default_breath_pattern}'"
                 )
 

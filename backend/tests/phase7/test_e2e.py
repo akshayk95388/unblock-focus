@@ -212,13 +212,14 @@ def make_mock_classifier(expected_type: str):
     async def mock_classifier_node(state, config=None):
         from engine.nodes.n01_classifier import scale_sections
         from engine.profiles.pacing import PACING_PROFILES, SPEECH_DENSITY
-        from engine.profiles.section_templates import SECTION_TEMPLATES
+        from engine.profiles.section_templates import get_template_for_category
 
         meditation_type = expected_type
-        template = SECTION_TEMPLATES.get(meditation_type, SECTION_TEMPLATES["general"])
+        duration_category = state.get("duration_category", "quick")
+        template = get_template_for_category(duration_category)
         pacing = PACING_PROFILES.get(meditation_type, PACING_PROFILES["general"])
         density = SPEECH_DENSITY.get(meditation_type, SPEECH_DENSITY["general"])
-        total_s = state["duration_mins"] * 60
+        total_s = 450.0 if duration_category == "deep" else 210.0
         target_speech_s = total_s * density
         target_words = int((target_speech_s / 60) * pacing["wpm"])
 
