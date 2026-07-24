@@ -32,6 +32,7 @@ export interface ReplayConfig {
 }
 
 interface MeditationSubtitleEntry {
+  segment_id?: string;
   text: string;
   start_ms: number;
   end_ms: number;
@@ -771,13 +772,31 @@ export default function MeditationTab({
     }
   };
 
-  // Audio Playback Sync Subtitles & Breath Guides
+  // Audio Playback Sync Subtitles & Breath Guides (60fps requestAnimationFrame)
   useEffect(() => {
-    if (!audioRef.current || status !== "playing" || subtitles.length === 0) return;
+    if (!audioRef.current || status !== "playing") return;
 
     const audio = audioRef.current;
+    let frameId: number | undefined;
 
-    const handleTimeUpdate = () => {
+    const isExactBreathCue = (text: string): boolean => {
+      const clean = text.trim().toLowerCase();
+      return (
+        clean === "breathe in..." ||
+        clean === "breathe in slowly..." ||
+        clean === "breathe out..." ||
+        clean === "and breathe out..." ||
+        clean === "and slowly release..." ||
+        clean === "hold..." ||
+        clean === "hold" ||
+        clean === "in..." ||
+        clean === "in" ||
+        clean === "out..." ||
+        clean === "out"
+      );
+    };
+
+    const tick = () => {
       const timeMs = audio.currentTime * 1000;
       setCurrentTime(audio.currentTime);
 
@@ -786,11 +805,28 @@ export default function MeditationTab({
         setActiveSubtitle(sub.text);
 
         const txt = sub.text.toLowerCase();
-        if (txt.includes("breathe in") || txt.includes("inhale") || txt.includes("breath in")) {
+        const isBreathCue = isExactBreathCue(sub.text);
+
+        if (
+          isBreathCue &&
+          (txt.includes("breathe in") ||
+            txt.includes("inhale") ||
+            txt.includes("breath in") ||
+            txt === "in..." ||
+            txt === "in")
+        ) {
           setBreathState("inhale");
-        } else if (txt.includes("breathe out") || txt.includes("exhale") || txt.includes("breath out")) {
+        } else if (
+          isBreathCue &&
+          (txt.includes("breathe out") ||
+            txt.includes("exhale") ||
+            txt.includes("breath out") ||
+            txt.includes("release") ||
+            txt === "out..." ||
+            txt === "out")
+        ) {
           setBreathState("exhale");
-        } else if (txt.includes("hold")) {
+        } else if (isBreathCue && txt.includes("hold")) {
           setBreathState("hold");
         } else {
           setBreathState("normal");
@@ -798,6 +834,10 @@ export default function MeditationTab({
       } else {
         setActiveSubtitle(null);
         setBreathState("normal");
+      }
+
+      if (isPlaying) {
+        frameId = requestAnimationFrame(tick);
       }
     };
 
@@ -812,14 +852,17 @@ export default function MeditationTab({
       }
     };
 
-    audio.addEventListener("timeupdate", handleTimeUpdate);
     audio.addEventListener("ended", handleEnded);
 
+    if (isPlaying) {
+      frameId = requestAnimationFrame(tick);
+    }
+
     return () => {
-      audio.removeEventListener("timeupdate", handleTimeUpdate);
+      if (frameId !== undefined) cancelAnimationFrame(frameId);
       audio.removeEventListener("ended", handleEnded);
     };
-  }, [status, subtitles, isReplay]);
+  }, [status, subtitles, isReplay, isPlaying]);
 
   // Sync volume change
   useEffect(() => {
@@ -1193,7 +1236,7 @@ export default function MeditationTab({
 
             <div className="w-full flex items-center justify-between border-b border-outline-variant/10 pb-4 z-10">
               <div className="flex items-center gap-3">
-                <span className={`text-xs px-2 py-0.5 rounded font-bold uppercase tracking-wider ${isReplay ? "bg-tertiary/20 text-tertiary" : "bg-primary/20 text-primary"}`}>
+                <span className={`hidden sm:inline text-xs px-2 py-0.5 rounded font-bold uppercase tracking-wider ${isReplay ? "bg-tertiary/20 text-tertiary" : "bg-primary/20 text-primary"}`}>
                   {isReplay ? "Replaying" : restoredPaused ? "Restored" : "Active Session"}
                 </span>
                 <h3 className="text-sm font-bold text-on-surface">
@@ -1226,24 +1269,28 @@ export default function MeditationTab({
             {/* Subtitle / Breathing Ring Area */}
             <div className="flex-1 flex flex-col items-center justify-center text-center py-8 max-w-xl w-full relative min-h-[160px] z-10">
               {/* Visual breathing ring */}
-              {breathState !== "normal" && (
-                <div
-                  className={`absolute w-36 h-36 rounded-full border border-primary/25 transition-all duration-[4000ms] ease-in-out flex items-center justify-center ${breathState === "inhale"
-                    ? 'scale-[1.7] border-primary/45 shadow-[0_0_30px_rgba(255,182,146,0.25)]'
-                    : breathState === "exhale"
-                      ? "scale-[0.9] border-primary/10"
-                      : "scale-[1.7] border-tertiary/40 shadow-[0_0_35px_rgba(233,196,0,0.2)]"
-                    }`}
-                >
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-primary/75">
-                    {breathState === "inhale" ? "Inhale" : breathState === "exhale" ? "Exhale" : "Hold"}
-                  </span>
-                </div>
-              )}
+              <div
+                className={`absolute w-24 h-24 md:w-36 md:h-36 rounded-full border flex items-center justify-center pointer-events-none ${
+                  breathState === "normal"
+                    ? "scale-[0.9] border-primary/0 opacity-0"
+                    : breathState === "inhale"
+                      ? "scale-[1.4] md:scale-[1.7] border-primary/45 shadow-[0_0_30px_rgba(255,182,146,0.25)] opacity-100"
+                      : breathState === "exhale"
+                        ? "scale-[0.9] border-primary/10 opacity-100"
+                        : "scale-[1.4] md:scale-[1.7] border-tertiary/40 shadow-[0_0_35px_rgba(233,196,0,0.2)] opacity-100"
+                }`}
+                style={{
+                  transition: "opacity 400ms ease-in-out, scale 4000ms ease-in-out, border-color 4000ms ease-in-out, box-shadow 4000ms ease-in-out"
+                }}
+              />
 
               {/* Subtitle text */}
-              <p className="text-xl md:text-2xl font-light tracking-wide text-on-surface leading-relaxed max-w-lg z-10 transition-all duration-300">
-                {activeSubtitle || "Settle in..."}
+              <p
+                className={`text-lg md:text-2xl font-light tracking-wide text-on-surface leading-relaxed max-w-lg z-10 transition-[color,opacity] duration-300 ${
+                  breathState !== "normal" ? "translate-y-28 sm:translate-y-32 md:translate-y-44" : ""
+                }`}
+              >
+                {activeSubtitle || ""}
               </p>
             </div>
 
@@ -1283,7 +1330,7 @@ export default function MeditationTab({
                     step={0.05}
                     value={audioVolume}
                     onChange={(e) => setAudioVolume(Number(e.target.value))}
-                    className="w-20 md:w-24 accent-primary h-1 bg-surface-container-highest rounded-lg appearance-none cursor-pointer"
+                    className="w-14 md:w-24 accent-primary h-1 bg-surface-container-highest rounded-lg appearance-none cursor-pointer"
                   />
                 </div>
 

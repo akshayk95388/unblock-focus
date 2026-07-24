@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/client";
 
 export interface SubtitleEntry {
+  segment_id?: string;
   text: string;
   start_ms: number;
   end_ms: number;

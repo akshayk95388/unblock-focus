@@ -5,8 +5,9 @@ from pathlib import Path
 from typing import List
 
 from engine.state import MeditationEngineState
-from engine.models.events import SpeechEvent
+from engine.models.events import SpeechEvent, BreathEvent
 from engine.models.job import SubtitleEntry
+from engine.profiles.breath_patterns import BREATH_PATTERNS
 from storage.factory import get_storage_backend
 
 logger = logging.getLogger(__name__)
@@ -17,7 +18,8 @@ def build_subtitles(state: MeditationEngineState) -> List[SubtitleEntry]:
     timeline = state["timeline"]
     segments = {s.segment_id: s for s in state["speech_segments"]}
     subtitles = []
-    current_ms = 0
+    # Start at 1500ms to align with the composer's leading silence
+    current_ms = 1500
 
     for event in timeline.events:
         if isinstance(event, SpeechEvent):
@@ -31,6 +33,19 @@ def build_subtitles(state: MeditationEngineState) -> List[SubtitleEntry]:
                     end_ms=current_ms + duration_ms,
                 ))
                 current_ms += duration_ms
+        elif isinstance(event, BreathEvent):
+            pattern = BREATH_PATTERNS.get(event.pattern)
+            if pattern:
+                for cycle in range(event.cycles):
+                    for phase in pattern.phases:
+                        duration_ms = int(phase.duration_s * 1000)
+                        subtitles.append(SubtitleEntry(
+                            segment_id=f"breath_{event.pattern}_{cycle}_{phase.phase}",
+                            text=phase.cue_text,
+                            start_ms=current_ms,
+                            end_ms=current_ms + duration_ms,
+                        ))
+                        current_ms += duration_ms
         elif hasattr(event, "resolved_ms") and event.resolved_ms > 0:
             current_ms += event.resolved_ms
         elif hasattr(event, "duration_s") and event.duration_s > 0:
