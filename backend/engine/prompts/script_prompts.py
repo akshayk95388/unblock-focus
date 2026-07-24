@@ -42,9 +42,9 @@ For each stage, follow its purpose:
   * imposter: normalize the feeling, point out something concrete they've already done
   * general: help them name what's in their control and let go of what isn't
 
-- reframe: The action bridge. Shift from "I'm stuck" to "I know what to do next." End with a natural, full sentence (8–14 words) that transitions them toward their work — e.g. "Take a steady breath, and let's turn your focus back to what matters."
+- reframe: The action bridge. Use a 2-line contrast pattern: first release what they don't need to finish right now (e.g. "You don't need to finish the whole project today."), then pivot to their single micro-step (e.g. "You only need to draft the first three paragraphs."). End with a natural transition sentence toward their work.
 
-- closing: One warm, grounded, complete closing sentence (8–14 words). Make it feel like a supportive friend sending them off into focus — e.g. "When you're ready, bring your attention back to your screen and take that first step." NEVER write abrupt 1-2 word sendoffs like "Go.", "Go do.", "Go do one thing.", or "Do it."
+- closing: One warm, grounded, complete closing sentence (8–14 words). Direct them naturally back to their desk or screen to begin — e.g. "Bring your attention back to your screen, open your file, and take that first step." NEVER write abrupt 1-2 word sendoffs like "Go.", "Go do.", "Go do one thing.", or "Do it."
 
 CRITICAL: Output ONLY the sections listed in the stage plan above. Do not add or invent extra sections.
 
