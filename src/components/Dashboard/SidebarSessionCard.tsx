@@ -58,9 +58,16 @@ export default function SidebarSessionCard({
 
   const progress =
     session.totalSeconds > 0
-      ? Math.round(
-          ((session.totalSeconds - session.secondsLeft) / session.totalSeconds) *
-            100
+      ? Math.min(
+          100,
+          Math.max(
+            0,
+            Math.round(
+              ((session.totalSeconds - session.secondsLeft) /
+                session.totalSeconds) *
+                100
+            )
+          )
         )
       : 0;
 

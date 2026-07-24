@@ -433,6 +433,30 @@ export default function MeditationTab({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [restoredPaused, audioUrl]);
 
+  // Sync actualDuration from the HTML5 audio element's loaded metadata/duration
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const updateDuration = () => {
+      if (isFinite(audio.duration) && audio.duration > 0) {
+        setActualDuration(audio.duration);
+      }
+    };
+
+    if (audio.readyState >= 1) {
+      updateDuration();
+    }
+
+    audio.addEventListener("loadedmetadata", updateDuration);
+    audio.addEventListener("durationchange", updateDuration);
+
+    return () => {
+      audio.removeEventListener("loadedmetadata", updateDuration);
+      audio.removeEventListener("durationchange", updateDuration);
+    };
+  }, [audioUrl]);
+
   // Fallback to go back to the dashboard if the state ever lands on idle.
   // Suppressed until a restore attempt has run so a restored session isn't
   // bounced away before it hydrates.
@@ -465,10 +489,11 @@ export default function MeditationTab({
         isGenerating: true,
       });
     } else if (status === "playing") {
+      const dur = actualDuration || durationMins * 60;
       setSession({
         type: "guided",
-        totalSeconds: actualDuration || durationMins * 60,
-        secondsLeft: actualDuration || durationMins * 60,
+        totalSeconds: dur,
+        secondsLeft: Math.max(0, Math.round(dur - currentTime)),
         sourceTab: "meditation",
       });
     } else if (status === "focus_timer") {
@@ -482,7 +507,7 @@ export default function MeditationTab({
       // idle, post_reset, session_complete, failed → no active ticking session
       setSession(null);
     }
-  }, [status]); // intentionally only fires on status change
+  }, [status, actualDuration, durationMins, focusDuration, resetDone]);
 
   // ── Sync focus timer countdown to context ──
   useEffect(() => {
@@ -1647,7 +1672,20 @@ export default function MeditationTab({
           })()}
       </div>
       {/* Hidden audio element */}
-      {audioUrl && <audio ref={audioRef} src={audioUrl} preload="auto" className="hidden" />}
+      {audioUrl && (
+        <audio
+          ref={audioRef}
+          src={audioUrl}
+          preload="auto"
+          onLoadedMetadata={(e) => {
+            const target = e.currentTarget;
+            if (isFinite(target.duration) && target.duration > 0) {
+              setActualDuration(target.duration);
+            }
+          }}
+          className="hidden"
+        />
+      )}
 
       {/* Paywall Modal */}
       {showPaywall && (
