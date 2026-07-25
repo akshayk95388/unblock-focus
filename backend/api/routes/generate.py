@@ -107,11 +107,16 @@ async def run_pipeline_task(job_id: str, request: GenerateRequest):
                 job.actual_duration_s = state.get("actual_duration_s")
                 job.completed_at = datetime.utcnow()
                 
-                # Save subtitles events and focus task metadata
+                should_include_words = getattr(request, "include_words_ts", False)
                 job.subtitles = {
                     "events": [
-                        {"segment_id": s.segment_id, "text": s.text,
-                         "start_ms": s.start_ms, "end_ms": s.end_ms}
+                        {
+                            "segment_id": s.segment_id if hasattr(s, "segment_id") else s.get("segment_id"),
+                            "text": s.text if hasattr(s, "text") else s.get("text"),
+                            "start_ms": s.start_ms if hasattr(s, "start_ms") else s.get("start_ms"),
+                            "end_ms": s.end_ms if hasattr(s, "end_ms") else s.get("end_ms"),
+                            **({"words": s.words if hasattr(s, "words") else s.get("words")} if should_include_words and (hasattr(s, "words") or (isinstance(s, dict) and s.get("words"))) else {}),
+                        }
                         for s in state.get("subtitles", [])
                     ],
                     "focus_task": state.get("raw_prose", {}).get("focus_task", "Focused Work")

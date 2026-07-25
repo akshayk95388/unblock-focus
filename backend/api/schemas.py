@@ -9,6 +9,7 @@ class GenerateRequest(BaseModel):
     duration_mins: Optional[int] = Field(default=None, ge=1, le=30)
     voice: str = Field(default="gentle_female")
     music: str = Field(default="none")
+    include_words_ts: Optional[bool] = Field(default=False)
 
 
 class GenerateResponse(BaseModel):

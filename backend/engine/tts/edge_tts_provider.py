@@ -48,3 +48,57 @@ class EdgeTTSProvider(TTSProvider):
         await communicate.save(str(path))
 
         logger.debug(f"Edge TTS generated ({rate}): {output_path}")
+
+    async def generate_with_timestamps(
+        self,
+        text: str,
+        voice_id: str,
+        rate: str = "+0%",
+        speed: float = 1.0,
+        previous_text: Optional[str] = None,
+        next_text: Optional[str] = None,
+    ) -> dict:
+        """Edge TTS timestamp generation using native WordBoundary events."""
+        import edge_tts
+
+        resolved_voice = self.VOICE_MAP.get(voice_id, voice_id)
+        communicate = edge_tts.Communicate(text, resolved_voice, rate=rate)
+
+        audio_chunks = []
+        boundaries = []
+
+        async for chunk in communicate.stream():
+            if chunk["type"] == "audio":
+                audio_chunks.append(chunk["data"])
+            elif chunk["type"] in ("WordBoundary", "SentenceBoundary"):
+                st_s = chunk["offset"] / 10_000_000.0
+                dur_s = chunk["duration"] / 10_000_000.0
+                boundaries.append((chunk["text"], st_s, dur_s))
+
+        audio_bytes = b"".join(audio_chunks)
+
+        n_chars = len(text)
+        characters = list(text)
+        char_start = [0.0] * n_chars
+        char_end = [0.0] * n_chars
+
+        cursor = 0
+        for b_text, st_s, dur_s in boundaries:
+            idx = text.find(b_text, cursor)
+            if idx == -1:
+                idx = text.lower().find(b_text.lower(), cursor)
+            if idx != -1:
+                b_len = max(1, len(b_text))
+                for c_idx in range(b_len):
+                    pos = idx + c_idx
+                    if pos < n_chars:
+                        char_start[pos] = st_s + (c_idx / b_len) * dur_s
+                        char_end[pos] = st_s + ((c_idx + 1) / b_len) * dur_s
+                cursor = idx + b_len
+
+        return {
+            "audio_bytes": audio_bytes,
+            "char_start": char_start,
+            "char_end": char_end,
+            "characters": characters,
+        }

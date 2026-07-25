@@ -106,8 +106,13 @@ async def run_full_pipeline(
             "actual_duration_s": state.get("actual_duration_s"),
             "total_segments": len(state.get("speech_segments", [])),
             "subtitles": [
-                {"segment_id": s.segment_id, "text": s.text,
-                 "start_ms": s.start_ms, "end_ms": s.end_ms}
+                {
+                    "segment_id": s.segment_id,
+                    "text": s.text,
+                    "start_ms": s.start_ms,
+                    "end_ms": s.end_ms,
+                    "words": getattr(s, "words", None),
+                }
                 for s in state.get("subtitles", [])
             ],
             "timeline": state.get("timeline"),

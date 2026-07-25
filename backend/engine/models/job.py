@@ -8,6 +8,7 @@ class SpeechSegment:
     segment_id: str = ""
     path: str = ""
     duration_s: float = 0.0
+    words: Optional[List[dict]] = None
 
 
 @dataclass
@@ -17,3 +18,4 @@ class SubtitleEntry:
     text: str = ""
     start_ms: int = 0
     end_ms: int = 0
+    words: Optional[List[dict]] = None

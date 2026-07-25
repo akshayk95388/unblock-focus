@@ -111,6 +111,76 @@ def test_build_command_with_music():
     assert "sidechaincompress" in filter_str
 
 
+def test_build_subtitles_includes_words():
+    """Verify build_subtitles calculates global word timestamps correctly."""
+    from engine.models.job import SpeechSegment
+    from engine.models.events import SpeechEvent
+    from engine.models.timeline import MeditationTimeline
+    from engine.nodes.n07_storage_notify import build_subtitles
+
+    timeline = MeditationTimeline(
+        events=[
+            SpeechEvent(segment_id="seg_0", text="Breathe in deeply.")
+        ]
+    )
+    speech_segments = [
+        SpeechSegment(
+            segment_id="seg_0",
+            path="/tmp/seg_0.mp3",
+            duration_s=3.0,
+            words=[
+                {"word": "Breathe", "start_ms": 0, "end_ms": 500},
+                {"word": "in", "start_ms": 520, "end_ms": 700},
+                {"word": "deeply.", "start_ms": 710, "end_ms": 1400},
+            ],
+        )
+    ]
+
+    state = {
+        "timeline": timeline,
+        "speech_segments": speech_segments,
+    }
+
+    subtitles = build_subtitles(state)
+    assert len(subtitles) == 1
+    assert subtitles[0].segment_id == "seg_0"
+    assert subtitles[0].start_ms == 1500  # Starts after leading silence
+    assert subtitles[0].words is not None
+    assert len(subtitles[0].words) == 3
+    # Word timestamps should be offset by 1500ms leading silence
+    assert subtitles[0].words[0] == {"word": "Breathe", "start_ms": 1500, "end_ms": 2000}
+    assert subtitles[0].words[1] == {"word": "in", "start_ms": 2020, "end_ms": 2200}
+    assert subtitles[0].words[2] == {"word": "deeply.", "start_ms": 2210, "end_ms": 2900}
+
+
+def test_build_subtitles_includes_breath_cue_words():
+    """Verify build_subtitles generates word timestamps for breath cues."""
+    from engine.models.events import BreathEvent
+    from engine.models.timeline import MeditationTimeline
+    from engine.nodes.n07_storage_notify import build_subtitles
+
+    timeline = MeditationTimeline(
+        events=[
+            BreathEvent(pattern="box_4", cycles=1)
+        ]
+    )
+    state = {
+        "timeline": timeline,
+        "speech_segments": [],
+    }
+
+    subtitles = build_subtitles(state)
+    assert len(subtitles) == 4  # box_4 has 4 phases: inhale, hold_in, exhale, hold_out
+    # Inhale cue: "Breathe in..."
+    inhale_sub = subtitles[0]
+    assert inhale_sub.text == "Breathe in..."
+    assert inhale_sub.words is not None
+    assert len(inhale_sub.words) == 2
+    assert inhale_sub.words[0]["word"] == "Breathe"
+    assert inhale_sub.words[1]["word"] == "in..."
+    assert inhale_sub.words[0]["start_ms"] == 1500
+
+
 def test_build_command_fade_positions():
     """Fade out should start 3s before duration end for voice-only mastering."""
     cmd = build_mastering_command(

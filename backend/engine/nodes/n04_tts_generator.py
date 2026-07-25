@@ -143,6 +143,57 @@ class ScriptItem:
     text: str
 
 
+def _extract_words_for_slice(
+    characters: List[str],
+    char_start: List[float],
+    char_end: List[float],
+    start_c: int,
+    end_c: int,
+    segment_start_s: float,
+) -> List[dict]:
+    """Group character alignments into word timestamps relative to segment start (ms)."""
+    if not characters or not char_start or not char_end:
+        return []
+
+    words = []
+    current_word = ""
+    w_start = None
+    limit = min(end_c, len(characters), len(char_start), len(char_end))
+
+    for idx in range(start_c, limit):
+        ch = characters[idx]
+        st = char_start[idx]
+        et = char_end[idx]
+
+        if ch.strip():
+            if w_start is None:
+                w_start = st
+            current_word += ch
+        else:
+            if current_word and w_start is not None:
+                rel_start = max(0, int((w_start - segment_start_s) * 1000))
+                rel_end = max(rel_start + 50, int((et - segment_start_s) * 1000))
+                words.append({
+                    "word": current_word,
+                    "start_ms": rel_start,
+                    "end_ms": rel_end,
+                })
+                current_word = ""
+                w_start = None
+
+    if current_word and w_start is not None:
+        last_et = char_end[min(limit - 1, len(char_end) - 1)] if limit > start_c else w_start
+        rel_start = max(0, int((w_start - segment_start_s) * 1000))
+        rel_end = max(rel_start + 50, int((last_et - segment_start_s) * 1000))
+        words.append({
+            "word": current_word,
+            "start_ms": rel_start,
+            "end_ms": rel_end,
+        })
+
+    return words
+
+
 async def _generate_single_shot_session(
     timeline,
     voice_key: str,
@@ -198,6 +249,7 @@ async def _generate_single_shot_session(
     audio_bytes = ts_res.get("audio_bytes")
     char_start = ts_res.get("char_start")
     char_end = ts_res.get("char_end")
+    characters = ts_res.get("characters", [])
 
     if not audio_bytes or not char_end:
         return None
@@ -221,6 +273,15 @@ async def _generate_single_shot_session(
 
         slice_clip = full_audio[start_ms:end_ms]
 
+        words = _extract_words_for_slice(
+            characters=characters,
+            char_start=char_start,
+            char_end=char_end,
+            start_c=start_c,
+            end_c=end_c,
+            segment_start_s=start_s,
+        )
+
         if item.kind == "speech":
             path = tmp_dir / f"{item.item_id}.mp3"
             slice_clip.export(str(path), format="mp3", bitrate="128k")
@@ -228,6 +289,7 @@ async def _generate_single_shot_session(
                 segment_id=item.item_id,
                 path=str(path),
                 duration_s=len(slice_clip) / 1000.0,
+                words=words if words else None,
             ))
         elif item.kind == "breath_cue":
             path = tmp_dir / f"breath_{item.pattern}_{item.item_id}.mp3"
@@ -299,6 +361,7 @@ async def _generate_chunked_session(
         audio_bytes = ts_res.get("audio_bytes")
         char_start = ts_res.get("char_start")
         char_end = ts_res.get("char_end")
+        characters = ts_res.get("characters", [])
 
         if not audio_bytes or not char_end:
             return None
@@ -323,10 +386,20 @@ async def _generate_chunked_session(
             path = tmp_dir / f"{segment_id}.mp3"
             slice_clip.export(str(path), format="mp3", bitrate="128k")
 
+            words = _extract_words_for_slice(
+                characters=characters,
+                char_start=char_start,
+                char_end=char_end,
+                start_c=start_c,
+                end_c=end_c,
+                segment_start_s=start_s,
+            )
+
             speech_segments.append(SpeechSegment(
                 segment_id=segment_id,
                 path=str(path),
                 duration_s=len(slice_clip) / 1000.0,
+                words=words if words else None,
             ))
 
     logger.info(f"Chunked Session successful! Generated {len(speech_segments)} segments across {len(chunks)} stitched chunks.")
