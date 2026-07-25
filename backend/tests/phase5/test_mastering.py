@@ -79,7 +79,7 @@ async def run_mastering(
 
 
 def test_build_command_no_music():
-    """Command without music should have one input."""
+    """Command without music should have one input and no ducking."""
     cmd = build_mastering_command(
         voice_path="/tmp/voice.wav",
         music_path=None,
@@ -90,18 +90,25 @@ def test_build_command_no_music():
     assert cmd.count("-i") == 1
     assert "libmp3lame" in cmd
     assert "192k" in cmd
+    filter_str = " ".join(cmd)
+    assert "sidechaincompress" not in filter_str
+    assert "asplit" not in filter_str
 
 
 def test_build_command_with_music():
-    """Command with music should have two inputs."""
+    """Command with music should have two inputs and sidechain ducking."""
     cmd = build_mastering_command(
         voice_path="/tmp/voice.wav",
         music_path="/tmp/music.mp3",
         output_path="/tmp/out.mp3",
         duration_s=60.0,
     )
+    filter_str = " ".join(cmd)
     assert cmd.count("-i") == 2
-    assert "amix" in " ".join(cmd)
+    assert "amix" in filter_str
+    # Sidechain ducking: voice is split, music is compressed by voice level
+    assert "asplit" in filter_str
+    assert "sidechaincompress" in filter_str
 
 
 def test_build_command_fade_positions():
