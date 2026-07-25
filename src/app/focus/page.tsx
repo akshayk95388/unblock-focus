@@ -398,15 +398,11 @@ function DashboardContent() {
             {/* Hero — Inline Session Starter */}
             <div className="relative w-full">
               <div className="max-w-2xl w-full mx-auto">
-                <h1 className="text-4xl md:text-5xl font-bold tracking-tighter text-on-surface mb-4 leading-tight">
-                  Clear your head.
-                  <br />
-                  <span className="text-primary-container">Get to work.</span>
-                </h1>
-                <p className="hidden sm:block text-on-surface-variant text-base md:text-lg mb-6 md:mb-8 leading-relaxed">
-                  A personalized guided session to clear what&apos;s blocking you, then a
-                  focus session to get your deep work done.
-                </p>
+                <div className="mb-6 md:mb-8">
+                  <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-on-surface">
+                    Welcome, <span className="text-primary-container">{user?.user_metadata?.full_name?.split(" ")[0] || user?.user_metadata?.name?.split(" ")[0] || "Akshay"}</span>
+                  </h1>
+                </div>
 
                 {/* Timeline Roadmap Layout */}
                 <div className="relative flex gap-0 md:gap-8 mt-4 sm:mt-8">
