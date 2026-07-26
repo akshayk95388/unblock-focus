@@ -17,6 +17,7 @@ from engine.models.schemas import ScriptProseSchema
 from engine.prompts.script_prompts import (
     SYSTEM_PROMPT,
     SCRIPT_PROMPT,
+    PROMPT_REGISTRY,
     SCRIPT_PROMPT_TEMPLATE,
     format_reflection_feedback,
 )
@@ -35,8 +36,11 @@ async def script_generator_node(state: MeditationEngineState, config: Optional[d
     llm = get_chat_model(config=config, temperature=0.7)
     structured_llm = llm.with_structured_output(ScriptProseSchema)
 
+    preset = state.get("preset", "guided_session")
+    script_prompt_template = PROMPT_REGISTRY.get(preset, SCRIPT_PROMPT)
+
     sections_text = format_sections_for_prompt(state["section_plan"])
-    prompt = SCRIPT_PROMPT.format(
+    prompt = script_prompt_template.format(
         stressor=state["stressor"],
         meditation_type=state["meditation_type"],
         duration_mins=state["duration_mins"],

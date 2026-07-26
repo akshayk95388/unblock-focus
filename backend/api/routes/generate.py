@@ -50,6 +50,7 @@ async def run_pipeline_task(job_id: str, request: GenerateRequest):
         "duration_mins": request.duration_mins or (7 if category == "deep" else 3),
         "voice_key": request.voice,
         "music_key": request.music,
+        "preset": request.preset or "guided_session",
         "fix_attempts": 0,
     }
 

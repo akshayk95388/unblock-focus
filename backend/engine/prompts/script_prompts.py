@@ -65,9 +65,32 @@ Pause duration rules (pause_s values):
 - Use 5–8s on the final closing line.
 
 "breath_cycle" must be null or one of: box_4, sleep_478, calm_46, focus_44
-Only sections with breathing in the plan should set breath_cycle.
+Only sections with breathing in the plan should set breath_cycle."""
 
+REEL_HUMAN_PROMPT = """Write a 60-second high-impact unblock reel for someone stuck on: "{stressor}"
+Category: {meditation_type}
+Target narration: {target_word_count} words (spoken at 130-140 words per minute)
+
+Structure the reset through these stages in order:
+{sections_with_durations}
+
+For each stage, follow its purpose:
+
+- hook: Start with a powerful 1-sentence attention hook that names their exact blocker directly and invites them to pause. Example: "If your mind is spinning over a hard decision, stop scrolling and take 45 seconds to clear the noise."
+
+- breathing_reset: IMPORTANT — write only 1 short framing line introducing a single calming breath (e.g. "Take a deep breath in through your nose and let it out."). Do NOT narrate individual inhale/hold/exhale steps.
+
+- reframe: The essential core fix. 3-4 crisp lines giving them direct perspective, releasing what they do not need to finish right now, and providing a single micro-step to unblock them.
+
+- closing: One sharp, motivating closing sentence directing them to take action right now.
+
+CRITICAL: Output ONLY valid JSON matching the schema with top-level fields: title, intention, focus_task, and sections. Output ONLY the sections listed in the stage plan above. Do not add or invent extra sections.
 Do not use: colons, semicolons, bullet points, em dashes in any "text" value."""
+
+PROMPT_REGISTRY = {
+    "guided_session": SCRIPT_PROMPT,
+    "unblock_reel": REEL_HUMAN_PROMPT,
+}
 
 SCRIPT_PROMPT_TEMPLATE = ChatPromptTemplate.from_messages([
     ("system", SYSTEM_PROMPT),

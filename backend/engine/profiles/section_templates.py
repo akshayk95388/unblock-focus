@@ -29,6 +29,20 @@ DEEP_RESET = [
     SectionTemplate("closing",          0.10, None,       0),
 ]
 
+UNBLOCK_REEL = [
+    SectionTemplate("hook",            0.15, None,       0),
+    SectionTemplate("breathing_reset", 0.25, "calm_46",  1),
+    SectionTemplate("reframe",         0.45, None,       0),
+    SectionTemplate("closing",         0.15, None,       0),
+]
+
+
+def get_template_for_preset(preset: str, duration_category: str) -> List[SectionTemplate]:
+    """Return structural template based on preset or duration category."""
+    if preset == "unblock_reel":
+        return UNBLOCK_REEL
+    return DEEP_RESET if duration_category == "deep" else QUICK_RESET
+
 
 def get_template_for_category(duration_category: str) -> List[SectionTemplate]:
     """Return the structural template for a duration category."""

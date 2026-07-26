@@ -200,6 +200,22 @@ def test_build_timeline_from_prose_structure():
     assert len(section_markers) == 5
 
 
+def test_unblock_reel_preset_template_and_prompt():
+    """Verify unblock_reel preset configures 60s total duration and UNBLOCK_REEL sections."""
+    from engine.profiles.section_templates import get_template_for_preset, UNBLOCK_REEL
+    from engine.prompts.script_prompts import PROMPT_REGISTRY, REEL_HUMAN_PROMPT
+
+    template = get_template_for_preset("unblock_reel", "quick")
+    assert template == UNBLOCK_REEL
+    assert len(template) == 4
+    assert template[0].name == "hook"
+    assert template[1].name == "breathing_reset"
+    assert template[2].name == "reframe"
+    assert template[3].name == "closing"
+
+    assert PROMPT_REGISTRY.get("unblock_reel") == REEL_HUMAN_PROMPT
+
+
 def test_build_timeline_pause_weights_match():
     """Pause events must have weights from PAUSE_WEIGHTS, not LLM-assigned."""
     state = {"job_id": "test", "meditation_type": "anxiety", "duration_mins": 5}

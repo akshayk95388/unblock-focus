@@ -6,7 +6,7 @@ from typing import List, Optional
 
 from engine.state import MeditationEngineState, SectionPlan
 from engine.profiles.pacing import PACING_PROFILES, SPEECH_DENSITY
-from engine.profiles.section_templates import get_template_for_category
+from engine.profiles.section_templates import get_template_for_category, get_template_for_preset
 from engine.utils.llm_factory import get_chat_model
 from engine.models.schemas import ClassifierResponseSchema
 from engine.prompts.classifier_prompts import (
@@ -66,6 +66,7 @@ async def classifier_node(state: MeditationEngineState, config: Optional[dict] =
 
     duration_category = state.get("duration_category")
     duration_mins = state.get("duration_mins")
+    preset = state.get("preset", "guided_session")
 
     if not duration_category:
         if duration_mins and duration_mins > 5:
@@ -73,14 +74,18 @@ async def classifier_node(state: MeditationEngineState, config: Optional[dict] =
         else:
             duration_category = "quick"
 
-    template = get_template_for_category(duration_category)
+    template = get_template_for_preset(preset, duration_category)
     pacing = PACING_PROFILES[meditation_type]
     density = SPEECH_DENSITY[meditation_type]
 
-    # Target anchor midpoints: Quick = 3.5m (210s), Deep = 7.5m (450s)
-    total_s = 450.0 if duration_category == "deep" else 210.0
-    target_speech_s = total_s * density
-    target_words = int((target_speech_s / 60) * pacing["wpm"])
+    if preset == "unblock_reel":
+        total_s = 60.0
+        target_words = 80
+    else:
+        # Target anchor midpoints: Quick = 3.5m (210s), Deep = 7.5m (450s)
+        total_s = 450.0 if duration_category == "deep" else 210.0
+        target_speech_s = total_s * density
+        target_words = int((target_speech_s / 60) * pacing["wpm"])
 
     return {
         "duration_category": duration_category,
