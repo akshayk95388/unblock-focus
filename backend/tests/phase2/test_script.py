@@ -217,8 +217,8 @@ def test_unblock_reel_preset_template_and_prompt():
     assert PROMPT_REGISTRY.get("unblock_reel") == REEL_HUMAN_PROMPT
 
     reel_profile = get_preset_profile("unblock_reel")
-    assert reel_profile.target_duration_s == 60.0
-    assert reel_profile.target_words == 80
+    assert reel_profile.target_duration_s == 120.0
+    assert reel_profile.target_words == 150
     assert reel_profile.pause_mode == "snappy"
 
     guided_profile = get_preset_profile("guided_session")

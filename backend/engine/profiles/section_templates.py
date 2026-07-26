@@ -31,7 +31,7 @@ DEEP_RESET = [
 
 UNBLOCK_REEL = [
     SectionTemplate("hook",            0.15, None,       0),
-    SectionTemplate("breathing_reset", 0.25, "calm_46",  1),
+    SectionTemplate("breathing_reset", 0.25, "calm_46",  2),
     SectionTemplate("reframe",         0.45, None,       0),
     SectionTemplate("closing",         0.15, None,       0),
 ]

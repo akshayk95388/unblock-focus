@@ -27,8 +27,8 @@ PRESET_PROFILES: Dict[str, PresetProfile] = {
     ),
     "unblock_reel": PresetProfile(
         name="unblock_reel",
-        target_duration_s=60.0,
-        target_words=80,
+        target_duration_s=120.0,
+        target_words=150,
         pause_mode="snappy",
         template=UNBLOCK_REEL,
     ),
