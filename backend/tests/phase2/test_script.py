@@ -203,7 +203,7 @@ def test_build_timeline_from_prose_structure():
 def test_unblock_reel_preset_template_and_prompt():
     """Verify unblock_reel preset configures 60s total duration and UNBLOCK_REEL sections."""
     from engine.profiles.section_templates import get_template_for_preset, UNBLOCK_REEL
-    from engine.prompts.script_prompts import PROMPT_REGISTRY, REEL_HUMAN_PROMPT
+    from engine.prompts.script_prompts import REEL_HUMAN_PROMPT
     from engine.profiles.preset_profiles import get_preset_profile, PRESET_PROFILES
 
     template = get_template_for_preset("unblock_reel", "quick")
@@ -214,9 +214,8 @@ def test_unblock_reel_preset_template_and_prompt():
     assert template[2].name == "reframe"
     assert template[3].name == "closing"
 
-    assert PROMPT_REGISTRY.get("unblock_reel") == REEL_HUMAN_PROMPT
-
     reel_profile = get_preset_profile("unblock_reel")
+    assert reel_profile.prompt_template == REEL_HUMAN_PROMPT
     assert reel_profile.target_duration_s == 120.0
     assert reel_profile.target_words == 150
     assert reel_profile.pause_mode == "snappy"

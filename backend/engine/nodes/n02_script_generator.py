@@ -12,12 +12,11 @@ if backend_root not in sys.path:
     sys.path.insert(0, backend_root)
 
 from engine.state import MeditationEngineState
+from engine.profiles.preset_profiles import get_preset_profile
 from engine.utils.llm_factory import get_chat_model
 from engine.models.schemas import ScriptProseSchema
 from engine.prompts.script_prompts import (
     SYSTEM_PROMPT,
-    SCRIPT_PROMPT,
-    PROMPT_REGISTRY,
     SCRIPT_PROMPT_TEMPLATE,
     format_reflection_feedback,
 )
@@ -36,8 +35,8 @@ async def script_generator_node(state: MeditationEngineState, config: Optional[d
     llm = get_chat_model(config=config, temperature=0.7)
     structured_llm = llm.with_structured_output(ScriptProseSchema)
 
-    preset = state.get("preset", "guided_session")
-    script_prompt_template = PROMPT_REGISTRY.get(preset, SCRIPT_PROMPT)
+    profile = get_preset_profile(state.get("preset"))
+    script_prompt_template = profile.prompt_template
 
     sections_text = format_sections_for_prompt(state["section_plan"])
     prompt = script_prompt_template.format(

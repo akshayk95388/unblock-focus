@@ -84,15 +84,20 @@ async def classifier_node(state: MeditationEngineState, config: Optional[dict] =
         total_s = profile.target_duration_s
         target_words = profile.target_words or 80
         duration_target_s = int(total_s)
+        duration_mins = int(round(total_s / 60.0))
     else:
-        # Target anchor midpoints: Quick = 3.5m (210s), Deep = 7.5m (450s)
+        # Guided sessions use anchor defaults tuned to match prompt rules
+        # (Quick=3min/210s section scaling, Deep=7min/450s section scaling).
+        # Client duration_mins only influences quick vs deep category (lines 72-76).
         total_s = 450.0 if duration_category == "deep" else 210.0
+        duration_mins = 7 if duration_category == "deep" else 3
+        duration_target_s = duration_mins * 60
         target_speech_s = total_s * density
         target_words = int((target_speech_s / 60) * pacing["wpm"])
-        duration_target_s = int(state.get("duration_mins", 3) * 60)
 
     return {
         "duration_category": duration_category,
+        "duration_mins": duration_mins,
         "meditation_type": meditation_type,
         "section_plan": scale_sections(template, total_s),
         "pacing_profile": pacing["profile"],

@@ -6,6 +6,7 @@ from engine.profiles.section_templates import (
     SectionTemplate,
     UNBLOCK_REEL,
 )
+from engine.prompts.script_prompts import SCRIPT_PROMPT, REEL_HUMAN_PROMPT
 
 
 @dataclass
@@ -15,6 +16,7 @@ class PresetProfile:
     target_words: Optional[int]         # None = dynamic calculation from WPM
     pause_mode: str                     # "guided" | "snappy"
     template: Optional[List[SectionTemplate]]  # None = dynamic choice via duration_category
+    prompt_template: str                # Prompt template string for LLM script generation
 
 
 PRESET_PROFILES: Dict[str, PresetProfile] = {
@@ -24,6 +26,7 @@ PRESET_PROFILES: Dict[str, PresetProfile] = {
         target_words=None,
         pause_mode="guided",
         template=None,
+        prompt_template=SCRIPT_PROMPT,
     ),
     "unblock_reel": PresetProfile(
         name="unblock_reel",
@@ -31,6 +34,7 @@ PRESET_PROFILES: Dict[str, PresetProfile] = {
         target_words=150,
         pause_mode="snappy",
         template=UNBLOCK_REEL,
+        prompt_template=REEL_HUMAN_PROMPT,
     ),
 }
 

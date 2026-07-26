@@ -87,11 +87,6 @@ For each stage, follow its purpose:
 CRITICAL: Output ONLY valid JSON matching the schema with top-level fields: title, intention, focus_task, and sections. Output ONLY the sections listed in the stage plan above. Do not add or invent extra sections.
 Do not use: colons, semicolons, bullet points, em dashes in any "text" value."""
 
-PROMPT_REGISTRY = {
-    "guided_session": SCRIPT_PROMPT,
-    "unblock_reel": REEL_HUMAN_PROMPT,
-}
-
 SCRIPT_PROMPT_TEMPLATE = ChatPromptTemplate.from_messages([
     ("system", SYSTEM_PROMPT),
     ("human", "{human_prompt}"),

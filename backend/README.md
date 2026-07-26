@@ -72,11 +72,14 @@ backend/
 
 ## Adding New Presets
 
-Presets control session format (e.g. `guided_session` for 3–7 min meditations, `unblock_reel` for 60s video reels). To add a new preset, touch **3 files** — no node code changes required.
+Presets control session format (e.g. `guided_session` for 3–7 min meditations, `unblock_reel` for 2-min resets). To add a new preset, touch **2 files** — no node code changes required.
 
-**Step 1 — Define the section template** in `engine/profiles/section_templates.py`:
+**Step 1 — Define section template & prompt** in `engine/profiles/section_templates.py` and `engine/prompts/script_prompts.py`:
 ```python
-MY_PRESET = [
+MY_PRESET_PROMPT = """Your prompt template with {stressor}, {meditation_type},
+{target_word_count}, {sections_with_durations}, {duration_mins} placeholders..."""
+
+MY_PRESET_TEMPLATE = [
     SectionTemplate("intro",    0.20, None,      0),
     SectionTemplate("exercise", 0.60, "calm_46", 2),
     SectionTemplate("closing",  0.20, None,      0),
@@ -90,16 +93,9 @@ PRESET_PROFILES["my_preset"] = PresetProfile(
     target_duration_s=90.0,       # Fixed duration (None = dynamic from duration_mins)
     target_words=120,             # Target word count (None = dynamic from WPM)
     pause_mode="snappy",          # "guided" (meditation pauses) or "snappy" (tight transitions)
-    template=MY_PRESET,           # Section template (None = uses QUICK_RESET/DEEP_RESET)
+    template=MY_PRESET_TEMPLATE,  # Section template (None = uses QUICK_RESET/DEEP_RESET)
+    prompt_template=MY_PRESET_PROMPT,  # LLM prompt template string
 )
-```
-
-**Step 3 — Add the prompt** in `engine/prompts/script_prompts.py`:
-```python
-MY_PRESET_PROMPT = """Your prompt template with {stressor}, {meditation_type},
-{target_word_count}, {sections_with_durations}, {duration_mins} placeholders..."""
-
-PROMPT_REGISTRY["my_preset"] = MY_PRESET_PROMPT
 ```
 
 The API accepts the preset via `POST /api/generate` with `{"preset": "my_preset", ...}`.
