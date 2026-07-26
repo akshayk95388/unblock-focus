@@ -55,9 +55,10 @@ def validate_timeline(timeline: MeditationTimeline) -> List[str]:
             issues.append(f"Repeated line: '{text[:50]}'")
         seen.add(text)
 
-    # Check minimum line count
-    if len(speech_events) < 8:
-        issues.append(f"Too few lines: {len(speech_events)} (minimum 8)")
+    # Check minimum line count (4 for 60s reels, 8 for guided sessions)
+    min_lines = 4 if timeline.duration_target_s <= 60 else 8
+    if len(speech_events) < min_lines:
+        issues.append(f"Too few lines: {len(speech_events)} (minimum {min_lines})")
 
     return issues
 

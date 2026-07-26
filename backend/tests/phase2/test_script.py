@@ -204,6 +204,7 @@ def test_unblock_reel_preset_template_and_prompt():
     """Verify unblock_reel preset configures 60s total duration and UNBLOCK_REEL sections."""
     from engine.profiles.section_templates import get_template_for_preset, UNBLOCK_REEL
     from engine.prompts.script_prompts import PROMPT_REGISTRY, REEL_HUMAN_PROMPT
+    from engine.profiles.preset_profiles import get_preset_profile, PRESET_PROFILES
 
     template = get_template_for_preset("unblock_reel", "quick")
     assert template == UNBLOCK_REEL
@@ -214,6 +215,15 @@ def test_unblock_reel_preset_template_and_prompt():
     assert template[3].name == "closing"
 
     assert PROMPT_REGISTRY.get("unblock_reel") == REEL_HUMAN_PROMPT
+
+    reel_profile = get_preset_profile("unblock_reel")
+    assert reel_profile.target_duration_s == 60.0
+    assert reel_profile.target_words == 80
+    assert reel_profile.pause_mode == "snappy"
+
+    guided_profile = get_preset_profile("guided_session")
+    assert guided_profile.target_duration_s is None
+    assert guided_profile.pause_mode == "guided"
 
 
 def test_build_timeline_pause_weights_match():

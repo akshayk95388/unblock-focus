@@ -14,6 +14,7 @@ from engine.models.events import (
 from engine.models.timeline import MeditationTimeline
 from engine.profiles.pacing import PAUSE_WEIGHTS, DEFAULT_PAUSE_TYPE
 from engine.profiles.breath_patterns import BREATH_PATTERNS
+from engine.profiles.preset_profiles import get_preset_profile
 
 logger = logging.getLogger(__name__)
 
@@ -67,6 +68,7 @@ def build_timeline_from_prose(prose: dict, state: Dict[str, Any]) -> MeditationT
     """Deterministically convert LLM prose JSON into a MeditationTimeline DSL."""
     events = []
     speech_count = 0
+    profile = get_preset_profile(state.get("preset"))
 
     for i, section in enumerate(prose["sections"]):
         events.append(SectionMarkerEvent(
@@ -102,9 +104,12 @@ def build_timeline_from_prose(prose: dict, state: Dict[str, Any]) -> MeditationT
                 if pause_type_str not in PAUSE_WEIGHTS:
                     pause_type_str = DEFAULT_PAUSE_TYPE
 
-            # Apply reflection pause (5s) before breath cycles, section_end on standard section ends
-            if j == len(lines) - 1:
-                pause_type_str = "reflection" if has_breath else "section_end"
+            if profile.pause_mode == "snappy":
+                pause_type_str = "transition" if j == len(lines) - 1 else "short"
+            else:
+                # Apply reflection pause (5s) before breath cycles, section_end on standard section ends
+                if j == len(lines) - 1:
+                    pause_type_str = "reflection" if has_breath else "section_end"
 
             events.append(PauseEvent(
                 pause_type=PauseType(pause_type_str),
@@ -121,11 +126,12 @@ def build_timeline_from_prose(prose: dict, state: Dict[str, Any]) -> MeditationT
                 duration_s=cycle_s,
             ))
 
+    duration_target_s = state.get("duration_target_s", state.get("duration_mins", 3) * 60)
     return MeditationTimeline(
         job_id=state.get("job_id", ""),
         meditation_type=state.get("meditation_type", "general"),
         title=prose.get("title", "Guided Reset"),
-        duration_target_s=state.get("duration_mins", 3) * 60,
+        duration_target_s=duration_target_s,
         pacing_profile=state.get("pacing_profile", ""),
         events=events,
     )

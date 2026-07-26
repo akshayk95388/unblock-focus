@@ -6,7 +6,8 @@ from typing import List, Optional
 
 from engine.state import MeditationEngineState, SectionPlan
 from engine.profiles.pacing import PACING_PROFILES, SPEECH_DENSITY
-from engine.profiles.section_templates import get_template_for_category, get_template_for_preset
+from engine.profiles.preset_profiles import get_preset_profile
+from engine.profiles.section_templates import get_template_for_category
 from engine.utils.llm_factory import get_chat_model
 from engine.models.schemas import ClassifierResponseSchema
 from engine.prompts.classifier_prompts import (
@@ -74,18 +75,21 @@ async def classifier_node(state: MeditationEngineState, config: Optional[dict] =
         else:
             duration_category = "quick"
 
-    template = get_template_for_preset(preset, duration_category)
+    profile = get_preset_profile(preset)
+    template = profile.template or get_template_for_category(duration_category)
     pacing = PACING_PROFILES[meditation_type]
     density = SPEECH_DENSITY[meditation_type]
 
-    if preset == "unblock_reel":
-        total_s = 60.0
-        target_words = 80
+    if profile.target_duration_s is not None:
+        total_s = profile.target_duration_s
+        target_words = profile.target_words or 80
+        duration_target_s = int(total_s)
     else:
         # Target anchor midpoints: Quick = 3.5m (210s), Deep = 7.5m (450s)
         total_s = 450.0 if duration_category == "deep" else 210.0
         target_speech_s = total_s * density
         target_words = int((target_speech_s / 60) * pacing["wpm"])
+        duration_target_s = int(state.get("duration_mins", 3) * 60)
 
     return {
         "duration_category": duration_category,
@@ -93,6 +97,7 @@ async def classifier_node(state: MeditationEngineState, config: Optional[dict] =
         "section_plan": scale_sections(template, total_s),
         "pacing_profile": pacing["profile"],
         "target_word_count": target_words,
+        "duration_target_s": duration_target_s,
         "current_stage": "classifying",
         "progress_pct": 10.0,
     }
