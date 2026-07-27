@@ -80,12 +80,12 @@ For each stage, follow its purpose:
 
 - breathing_reset: IMPORTANT — write 1-2 framing lines introducing 2 calming breath cycles (e.g. "Take a deep breath in through your nose and let it out. One more time, in and out."). Do NOT narrate individual inhale/hold/exhale steps.
 
-- reframe: The essential core fix. 4-6 crisp lines giving them direct perspective, releasing what they do not need to finish right now, and providing a single micro-step to unblock them.
+- reframe: The essential core fix. 4-6 crisp lines providing direct perspective. Avoid repetition and clichés. Focus on releasing what they do not need to finish right now. Provide a single micro-step that feels immediate and actionable, ensuring no phrases are repeated within this section. Ensure each line has 8–15 words to maintain spoken rhythm.
 
-- closing: One sharp, motivating closing sentence directing them to take action right now.
+- closing: One sharp, motivating closing sentence directing them to take action right now. Ensure it feels urgent and compelling.
 
 CRITICAL: Output ONLY valid JSON matching the schema with top-level fields: title, intention, focus_task, and sections. Output ONLY the sections listed in the stage plan above. Do not add or invent extra sections.
-Do not use: colons, semicolons, bullet points, em dashes in any "text" value."""
+Do not use colons, semicolons, bullet points, or em dashes in any "text" value. Ensure no line is shorter than 8 words or longer than 15 words. Avoid using similar phrases or ideas in close proximity to eliminate repetition."""
 
 SCRIPT_PROMPT_TEMPLATE = ChatPromptTemplate.from_messages([
     ("system", SYSTEM_PROMPT),
