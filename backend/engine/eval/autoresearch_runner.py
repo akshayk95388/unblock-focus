@@ -34,16 +34,27 @@ logger = logging.getLogger(__name__)
 # --- Configuration ---
 EVAL_TIMEOUT_SECONDS = 120  # Kill evaluation if it exceeds 2 minutes per dataset
 
-# --- BENCHMARK DATASETS (Train / Validation Split to Prevent Overfitting) ---
-TRAIN_SET = [
-    {"stressor": "Stuck on pricing strategy and overthinking competitors", "preset": "unblock_reel"},
-    # {"stressor": "Terrified of launching on Product Hunt tomorrow morning", "preset": "unblock_reel"},
-    # {"stressor": "Procrastinating on writing the investor pitch deck", "preset": "unblock_reel"},
-]
+# --- Mapping from Preset Name to prompt string variable in script_prompts.py ---
+PRESET_TO_VARIABLE_MAP = {
+    "unblock_reel": "REEL_HUMAN_PROMPT",
+    "guided_session": "SCRIPT_PROMPT",
+}
 
-VALIDATION_SET = [
-    {"stressor": "Overwhelmed by 50 unread customer support tickets and bug reports", "preset": "unblock_reel"},
-    # {"stressor": "Feeling imposter syndrome after a brutal investor rejection", "preset": "unblock_reel"},
+# --- MASTER BENCHMARK DATASET (Train / Validation Split) ---
+MASTER_BENCHMARK_SET = [
+    # preset: unblock_reel (2-minute snappy reset)
+    {"stressor": "Stuck on pricing strategy and overthinking competitors", "preset": "unblock_reel", "split": "train"},
+    # {"stressor": "Terrified of launching on Product Hunt tomorrow morning", "preset": "unblock_reel", "split": "train"},
+    # {"stressor": "Procrastinating on writing the investor pitch deck", "preset": "unblock_reel", "split": "train"},
+    {"stressor": "Overwhelmed by 50 unread customer support tickets and bug reports", "preset": "unblock_reel", "split": "val"},
+    # {"stressor": "Feeling imposter syndrome after a brutal investor rejection", "preset": "unblock_reel", "split": "val"},
+
+    # preset: guided_session (multi-minute deep/standard guided session)
+    {"stressor": "Stuck on pricing strategy and overthinking competitors", "preset": "guided_session", "split": "train"},
+    # {"stressor": "Terrified of launching on Product Hunt tomorrow morning", "preset": "guided_session", "split": "train"},
+    # {"stressor": "Procrastinating on writing the investor pitch deck", "preset": "guided_session", "split": "train"},
+    {"stressor": "Overwhelmed by 50 unread customer support tickets and bug reports", "preset": "guided_session", "split": "val"},
+    # {"stressor": "Feeling imposter syndrome after a brutal investor rejection", "preset": "guided_session", "split": "val"},
 ]
 
 EXPERIMENTS_DIR = Path(backend_root) / "engine" / "eval" / "experiments"
@@ -54,20 +65,34 @@ LEADERBOARD_FILE = EXPERIMENTS_DIR / "leaderboard.md"
 # --- Git Helpers ---
 
 def setup_experiment_branch(run_tag: str = None) -> str:
-    """Create and checkout an isolated experiment branch (e.g. autoresearch/jul28)."""
+    """Create and checkout an isolated experiment branch (e.g. autoresearch/jul28), falling back to current branch on conflict."""
+    # Get current branch
+    branch_res = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=backend_root, capture_output=True, text=True)
+    current_branch = branch_res.stdout.strip() if branch_res.returncode == 0 else "main"
+
     if not run_tag:
         run_tag = datetime.now().strftime("%b%d").lower()
     branch_name = f"autoresearch/{run_tag}"
-    try:
-        # Check if branch exists
-        res = subprocess.run(["git", "branch", "--list", branch_name], cwd=backend_root, capture_output=True, text=True)
-        if branch_name in res.stdout:
-            subprocess.run(["git", "checkout", branch_name], cwd=backend_root, capture_output=True, text=True)
-        else:
-            subprocess.run(["git", "checkout", "-b", branch_name], cwd=backend_root, capture_output=True, text=True)
-        logger.info(f"Using experiment branch: {branch_name}")
-    except Exception as e:
-        logger.warning(f"Could not setup experiment branch {branch_name}: {e}")
+
+    if current_branch == branch_name:
+        logger.info(f"Already on experiment branch: {branch_name}")
+        return branch_name
+
+    # Check if branch exists
+    res = subprocess.run(["git", "branch", "--list", branch_name], cwd=backend_root, capture_output=True, text=True)
+    if branch_name in res.stdout:
+        checkout_res = subprocess.run(["git", "checkout", branch_name], cwd=backend_root, capture_output=True, text=True)
+    else:
+        checkout_res = subprocess.run(["git", "checkout", "-b", branch_name], cwd=backend_root, capture_output=True, text=True)
+
+    if checkout_res.returncode != 0:
+        print(
+            f"  ⚠️ Could not switch to experiment branch '{branch_name}' due to local changes.\n"
+            f"  Running AutoResearch directly on current active branch: '{current_branch}'."
+        )
+        return current_branch
+
+    logger.info(f"Using experiment branch: {branch_name}")
     return branch_name
 
 
@@ -83,14 +108,14 @@ def get_git_commit_hash() -> str:
         return "unknown"
 
 
-def write_prompt_to_disk(new_prompt: str):
-    """Write updated REEL_HUMAN_PROMPT string directly to engine/prompts/script_prompts.py."""
+def write_prompt_to_disk(variable_name: str, new_prompt: str):
+    """Write updated prompt string directly to engine/prompts/script_prompts.py."""
     file_path = Path(backend_root) / "engine" / "prompts" / "script_prompts.py"
     content = file_path.read_text()
 
-    # Match REEL_HUMAN_PROMPT = """...""" block
-    pattern = r'REEL_HUMAN_PROMPT = """.*?"""'
-    replacement = f'REEL_HUMAN_PROMPT = """{new_prompt}"""'
+    # Match target_variable = """...""" block dynamically
+    pattern = rf'{variable_name} = """.*?"""'
+    replacement = f'{variable_name} = """{new_prompt}"""'
     updated_content = re.sub(pattern, replacement, content, flags=re.DOTALL)
     file_path.write_text(updated_content)
 
@@ -216,6 +241,15 @@ def log_experiment_to_ledger(entry: Dict[str, Any]):
 
 async def run_autoresearch_optimization(preset_name: str = "unblock_reel", max_experiments: int = 3, target_val_score: float = 9.0):
     """Run full Karpathy-style AutoResearch loop."""
+    if preset_name not in PRESET_TO_VARIABLE_MAP:
+        raise ValueError(f"Preset '{preset_name}' is not registered in PRESET_TO_VARIABLE_MAP.")
+
+    target_var = PRESET_TO_VARIABLE_MAP[preset_name]
+
+    # Filter train/val sets dynamically from the Master Benchmark Set
+    train_set = [x for x in MASTER_BENCHMARK_SET if x["preset"] == preset_name and x["split"] == "train"]
+    val_set = [x for x in MASTER_BENCHMARK_SET if x["preset"] == preset_name and x["split"] == "val"]
+
     # Karpathy Pattern: Automatically switch to isolated experiment branch (e.g. autoresearch/jul28)
     exp_branch = setup_experiment_branch()
 
@@ -226,14 +260,15 @@ async def run_autoresearch_optimization(preset_name: str = "unblock_reel", max_e
     print("=================================================================")
     print("      🔬 UNBLOCK FOCUS — KARPATHY AUTORESEARCH OPTIMIZER         ")
     print("=================================================================\n")
-    print(f"  Train samples: {len(TRAIN_SET)}  |  Val samples: {len(VALIDATION_SET)}")
+    print(f"  Target Preset:   {preset_name} (Variable: {target_var})")
+    print(f"  Train samples:   {len(train_set)}  |  Val samples: {len(val_set)}")
     print(f"  Max experiments: {max_experiments}  |  Target val score: {target_val_score}")
-    print(f"  Eval timeout: {EVAL_TIMEOUT_SECONDS}s per LLM call\n")
+    print(f"  Eval timeout:    {EVAL_TIMEOUT_SECONDS}s per LLM call\n")
 
     # Initial Baseline Evaluation
     print("📊 Evaluating Baseline Prompt on Train & Validation sets...")
-    train_score, train_critiques = await evaluate_dataset(TRAIN_SET, current_prompt, preset_name)
-    val_score, _ = await evaluate_dataset(VALIDATION_SET, current_prompt, preset_name)
+    train_score, train_critiques = await evaluate_dataset(train_set, current_prompt, preset_name)
+    val_score, _ = await evaluate_dataset(val_set, current_prompt, preset_name)
     best_val_score = val_score
 
     print(f"  Baseline Train Score: {train_score:.2f} / 10.0")
@@ -260,13 +295,13 @@ async def run_autoresearch_optimization(preset_name: str = "unblock_reel", max_e
         print(f"📝 Rationale: {mutation.rationale}")
 
         # Update physical file on disk (Karpathy AutoResearch pattern)
-        write_prompt_to_disk(candidate_prompt)
+        write_prompt_to_disk(target_var, candidate_prompt)
 
         # 2. Evaluate Candidate on Train & Validation sets
         print("📊 Evaluating candidate on Train set...")
-        candidate_train_score, candidate_critiques = await evaluate_dataset(TRAIN_SET, candidate_prompt, preset_name)
+        candidate_train_score, candidate_critiques = await evaluate_dataset(train_set, candidate_prompt, preset_name)
         print("📊 Evaluating candidate on Validation set...")
-        candidate_val_score, _ = await evaluate_dataset(VALIDATION_SET, candidate_prompt, preset_name)
+        candidate_val_score, _ = await evaluate_dataset(val_set, candidate_prompt, preset_name)
 
         print(f"  Candidate Train Score: {candidate_train_score:.2f} (Baseline: {train_score:.2f})")
         print(f"  Candidate Val Score:   {candidate_val_score:.2f} (Best Val: {best_val_score:.2f})")
@@ -319,4 +354,31 @@ async def run_autoresearch_optimization(preset_name: str = "unblock_reel", max_e
 
 
 if __name__ == "__main__":
-    asyncio.run(run_autoresearch_optimization())
+    import argparse
+    parser = argparse.ArgumentParser(description="🔬 AutoResearch Prompt Optimization Runner")
+    parser.add_argument(
+        "--preset", 
+        type=str, 
+        default="unblock_reel", 
+        choices=["unblock_reel", "guided_session"], 
+        help="Target preset profile to optimize"
+    )
+    parser.add_argument(
+        "--experiments", 
+        type=int, 
+        default=3, 
+        help="Maximum number of mutation iterations to run"
+    )
+    parser.add_argument(
+        "--target-score", 
+        type=float, 
+        default=9.0, 
+        help="Validation score threshold to stop early"
+    )
+    args = parser.parse_args()
+
+    asyncio.run(run_autoresearch_optimization(
+        preset_name=args.preset, 
+        max_experiments=args.experiments, 
+        target_val_score=args.target_score
+    ))
