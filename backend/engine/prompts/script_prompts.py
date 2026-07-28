@@ -30,13 +30,13 @@ Structure the reset through these stages in order:
 
 For each stage, follow its purpose:
 
-- grounding: Acknowledge their situation directly. Start with a warm, complete opening sentence (8–12 words) such as "Take a seat, settle in, and let's clear your mind together." or "Let's take a moment together to pause and reset." NEVER start with a standalone 1-word greeting like "Hey." or "Hi." — always use a full, welcoming sentence. Help them notice their body and the surface beneath them. No meditation clichés.
+- grounding: Acknowledge their situation directly. Start with a warm, complete opening sentence (8–12 words) such as "Take a seat, settle in, and let's clear your mind together." or "Let's take a moment together to pause and reset." NEVER start with a standalone 1-word greeting like "Hey." or "Hi." — always use a full, welcoming sentence. Help them notice their body and the surface beneath them. Avoid meditation clichés and ensure each sentence introduces a fresh perspective or insight.
 
 - breathing_reset: CRITICAL — write a MAXIMUM of 2 sentences. Your only job is to announce that an automated breathing cue is starting. Do NOT write steps like "breathe in" or "breathe out". Examples: "Let's take a moment to breathe. Just follow along with me." or "Let's pause right here and take a few slow breaths." (Use these as inspiration for tone and structure — feel free to adapt or use what feels most natural for the context.)
 
 - body_release: Guide releasing physical tension — shoulders, jaw, hands. Quick and practical, not a full body scan.
 
-- core_reset: This is the core psychological shift. CRITICAL: Do NOT talk about "work", "taking action", or "taking small steps" in this section. This section is pure psychology to fix the mindset. Save all action-oriented advice for the reframe stage. Adapt based on the category:
+- core_reset: This is the core psychological shift. CRITICAL: Do NOT talk about "work", "taking action", or "taking small steps" in this section. This section is pure psychology to fix the mindset. Save all action-oriented advice for the reframe stage. Ensure each line offers a unique insight or perspective without repetition. Adapt based on the category:
   * deadline/exam: help them zoom out and release the immediate pressure, letting go of the massive wall
   * presentation: help them picture the room, feel their feet on the ground, own the space
   * burnout: give them permission to rest, acknowledge the exhaustion is real
@@ -45,9 +45,9 @@ For each stage, follow its purpose:
   * imposter: normalize the feeling, remind them of their inherent capability
   * general: help them name what's in their control and let go of what isn't
 
-- reframe: The action bridge. Use a 2-line contrast pattern: first release what they don't need to finish right now (e.g. "You don't need to finish the whole project today."), then pivot to their single micro-step (e.g. "You only need to draft the first three paragraphs."). End with a natural transition sentence toward their work.
+- reframe: The action bridge. Use a 2-line contrast pattern: first release what they don't need to finish right now (e.g. "You don't need to finish the whole project today."), then pivot to their single micro-step. Tailor the micro-step specifically to their task if provided (e.g. "draft the first slide of your deck"); if their stressor is general, keep it universal ("focus on the single next action in front of you") without inventing unmentioned tasks. End with a natural transition sentence toward their work.
 
-- closing: One warm, grounded, complete closing sentence (8–14 words). Direct them naturally back to their desk or screen to begin — e.g. "Bring your attention back to your screen, open your file, and take that first step." NEVER write abrupt 1-2 word sendoffs like "Go.", "Go do.", "Go do one thing.", or "Do it."
+- closing: One warm, grounded, complete closing sentence (8–14 words). Direct them naturally back to their work to begin — if they mentioned a specific task or tool, reference it directly (e.g. "Bring your attention back to your file, open your draft, and take that first step."); if general, keep it naturally grounded (e.g. "Bring your attention back to your space and take that first step."). NEVER write abrupt 1-2 word sendoffs like "Go.", "Go do.", "Go do one thing.", or "Do it."
 
 CRITICAL: Output ONLY the sections listed in the stage plan above. Do not add or invent extra sections.
 
@@ -83,9 +83,9 @@ For each stage, follow its purpose:
 
 - breathing_reset: CRITICAL — write a MAXIMUM of 2 sentences. Your only job is to announce that an automated breathing cue is starting. Do NOT write steps like "breathe in" or "breathe out". Ensure the language is distinct from the hook. Examples: "Let's take a moment to breathe. Just follow along with me." or "Let's pause right here and take a few slow breaths." (Use these as inspiration for tone and structure — feel free to adapt or use what feels most natural for the context.)
 
-- reframe: The essential core fix. 4-6 crisp lines providing direct perspective. Avoid repetition and clichés. Focus on releasing what they do not need to finish right now. Provide a single, specific micro-step that feels immediate and actionable, ensuring no phrases are repeated within this section. Ensure each line has 8–15 words to maintain spoken rhythm. Avoid generic advice and tailor the micro-step to the stressor.
+- reframe: The essential core fix. 4-6 crisp lines providing direct perspective. Avoid repetition and clichés. Focus on releasing what they do not need to finish right now. Provide a single micro-step that feels immediate and actionable, ensuring no phrases are repeated within this section. Ensure each line has 8–15 words to maintain spoken rhythm. Tailor the micro-step specifically to their task if provided; if their stressor is general, keep it universal without inventing unmentioned tasks.
 
-- closing: One sharp, motivating closing sentence directing them to take action right now. Ensure it feels urgent and compelling.
+- closing: One sharp, motivating closing sentence directing them to take action right now. If they mentioned a specific task or tool, reference it directly (e.g. "Open your deck and outline that first slide right now."); if general, keep it naturally grounded (e.g. "Bring your focus back to your space and take that first step."). Ensure it feels urgent and compelling.
 
 CRITICAL: Output ONLY valid JSON matching the schema with top-level fields: title, intention, focus_task, and sections. Output ONLY the sections listed in the stage plan above. Do not add or invent extra sections.
 Do not use colons, semicolons, bullet points, or em dashes in any "text" value. Ensure no line is shorter than 8 words or longer than 15 words. Avoid using similar phrases or ideas in close proximity to eliminate repetition."""
