@@ -1,0 +1,62 @@
+[
+  {
+    "exp_id": 0,
+    "commit": "acc89e7",
+    "status": "BASELINE",
+    "train_score": 5.465999999999999,
+    "val_score": 5.75,
+    "rationale": "Initial baseline prompt",
+    "prompt_snapshot": "Write a 2-minute high-impact unblock reset for someone stuck on: \"{stressor}\"\nCategory: {meditation_type}\nTarget narration: {target_word_count} words (spoken at 130-140 words per minute)\n\nStructure th...",
+    "timestamp": "2026-07-29T01:38:35.604861"
+  },
+  {
+    "exp_id": 1,
+    "commit": "acc89e7",
+    "status": "REJECTED",
+    "train_score": 6.998,
+    "val_score": 5.75,
+    "rationale": "The revised prompt addresses the critiques by explicitly discouraging the use of similar phrases in the breathing_reset section to prevent repetition. It also emphasizes the need for specificity in the reframe section by instructing to tailor the micro-step to the stressor, avoiding generic advice. These changes aim to enhance the script's specificity and actionable guidance, while maintaining a natural spoken rhythm and avoiding repetition.",
+    "prompt_snapshot": "Write a 2-minute high-impact unblock reset for someone stuck on: \"{stressor}\"\nCategory: {meditation_type}\nTarget narration: {target_word_count} words (spoken at 130-140 words per minute)\n\nStructure th...",
+    "timestamp": "2026-07-29T01:40:01.496174"
+  },
+  {
+    "exp_id": 2,
+    "commit": "daa9809",
+    "status": "ACCEPTED",
+    "train_score": 6.6659999999999995,
+    "val_score": 6.6675,
+    "rationale": "The revised prompt addresses critiques by specifying that the word \"pause\" should not be repeated, ensuring distinct language between the hook and breathing_reset sections. It emphasizes the need for specificity in the reframe section, urging the inclusion of a tailored micro-step to avoid generic advice. This change aims to enhance the script's actionable guidance and reduce repetition. The rhythm constraint remains to ensure smooth delivery, and the JSON output requirement is reiterated to maintain structure.",
+    "prompt_snapshot": "Write a 2-minute high-impact unblock reset for someone stuck on: \"{stressor}\"\nCategory: {meditation_type}\nTarget narration: {target_word_count} words (spoken at 130-140 words per minute)\n\nStructure th...",
+    "timestamp": "2026-07-29T01:41:27.933131"
+  },
+  {
+    "exp_id": 3,
+    "commit": "daa9809",
+    "status": "REJECTED",
+    "train_score": 5.8,
+    "val_score": 5.3325,
+    "rationale": "The improved prompt template addresses the critiques by emphasizing the need for specificity and tailoring in the breathing_reset and reframe sections. By instructing the use of varied vocabulary and avoiding generic phrases, it reduces the risk of repetition and clich\u00e9s. The closing section now explicitly requires a specific action, addressing the critique of vague motivational language. These changes ensure a more engaging and actionable script, with a clear rhythm and focus on the stressor.",
+    "prompt_snapshot": "Write a 2-minute high-impact unblock reset for someone stuck on: \"{stressor}\"\nCategory: {meditation_type}\nTarget narration: {target_word_count} words (spoken at 130-140 words per minute)\n\nStructure th...",
+    "timestamp": "2026-07-29T01:42:56.461053"
+  },
+  {
+    "exp_id": 4,
+    "commit": "daa9809",
+    "status": "REJECTED",
+    "train_score": 6.6,
+    "val_score": 6.1675,
+    "rationale": "The revised prompt addresses the critiques by specifying the need for fresh, specific language in the breathing_reset section, avoiding generic phrases that lack impact. It emphasizes varied vocabulary in the reframe section to prevent redundancy and maintain engagement. The closing now requires a clear, immediate action to avoid vagueness. These changes aim to enhance specificity, reduce repetition, and ensure each section is impactful and actionable.",
+    "prompt_snapshot": "Write a 2-minute high-impact unblock reset for someone stuck on: \"{stressor}\"\nCategory: {meditation_type}\nTarget narration: {target_word_count} words (spoken at 130-140 words per minute)\n\nStructure th...",
+    "timestamp": "2026-07-29T01:44:23.688868"
+  },
+  {
+    "exp_id": 5,
+    "commit": "daa9809",
+    "status": "REJECTED",
+    "train_score": 6.866,
+    "val_score": 6.1675,
+    "rationale": "The revised prompt addresses critiques by emphasizing specificity and avoiding generic language, particularly in the breathing_reset section. It also stresses varied vocabulary in the reframe section to prevent redundancy and repetition. The closing section now requires a specific action, addressing the critique of lacking immediate steps. These changes aim to enhance clarity, specificity, and actionable guidance, ensuring a more engaging and effective script.",
+    "prompt_snapshot": "Write a 2-minute high-impact unblock reset for someone stuck on: \"{stressor}\"\nCategory: {meditation_type}\nTarget narration: {target_word_count} words (spoken at 130-140 words per minute)\n\nStructure th...",
+    "timestamp": "2026-07-29T01:45:44.227948"
+  }
+]

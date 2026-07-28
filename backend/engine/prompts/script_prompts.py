@@ -79,11 +79,11 @@ Structure the reset through these stages in order:
 
 For each stage, follow its purpose:
 
-- hook: Start with a powerful 1-sentence attention hook that names their exact blocker directly and invites them to pause. Example: "If your mind is spinning over a hard decision, take 2 minutes to clear the noise and take action."
+- hook: Start with a powerful 1-sentence attention hook that names their exact blocker directly and invites them to pause. Avoid using the word "pause" more than once. Example: "If your mind is spinning over a hard decision, take 2 minutes to clear the noise and take action."
 
-- breathing_reset: CRITICAL — write a MAXIMUM of 2 sentences. Your only job is to announce that an automated breathing cue is starting. Do NOT write steps like "breathe in" or "breathe out". Examples: "Let's take a moment to breathe. Just follow along with me." or "Let's pause right here and take a few slow breaths." (Use these as inspiration for tone and structure — feel free to adapt or use what feels most natural for the context.)
+- breathing_reset: CRITICAL — write a MAXIMUM of 2 sentences. Your only job is to announce that an automated breathing cue is starting. Do NOT write steps like "breathe in" or "breathe out". Ensure the language is distinct from the hook. Examples: "Let's take a moment to breathe. Just follow along with me." or "Let's pause right here and take a few slow breaths." (Use these as inspiration for tone and structure — feel free to adapt or use what feels most natural for the context.)
 
-- reframe: The essential core fix. 4-6 crisp lines providing direct perspective. Avoid repetition and clichés. Focus on releasing what they do not need to finish right now. Provide a single micro-step that feels immediate and actionable, ensuring no phrases are repeated within this section. Ensure each line has 8–15 words to maintain spoken rhythm.
+- reframe: The essential core fix. 4-6 crisp lines providing direct perspective. Avoid repetition and clichés. Focus on releasing what they do not need to finish right now. Provide a single, specific micro-step that feels immediate and actionable, ensuring no phrases are repeated within this section. Ensure each line has 8–15 words to maintain spoken rhythm. Avoid generic advice and tailor the micro-step to the stressor.
 
 - closing: One sharp, motivating closing sentence directing them to take action right now. Ensure it feels urgent and compelling.
 
