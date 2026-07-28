@@ -15,10 +15,11 @@ class SectionTemplate:
 # Deep resets (5-10 min) use DEEP_RESET (target ~7.5 min)
 
 QUICK_RESET = [
-    SectionTemplate("grounding",        0.15, None,       0),
-    SectionTemplate("breathing_reset",  0.25, "calm_46",  2),
+    SectionTemplate("grounding",        0.10, None,       0),
+    SectionTemplate("breathing_reset",  0.20, "calm_46",  2),
     SectionTemplate("core_reset",       0.40, None,       0),
     SectionTemplate("reframe",          0.20, None,       0),
+    SectionTemplate("closing",          0.10, None,       0),
 ]
 
 DEEP_RESET = [
