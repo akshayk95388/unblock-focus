@@ -44,17 +44,25 @@ PRESET_TO_VARIABLE_MAP = {
 MASTER_BENCHMARK_SET = [
     # preset: unblock_reel (2-minute snappy reset)
     {"stressor": "Stuck on pricing strategy and overthinking competitors", "preset": "unblock_reel", "split": "train"},
-    # {"stressor": "Terrified of launching on Product Hunt tomorrow morning", "preset": "unblock_reel", "split": "train"},
-    # {"stressor": "Procrastinating on writing the investor pitch deck", "preset": "unblock_reel", "split": "train"},
+    {"stressor": "Terrified of launching on Product Hunt tomorrow morning", "preset": "unblock_reel", "split": "train"},
+    {"stressor": "Procrastinating on writing the investor pitch deck", "preset": "unblock_reel", "split": "train"},
+    {"stressor": "Anxious about an upcoming performance review with a tough manager", "preset": "unblock_reel", "split": "train"},
+    {"stressor": "Feeling completely blocked on coding a complex new feature", "preset": "unblock_reel", "split": "train"},
     {"stressor": "Overwhelmed by 50 unread customer support tickets and bug reports", "preset": "unblock_reel", "split": "val"},
-    # {"stressor": "Feeling imposter syndrome after a brutal investor rejection", "preset": "unblock_reel", "split": "val"},
+    {"stressor": "Feeling imposter syndrome after a brutal investor rejection", "preset": "unblock_reel", "split": "val"},
+    {"stressor": "Lost focus after spending two hours scrolling social media", "preset": "unblock_reel", "split": "val"},
+    {"stressor": "Struggling to balance client deadlines and personal health", "preset": "unblock_reel", "split": "val"},
 
     # preset: guided_session (multi-minute deep/standard guided session)
     {"stressor": "Stuck on pricing strategy and overthinking competitors", "preset": "guided_session", "split": "train"},
-    # {"stressor": "Terrified of launching on Product Hunt tomorrow morning", "preset": "guided_session", "split": "train"},
-    # {"stressor": "Procrastinating on writing the investor pitch deck", "preset": "guided_session", "split": "train"},
+    {"stressor": "Terrified of launching on Product Hunt tomorrow morning", "preset": "guided_session", "split": "train"},
+    {"stressor": "Procrastinating on writing the investor pitch deck", "preset": "guided_session", "split": "train"},
+    {"stressor": "Anxious about an upcoming performance review with a tough manager", "preset": "guided_session", "split": "train"},
+    {"stressor": "Feeling completely blocked on coding a complex new feature", "preset": "guided_session", "split": "train"},
     {"stressor": "Overwhelmed by 50 unread customer support tickets and bug reports", "preset": "guided_session", "split": "val"},
-    # {"stressor": "Feeling imposter syndrome after a brutal investor rejection", "preset": "guided_session", "split": "val"},
+    {"stressor": "Feeling imposter syndrome after a brutal investor rejection", "preset": "guided_session", "split": "val"},
+    {"stressor": "Lost focus after spending two hours scrolling social media", "preset": "guided_session", "split": "val"},
+    {"stressor": "Struggling to balance client deadlines and personal health", "preset": "guided_session", "split": "val"},
 ]
 
 EXPERIMENTS_DIR = Path(backend_root) / "engine" / "eval" / "experiments"
@@ -160,6 +168,12 @@ async def evaluate_dataset(dataset: List[Dict[str, str]], candidate_prompt: str,
                 profile.prompt_template = candidate_prompt
                 g_res = await asyncio.wait_for(script_generator_node(state), timeout=EVAL_TIMEOUT_SECONDS)
                 prose = g_res.get("raw_prose", {})
+                if "sections" not in prose:
+                    print(f"  ❌ Generation/Schema error on sample '{item['stressor'][:30]}...': KeyError: 'sections'")
+                    scores.append(0.0)
+                    critiques.append(f"[{item['stressor'][:30]}...]: FAILED — Schema error (missing sections)")
+                    break
+
                 sections = prose.get("sections", [])
 
                 flow = analyze_script_flow(sections)
@@ -290,7 +304,7 @@ async def run_autoresearch_optimization(preset_name: str = "unblock_reel", max_e
 
         # 1. Mutate Prompt Candidate & Write to Disk
         print("🧠 Optimizer LLM generating mutated prompt candidate...")
-        mutation = await generate_improved_prompt(current_prompt, train_critiques[:4])
+        mutation = await generate_improved_prompt(current_prompt, train_critiques)
         candidate_prompt = mutation.improved_prompt_template
         print(f"📝 Rationale: {mutation.rationale}")
 
