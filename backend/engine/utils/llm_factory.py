@@ -19,7 +19,8 @@ logger = logging.getLogger(__name__)
 def get_chat_model(
     config: Optional[Dict[str, Any]] = None,
     temperature: float = 0.7,
-    default_model: str = "gpt-4o-mini",
+    # default_model: str = "gpt-4o-mini",
+    default_model: str = "gpt-4o",
     default_provider: str = "openai",
 ) -> BaseChatModel:
     """Initialize a ChatModel instance dynamically.

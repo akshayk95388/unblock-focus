@@ -52,7 +52,7 @@ def scale_sections(template: list, total_duration_s: float) -> List[SectionPlan]
 
 async def classifier_node(state: MeditationEngineState, config: Optional[dict] = None) -> dict:
     """Classify the stressor and build a section plan using ChatPromptTemplate and structured output."""
-    llm = get_chat_model(config=config, temperature=0.1)
+    llm = get_chat_model(config=config, temperature=0.1, default_model="gpt-4o-mini")
     structured_llm = llm.with_structured_output(ClassifierResponseSchema)
 
     messages = CLASSIFIER_PROMPT_TEMPLATE.format_messages(stressor=state["stressor"])

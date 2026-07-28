@@ -16,7 +16,10 @@ Rules:
 6. No medical or therapeutic claims.
 7. NEVER use these words: journey, embrace, flow, transform, revolutionary, namaste, manifest, chakra, universe, sacred.
 8. As the reset progresses, use fewer lines and longer pauses — not shorter words.
-9. Return ONLY valid JSON."""
+9. Maintain a natural, progressive flow across the entire script. Do not repeat the same phrases or ideas in different sections. The transition between stages should feel seamless and organic.
+10. Use simple, conversational, everyday spoken words. Avoid complex vocabulary or formal corporate jargon.
+11. When examples are provided, use them as inspiration for tone and structure, but DO NOT copy them exactly. Always vary your phrasing.
+12. Return ONLY valid JSON."""
 
 SCRIPT_PROMPT = """Write a {duration_mins}-minute mental reset for someone blocked by: "{stressor}"
 Category: {meditation_type}
@@ -29,17 +32,17 @@ For each stage, follow its purpose:
 
 - grounding: Acknowledge their situation directly. Start with a warm, complete opening sentence (8–12 words) such as "Take a seat, settle in, and let's clear your mind together." or "Let's take a moment together to pause and reset." NEVER start with a standalone 1-word greeting like "Hey." or "Hi." — always use a full, welcoming sentence. Help them notice their body and the surface beneath them. No meditation clichés.
 
-- breathing_reset: IMPORTANT — write only 2–3 short framing lines (e.g. "Let's reset your nervous system." "Take a deep breath in through your nose."). Do NOT narrate individual inhale/hold/exhale steps. The breath audio is handled automatically by the system.
+- breathing_reset: CRITICAL — write a MAXIMUM of 2 sentences. Your only job is to announce that an automated breathing cue is starting. Do NOT write steps like "breathe in" or "breathe out". Example: "Let's take a moment to breathe. Follow the audio guide to pace your inhales and exhales." (DO NOT copy them exactly. Always vary your phrasing.)
 
 - body_release: Guide releasing physical tension — shoulders, jaw, hands. Quick and practical, not a full body scan.
 
-- core_reset: This is where the real work happens. Adapt based on the category:
-  * deadline/exam: help them see the task as a series of small steps, not one massive wall
+- core_reset: This is the core psychological shift. CRITICAL: Do NOT talk about "work", "taking action", or "taking small steps" in this section. This section is pure psychology to fix the mindset. Save all action-oriented advice for the reframe stage. Adapt based on the category:
+  * deadline/exam: help them zoom out and release the immediate pressure, letting go of the massive wall
   * presentation: help them picture the room, feel their feet on the ground, own the space
   * burnout: give them permission to rest, acknowledge the exhaustion is real
-  * distraction: help them set a simple intention, name what they're choosing to focus on
-  * overthinking: help them notice the loop, then redirect attention to one concrete thing
-  * imposter: normalize the feeling, point out something concrete they've already done
+  * distraction: help them observe their urges without judgment, letting them pass
+  * overthinking: help them notice the mental loop, then redirect attention to the present moment
+  * imposter: normalize the feeling, remind them of their inherent capability
   * general: help them name what's in their control and let go of what isn't
 
 - reframe: The action bridge. Use a 2-line contrast pattern: first release what they don't need to finish right now (e.g. "You don't need to finish the whole project today."), then pivot to their single micro-step (e.g. "You only need to draft the first three paragraphs."). End with a natural transition sentence toward their work.
@@ -78,7 +81,7 @@ For each stage, follow its purpose:
 
 - hook: Start with a powerful 1-sentence attention hook that names their exact blocker directly and invites them to pause. Example: "If your mind is spinning over a hard decision, take 2 minutes to clear the noise and take action."
 
-- breathing_reset: IMPORTANT — write 1-2 framing lines introducing 2 calming breath cycles (e.g. "Take a deep breath in through your nose and let it out. One more time, in and out."). Do NOT narrate individual inhale/hold/exhale steps.
+- breathing_reset: CRITICAL — write a MAXIMUM of 2 sentences. Your only job is to announce that an automated breathing cue is starting. Do NOT write steps like "breathe in" or "breathe out". Example: "Let's take a moment to breathe. Follow the audio guide to pace your inhales and exhales." (DO NOT copy them exactly. Always vary your phrasing.)
 
 - reframe: The essential core fix. 4-6 crisp lines providing direct perspective. Avoid repetition and clichés. Focus on releasing what they do not need to finish right now. Provide a single micro-step that feels immediate and actionable, ensuring no phrases are repeated within this section. Ensure each line has 8–15 words to maintain spoken rhythm.
 
