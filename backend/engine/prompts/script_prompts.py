@@ -18,7 +18,7 @@ Rules:
 8. As the reset progresses, use fewer lines and longer pauses — not shorter words.
 9. Maintain a natural, progressive flow across the entire script. Do not repeat the same phrases or ideas in different sections. The transition between stages should feel seamless and organic.
 10. Use simple, conversational, everyday spoken words. Avoid complex vocabulary or formal corporate jargon.
-11. When examples are provided, use them as inspiration for tone and structure, but DO NOT copy them exactly. Always vary your phrasing.
+11. When examples are provided, use them as inspiration for tone and structure — feel free to adapt or use what feels most natural for the context.
 12. Return ONLY valid JSON."""
 
 SCRIPT_PROMPT = """Write a {duration_mins}-minute mental reset for someone blocked by: "{stressor}"
@@ -32,7 +32,7 @@ For each stage, follow its purpose:
 
 - grounding: Acknowledge their situation directly. Start with a warm, complete opening sentence (8–12 words) such as "Take a seat, settle in, and let's clear your mind together." or "Let's take a moment together to pause and reset." NEVER start with a standalone 1-word greeting like "Hey." or "Hi." — always use a full, welcoming sentence. Help them notice their body and the surface beneath them. No meditation clichés.
 
-- breathing_reset: CRITICAL — write a MAXIMUM of 2 sentences. Your only job is to announce that an automated breathing cue is starting. Do NOT write steps like "breathe in" or "breathe out". Example: "Let's take a moment to breathe. Follow the audio guide to pace your inhales and exhales." (DO NOT copy them exactly. Always vary your phrasing.)
+- breathing_reset: CRITICAL — write a MAXIMUM of 2 sentences. Your only job is to announce that an automated breathing cue is starting. Do NOT write steps like "breathe in" or "breathe out". Examples: "Let's take a moment to breathe. Just follow along with me." or "Let's pause right here and take a few slow breaths." (Use these as inspiration for tone and structure — feel free to adapt or use what feels most natural for the context.)
 
 - body_release: Guide releasing physical tension — shoulders, jaw, hands. Quick and practical, not a full body scan.
 
@@ -81,7 +81,7 @@ For each stage, follow its purpose:
 
 - hook: Start with a powerful 1-sentence attention hook that names their exact blocker directly and invites them to pause. Example: "If your mind is spinning over a hard decision, take 2 minutes to clear the noise and take action."
 
-- breathing_reset: CRITICAL — write a MAXIMUM of 2 sentences. Your only job is to announce that an automated breathing cue is starting. Do NOT write steps like "breathe in" or "breathe out". Example: "Let's take a moment to breathe. Follow the audio guide to pace your inhales and exhales." (DO NOT copy them exactly. Always vary your phrasing.)
+- breathing_reset: CRITICAL — write a MAXIMUM of 2 sentences. Your only job is to announce that an automated breathing cue is starting. Do NOT write steps like "breathe in" or "breathe out". Examples: "Let's take a moment to breathe. Just follow along with me." or "Let's pause right here and take a few slow breaths." (Use these as inspiration for tone and structure — feel free to adapt or use what feels most natural for the context.)
 
 - reframe: The essential core fix. 4-6 crisp lines providing direct perspective. Avoid repetition and clichés. Focus on releasing what they do not need to finish right now. Provide a single micro-step that feels immediate and actionable, ensuring no phrases are repeated within this section. Ensure each line has 8–15 words to maintain spoken rhythm.
 
