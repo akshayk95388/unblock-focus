@@ -269,8 +269,12 @@ async def test_full_pipeline_mock_llm(stressor, duration_mins, expected_type):
     mock_classifier = make_mock_classifier(expected_type)
     mock_script_gen = make_mock_script_generator(expected_type)
 
+    async def mock_script_polisher_node(state, config=None):
+        return {"current_stage": "script_polished"}
+
     with patch("engine.graphs.script_generator.classifier_node", mock_classifier), \
-         patch("engine.graphs.script_generator.script_generator_node", mock_script_gen):
+         patch("engine.graphs.script_generator.script_generator_node", mock_script_gen), \
+         patch("engine.graphs.script_generator.script_polisher_node", mock_script_polisher_node):
 
         result = await run_full_pipeline(
             stressor=stressor,
@@ -312,8 +316,12 @@ async def test_pipeline_produces_valid_mp3():
     mock_classifier = make_mock_classifier("anxiety")
     mock_script_gen = make_mock_script_generator("anxiety")
 
+    async def mock_script_polisher_node(state, config=None):
+        return {"current_stage": "script_polished"}
+
     with patch("engine.graphs.script_generator.classifier_node", mock_classifier), \
-         patch("engine.graphs.script_generator.script_generator_node", mock_script_gen):
+         patch("engine.graphs.script_generator.script_generator_node", mock_script_gen), \
+         patch("engine.graphs.script_generator.script_polisher_node", mock_script_polisher_node):
 
         result = await run_full_pipeline(
             stressor="test anxiety",
@@ -345,8 +353,12 @@ async def test_pipeline_subtitles_have_timing():
     mock_classifier = make_mock_classifier("focus")
     mock_script_gen = make_mock_script_generator("focus")
 
+    async def mock_script_polisher_node(state, config=None):
+        return {"current_stage": "script_polished"}
+
     with patch("engine.graphs.script_generator.classifier_node", mock_classifier), \
-         patch("engine.graphs.script_generator.script_generator_node", mock_script_gen):
+         patch("engine.graphs.script_generator.script_generator_node", mock_script_gen), \
+         patch("engine.graphs.script_generator.script_polisher_node", mock_script_polisher_node):
 
         result = await run_full_pipeline(
             stressor="need to focus",

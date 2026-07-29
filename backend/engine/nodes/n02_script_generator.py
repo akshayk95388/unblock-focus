@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 async def script_generator_node(state: MeditationEngineState, config: Optional[dict] = None) -> dict:
     """Generate a meditation script via model-agnostic LLM with structured output."""
-    llm = get_chat_model(config=config, temperature=0.7)
+    llm = get_chat_model(config=config, temperature=0.7, default_model="gpt-4o-mini")
     structured_llm = llm.with_structured_output(ScriptProseSchema)
 
     profile = get_preset_profile(state.get("preset"))

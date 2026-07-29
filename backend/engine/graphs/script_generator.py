@@ -1,7 +1,7 @@
 """LangGraph Script Generator Agent.
 
-Combines Node 01 (Classifier), Node 02 (Script Generator), and Node 03 (Validator)
-into a structured, reflection-driven LangGraph agent.
+Combines Node 01 (Classifier), Node 02 (Script Generator), Node 02b (Script Polisher),
+and Node 03 (Validator) into a structured, reflection-driven LangGraph agent.
 
 Features:
 - StateGraph architecture with clear node boundaries
@@ -28,6 +28,7 @@ from engine.models.schemas import (
 )
 from engine.nodes.n01_classifier import classifier_node
 from engine.nodes.n02_script_generator import script_generator_node
+from engine.nodes.n02b_script_polisher import script_polisher_node
 from engine.nodes.n03_validator import validator_node
 
 logger = logging.getLogger(__name__)
@@ -52,6 +53,14 @@ async def _graph_script_generator_node(state: MeditationEngineState, config: Opt
     return await target(state)
 
 
+async def _graph_script_polisher_node(state: MeditationEngineState, config: Optional[dict] = None) -> dict:
+    target = sys.modules[__name__].script_polisher_node
+    sig = inspect.signature(target)
+    if "config" in sig.parameters:
+        return await target(state, config=config)
+    return await target(state)
+
+
 async def _graph_validator_node(state: MeditationEngineState) -> dict:
     target = sys.modules[__name__].validator_node
     return await target(state)
@@ -62,6 +71,7 @@ class ScriptGeneratorState(TypedDict, total=False):
     duration_mins: int
     voice_key: str
     music_key: str
+    enable_polisher: bool
 
     # Classifier output
     meditation_type: str
@@ -117,12 +127,14 @@ def build_script_generator_graph(checkpointer: Optional[Any] = None) -> StateGra
     # Add nodes with dynamic resolution to respect test mocks
     workflow.add_node("classifier", _graph_classifier_node)
     workflow.add_node("script_generator", _graph_script_generator_node)
+    workflow.add_node("script_polisher", _graph_script_polisher_node)
     workflow.add_node("validator", _graph_validator_node)
 
     # Define edges
     workflow.add_edge(START, "classifier")
     workflow.add_edge("classifier", "script_generator")
-    workflow.add_edge("script_generator", "validator")
+    workflow.add_edge("script_generator", "script_polisher")
+    workflow.add_edge("script_polisher", "validator")
 
     # Conditional feedback / reflection loop from validator
     workflow.add_conditional_edges(

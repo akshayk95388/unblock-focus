@@ -36,6 +36,7 @@ async def run_pipeline_task(job_id: str, request: GenerateRequest):
     """Background task that runs the full meditation pipeline."""
     from engine.nodes.n01_classifier import classifier_node
     from engine.nodes.n02_script_generator import script_generator_node
+    from engine.nodes.n02b_script_polisher import script_polisher_node
     from engine.nodes.n03_validator import validator_node, validator_router
     from engine.nodes.n04_tts_generator import tts_generator_node
     from engine.audio.composer import audio_composer_node
@@ -64,6 +65,11 @@ async def run_pipeline_task(job_id: str, request: GenerateRequest):
         for attempt in range(3):
             update_progress(job_id, "generating_script", 15 + attempt * 5)
             result = await script_generator_node(state)
+            state.update(result)
+
+            # Step 2b: Polish script
+            update_progress(job_id, "polishing_script", 25)
+            result = await script_polisher_node(state)
             state.update(result)
 
             # Step 3: Validate

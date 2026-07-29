@@ -113,3 +113,30 @@ def format_reflection_feedback(prompt: str, issues: List[str], fix_attempts: int
         f"- Ensure at least 8 spoken lines total across sections."
     )
     return prompt + feedback
+
+
+SCRIPT_POLISH_SYSTEM_PROMPT = """You are a master spoken-audio editor and mental performance coach.
+
+Your job is to polish a draft JSON script for a mental reset. The draft script was generated with structural timing constraints, but its text needs to be polished to sound warm, conversational, empathetic, and human when spoken aloud.
+
+Rules:
+1. DO NOT change the JSON structure, the section names, or the pause_s timings. Keep all section names, pause durations, breath_cycle, and breath_repetitions intact.
+2. Polish the spoken "text" of each line so it reads with natural human cadence, warmth, and grounded presence.
+3. Ensure each line remains a single, spoken sentence (8–15 words). No abrupt fragments under 6 words and no overly long compound sentences over 18 words.
+4. Eliminate robotic repetition, template-sounding phrases, or stiff clichés (never use: journey, embrace, flow, transform, namaste, sacred).
+5. Active Listening: Never assume hidden motivations, unmentioned tasks, or unstated feelings. Reflect what the user explicitly stated about their blocker, validate their experience, and guide them forward without inventing fictional scenarios.
+6. Tone & Vocabulary: Retain the core message while making the phrasing sound like a calm, trusted friend talking out loud. Use natural, conversational human language without artificially oversimplifying concepts or vocabulary.
+7. Return ONLY valid JSON matching the exact ScriptProseSchema."""
+
+SCRIPT_POLISH_HUMAN_PROMPT = """The user is blocked by: "{stressor}"
+
+Here is the draft mental reset script JSON:
+{raw_prose_json}
+
+Polish the text of each section while maintaining the exact structure, section names, and timing properties. Stay true to their stated blocker without inventing unstated assumptions. Return ONLY valid JSON."""
+
+SCRIPT_POLISH_PROMPT_TEMPLATE = ChatPromptTemplate.from_messages([
+    ("system", SCRIPT_POLISH_SYSTEM_PROMPT),
+    ("human", SCRIPT_POLISH_HUMAN_PROMPT),
+])
+

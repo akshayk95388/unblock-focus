@@ -32,6 +32,7 @@ def test_build_script_generator_graph_structure():
     nodes = graph.nodes
     assert "classifier" in nodes
     assert "script_generator" in nodes
+    assert "script_polisher" in nodes
     assert "validator" in nodes
 
 
@@ -123,7 +124,8 @@ async def test_run_script_generator_agent_pipeline():
     }
 
     with patch("engine.graphs.script_generator.classifier_node", new_callable=AsyncMock) as mock_class, \
-         patch("engine.graphs.script_generator.script_generator_node", new_callable=AsyncMock) as mock_script:
+         patch("engine.graphs.script_generator.script_generator_node", new_callable=AsyncMock) as mock_script, \
+         patch("engine.graphs.script_generator.script_polisher_node", new_callable=AsyncMock) as mock_polish:
 
         mock_class.return_value = mock_classifier_res
 
@@ -143,6 +145,7 @@ async def test_run_script_generator_agent_pipeline():
             "current_stage": "script_generated",
             "progress_pct": 30.0,
         }
+        mock_polish.return_value = {"current_stage": "script_polished"}
 
         final_state = await run_script_generator_agent(
             stressor="I am stressed about a work deadline and shipping pressure",
@@ -156,6 +159,7 @@ async def test_run_script_generator_agent_pipeline():
         assert len(final_state["validation_issues"]) == 0
         assert mock_class.called
         assert mock_script.called
+        assert mock_polish.called
 
 
 def test_get_chat_model_configuration():
@@ -198,18 +202,21 @@ async def test_stream_script_generator_agent_yields_events():
 
     with patch("engine.graphs.script_generator.classifier_node", new_callable=AsyncMock) as mock_class, \
          patch("engine.graphs.script_generator.script_generator_node", new_callable=AsyncMock) as mock_script, \
+         patch("engine.graphs.script_generator.script_polisher_node", new_callable=AsyncMock) as mock_polish, \
          patch("engine.graphs.script_generator.validator_node", new_callable=AsyncMock) as mock_val:
 
         mock_class.return_value = mock_classifier_res
         mock_script.return_value = {"current_stage": "script_generated"}
+        mock_polish.return_value = {"current_stage": "script_polished"}
         mock_val.return_value = {"validation_issues": [], "fix_attempts": 0}
 
         events = []
         async for node_name, update in stream_script_generator_agent("I feel burned out"):
             events.append((node_name, update))
 
-        assert len(events) >= 3
+        assert len(events) >= 4
         node_names = [e[0] for e in events]
         assert "classifier" in node_names
         assert "script_generator" in node_names
+        assert "script_polisher" in node_names
         assert "validator" in node_names
