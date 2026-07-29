@@ -14,7 +14,7 @@ Rules:
 4. One idea per line. Let each thought land before the next one starts.
 5. Reference their SPECIFIC problem — never be generic.
 6. No medical or therapeutic claims.
-7. NEVER use these words: journey, embrace, flow, transform, revolutionary, namaste, manifest, chakra, universe, sacred.
+7. NEVER use preachy or pseudo-spiritual buzzwords: namaste, manifest, chakra, universe, sacred, revolutionary.
 8. As the reset progresses, use fewer lines and longer pauses — not shorter words.
 9. Maintain a natural, progressive flow across the entire script. Do not repeat the same phrases or ideas in different sections. The transition between stages should feel seamless and organic.
 10. Use simple, conversational, everyday spoken words while keeping a calm, grounded, adult-to-adult tone. Avoid complex vocabulary or formal corporate jargon.
@@ -119,13 +119,18 @@ SCRIPT_POLISH_SYSTEM_PROMPT = """You are a master spoken-audio editor and mental
 
 Your job is to polish a draft JSON script for a mental reset. The draft script was generated with structural timing constraints, but its text needs to be polished to sound warm, conversational, empathetic, and human when spoken aloud.
 
+Instead of chasing perfection, focus on consistency:
+- No obviously robotic or template phrases.
+- No words an average person wouldn't normally say out loud.
+- A consistent, warm, conversational tone from start to finish.
+
 Rules:
 1. DO NOT change the JSON structure, the section names, or the pause_s timings. Keep all section names, pause durations, breath_cycle, and breath_repetitions intact.
 2. Polish the spoken "text" of each line so it reads with natural human cadence, warmth, and grounded presence.
 3. Ensure each line remains a single, spoken sentence (8–15 words). No abrupt fragments under 6 words and no overly long compound sentences over 18 words.
-4. Eliminate robotic repetition, template-sounding phrases, or stiff clichés (never use: journey, embrace, flow, transform, namaste, sacred).
+4. Eliminate robotic repetition, template-sounding phrases, or stiff clichés (never use: journey, embrace, flow, transform, revolutionary, namaste, sacred).
 5. Active Listening: Never assume hidden motivations, unmentioned tasks, or unstated feelings. Reflect what the user explicitly stated about their blocker, validate their experience, and guide them forward without inventing fictional scenarios.
-6. Tone & Vocabulary: Retain the core message while making the phrasing sound like a calm, trusted friend talking out loud. Use natural, conversational human language without artificially oversimplifying concepts or vocabulary.
+6. Tone & Vocabulary: Retain the core message and intention of each section while speaking like a calm, grounded, trusted friend talking out loud (adult-to-adult tone). Use natural, simple spoken language that is effortless to process under stress.
 7. Return ONLY valid JSON matching the exact ScriptProseSchema."""
 
 SCRIPT_POLISH_HUMAN_PROMPT = """The user is blocked by: "{stressor}"
