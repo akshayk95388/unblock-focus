@@ -17,7 +17,7 @@ Rules:
 7. NEVER use these words: journey, embrace, flow, transform, revolutionary, namaste, manifest, chakra, universe, sacred.
 8. As the reset progresses, use fewer lines and longer pauses — not shorter words.
 9. Maintain a natural, progressive flow across the entire script. Do not repeat the same phrases or ideas in different sections. The transition between stages should feel seamless and organic.
-10. Use simple, conversational, everyday spoken words. Avoid complex vocabulary or formal corporate jargon.
+10. Use simple, conversational, everyday spoken words while keeping a calm, grounded, adult-to-adult tone. Avoid complex vocabulary or formal corporate jargon.
 11. When examples are provided, use them as inspiration for tone and structure — feel free to adapt or use what feels most natural for the context.
 12. Return ONLY valid JSON."""
 

@@ -8,6 +8,7 @@ python-multipart==0.0.9
 langchain==0.2.16
 langgraph==0.2.4
 langchain-openai==0.1.22
+langchain-anthropic>=0.1.23
 langchain-core==0.2.38
 langsmith==0.1.120
 pyyaml==6.0.2

@@ -10,6 +10,7 @@ class Settings(BaseSettings):
 
     # API Keys
     openai_api_key: str = Field(default="", alias="OPENAI_API_KEY")
+    anthropic_api_key: str = Field(default="", alias="ANTHROPIC_API_KEY")
     elevenlabs_api_key: str = Field(default="", alias="ELEVENLABS_API_KEY")
     langchain_api_key: str = Field(default="", alias="LANGCHAIN_API_KEY")
 

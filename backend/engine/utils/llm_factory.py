@@ -16,6 +16,11 @@ from config.settings import get_settings
 logger = logging.getLogger(__name__)
 
 
+MODEL_ALIASES = {
+    "claude-sonnet-4.6": "claude-sonnet-4-6",
+}
+
+
 def get_chat_model(
     config: Optional[Dict[str, Any]] = None,
     temperature: float = 0.7,
@@ -27,7 +32,7 @@ def get_chat_model(
 
     Supports configurable model override via LangGraph RunnableConfig:
     `config={"configurable": {"model": "claude-3-5-sonnet-20241022", "model_provider": "anthropic"}}`
-    or model format strings like `"openai:gpt-4o-mini"`.
+    or model format strings like `"anthropic:claude-sonnet-4.6"` or `"claude-sonnet-4.6"`.
 
     Args:
         config: Optional LangGraph RunnableConfig context.
@@ -48,16 +53,28 @@ def get_chat_model(
     if ":" in model_param:
         provider_param, model_param = model_param.split(":", 1)
 
+    # Resolve aliases (e.g. claude-sonnet-4.6)
+    resolved_model = MODEL_ALIASES.get(model_param.lower(), model_param)
+
+    # Auto-detect anthropic provider if model name starts with claude
+    if resolved_model.lower().startswith("claude") and provider_param == default_provider:
+        provider_param = "anthropic"
+
     api_key = configurable.get("api_key")
     if not api_key:
-        api_key = settings.openai_api_key or os.getenv("OPENAI_API_KEY") or "mock-key-for-testing"
+        if provider_param == "anthropic":
+            api_key = getattr(settings, "anthropic_api_key", "") or os.getenv("ANTHROPIC_API_KEY") or "mock-key-for-testing"
+        else:
+            api_key = settings.openai_api_key or os.getenv("OPENAI_API_KEY") or "mock-key-for-testing"
 
     kwargs = {
-        "model": model_param,
+        "model": resolved_model,
         "model_provider": provider_param,
         "temperature": temperature,
-        "api_key": api_key,
     }
+    if api_key:
+        kwargs["api_key"] = api_key
 
-    logger.debug(f"Initializing chat model: {provider_param}:{model_param} (temp={temperature})")
+    logger.debug(f"Initializing chat model: {provider_param}:{resolved_model} (temp={temperature})")
     return init_chat_model(**kwargs)
+
