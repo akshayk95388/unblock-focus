@@ -11,8 +11,8 @@ script_generator:
   temperature: 0.7
 
 script_polisher:
-  provider: openai
-  model: gpt-4o
+  provider: anthropic
+  model: claude-sonnet-4.6
   temperature: 0.7
 
 tts:

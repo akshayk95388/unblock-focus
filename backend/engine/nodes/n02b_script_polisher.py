@@ -41,8 +41,8 @@ async def script_polisher_node(state: MeditationEngineState, config: Optional[di
 
     stressor = state.get("stressor", "feeling overwhelmed")
 
-    # Use high-capacity model (gpt-4o) for creative polishing
-    llm = get_chat_model(config=config, temperature=0.7, default_model="gpt-4o")
+    # Use high-capacity model (claude-sonnet-4.6) for creative polishing
+    llm = get_chat_model(config=config, temperature=0.7, default_model="claude-sonnet-4.6")
     structured_llm = llm.with_structured_output(ScriptProseSchema)
 
     messages = SCRIPT_POLISH_PROMPT_TEMPLATE.format_messages(
@@ -50,7 +50,7 @@ async def script_polisher_node(state: MeditationEngineState, config: Optional[di
         raw_prose_json=json.dumps(raw_prose, indent=2),
     )
 
-    logger.info(f"[{state.get('job_id', 'local')[:8]}] Polishing script with LLM (gpt-4o)...")
+    logger.info(f"[{state.get('job_id', 'local')[:8]}] Polishing script with LLM (claude-sonnet-4.6)...")
 
     try:
         res: ScriptProseSchema = await structured_llm.ainvoke(messages, config=config)
