@@ -155,10 +155,19 @@ export default function Home() {
 
       {/* ===== Hero Section ===== */}
       <main className="flex-1">
-        <section id="hero" className="pt-32 pb-16 md:pt-40 md:pb-24 px-6 md:px-12 max-w-7xl mx-auto">
-          <div className="flex flex-col items-center text-center max-w-3xl mx-auto space-y-10">
+        <section id="hero" className="pt-24 pb-12 md:pt-32 md:pb-20 px-6 md:px-12 max-w-7xl mx-auto">
+          <div className="flex flex-col items-center text-center max-w-3xl mx-auto space-y-6 md:space-y-10">
             {/* Center: Copy */}
-            <div className="space-y-6">
+            <div className="space-y-6 flex flex-col items-center">
+              {/* Badge */}
+              <div className="mb-4 inline-flex items-center gap-2 md:gap-2.5 px-3 md:px-4 py-1 md:py-1.5 rounded-full bg-surface-container-high/60 border border-primary/25 text-on-surface text-[11px] md:text-xs font-medium tracking-wide backdrop-blur-md shadow-sm hover:border-primary/40 transition-colors">
+                <span className="relative flex h-2 w-2 shrink-0">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-container opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-container"></span>
+                </span>
+                <span>Get unblocked in under 5 minutes</span>
+              </div>
+
               <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-on-surface leading-[1.05]">
                 Break the loop.
                 <br />
