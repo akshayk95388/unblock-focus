@@ -529,6 +529,7 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
                 <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant block">Daily Goal (minutes)</label>
                 <CustomSelect
                   size="sm"
+                  showChevron
                   value={customGoalDuration}
                   onChange={(val) => setCustomGoalDuration(Number(val))}
                   options={[

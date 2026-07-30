@@ -92,6 +92,7 @@ export default function BreathingSetupModal({
               </label>
               <CustomSelect
                 size="sm"
+                showChevron
                 value={technique}
                 onChange={(val) => {
                   if (!canUseBreathingTechnique(planType, val)) {
@@ -118,6 +119,7 @@ export default function BreathingSetupModal({
               </label>
               <CustomSelect
                 size="sm"
+                showChevron
                 value={showCustomDuration ? "custom" : durationMins}
                 onChange={(val) => {
                   if (val === "custom") {

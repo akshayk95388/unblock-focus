@@ -373,7 +373,9 @@ function DashboardContent() {
     "Pitch deck due tomorrow",
     "Can't focus, keep checking phone",
     "Feeling overwhelmed",
-    "Exam anxiety",
+    "Procrastinating on hard task",
+    "Imposter syndrome",
+    "Exam & interview anxiety",
   ];
 
   return (
@@ -394,194 +396,166 @@ function DashboardContent() {
       <div className="flex flex-col lg:flex-row min-h-[calc(100vh-4rem)] md:min-h-screen">
         {/* ===== Center Content ===== */}
         {currentTab === "dashboard" && (
-          <section className="flex-1 p-6 md:p-12 overflow-y-auto" key={refreshKey}>
+          <section className="flex-1 p-6 md:p-12 overflow-y-auto flex flex-col justify-center min-h-full" key={refreshKey}>
             {/* Hero — Inline Session Starter */}
-            <div className="relative w-full">
-              <div className="max-w-2xl w-full mx-auto">
-                <div className="mb-6 md:mb-8">
+            <div className="relative w-full my-auto flex flex-col justify-center">
+              <div className="max-w-2xl w-full mx-auto relative z-10 space-y-5">
+                {/* Header — Centered */}
+                <div className="mb-6 text-center space-y-1.5">
                   <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-on-surface">
                     Welcome, <span className="text-primary-container">{user?.user_metadata?.full_name?.split(" ")[0] || user?.user_metadata?.name?.split(" ")[0] || "Akshay"}</span>
                   </h1>
+                  <p className="text-xs md:text-sm text-on-surface-variant/70">
+                    What&apos;s blocking you right now?
+                  </p>
                 </div>
 
-                {/* Timeline Roadmap Layout */}
-                <div className="relative flex gap-0 md:gap-8 mt-4 sm:mt-8">
-                  {/* Left Timeline Column (Desktop Only) */}
-                  <div className="hidden md:flex flex-col items-center w-8 shrink-0">
-                    {/* Step 1 Bullet */}
-                    <div className="w-8 h-8 rounded-full border border-primary/30 bg-surface-container-low flex items-center justify-center text-[10px] text-primary font-bold z-10 shrink-0 shadow-sm mt-1">
-                      01
-                    </div>
-                    {/* Connecting Line */}
-                    {!session && (
-                      <div className="flex-1 w-[2px] border-l-2 border-dashed border-outline-variant/15 my-3" />
-                    )}
-                    {/* Step 2 Bullet */}
-                    {!session && (
-                      <div className="w-8 h-8 rounded-full border border-outline-variant/30 bg-surface-container-low flex items-center justify-center text-[10px] text-on-surface-variant/60 font-bold z-10 shrink-0 shadow-sm">
-                        02
+                {/* Main Content Layout */}
+                <div className="space-y-6">
+                  {/* AI Hero Prompt Card */}
+                  <div className="bg-surface-container-low/90 backdrop-blur-xl border border-outline-variant/20 hover:border-outline-variant/35 focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20 focus-within:shadow-[0_0_30px_rgba(255,130,60,0.12)] rounded-3xl p-5 md:p-6 space-y-4 transition-all shadow-2xl relative">
+                    <textarea
+                      ref={textareaRef}
+                      value={heroStressor}
+                      onChange={(e) => setHeroStressor(e.target.value)}
+                      placeholder="e.g. Can't focus, pitch deck panic, feeling overwhelmed..."
+                      rows={3}
+                      className="w-full bg-transparent border-none p-1 text-sm focus:outline-none text-on-surface placeholder:text-on-surface-variant/40 resize-none leading-relaxed"
+                    />
+
+                    {/* Bottom Toolbar: Option Pills (Left) + Primary CTA (Right) */}
+                    <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row items-stretch sm:items-center md:items-stretch lg:items-center justify-between gap-3 pt-2">
+                      {/* Left: Option Pills */}
+                      <div className="flex flex-nowrap sm:flex-wrap items-center gap-2">
+                        <CustomSelect
+                          className="min-w-0 shrink sm:shrink-0"
+                          size="sm"
+                          icon="⏱️"
+                          value={durationMins > 5 ? "deep" : "quick"}
+                          onChange={(val) => setDurationMins(val === "deep" ? 7 : 3)}
+                          options={[
+                            { value: "quick", label: "Quick (2–5 min)" },
+                            { value: "deep", label: "Deep (5–10 min)" },
+                          ]}
+                        />
+
+                        <CustomSelect
+                          className="min-w-0 shrink sm:shrink-0"
+                          size="sm"
+                          icon="🎙️"
+                          value={voice}
+                          onChange={setVoice}
+                          options={[
+                            { value: "gentle_female", label: "Calm" },
+                            { value: "soft_male", label: "Steady" },
+                          ]}
+                        />
+
+                        <CustomSelect
+                          className="min-w-0 shrink sm:shrink-0"
+                          size="sm"
+                          icon="🎵"
+                          value={music}
+                          onChange={setMusic}
+                          options={[
+                            { value: "none", label: "Voice Only" },
+                            { value: "meditation_impromptu", label: "Ambient Synth" },
+                            { value: "flute", label: "Serene Flute" },
+                          ]}
+                        />
                       </div>
-                    )}
-                  </div>
 
-                  {/* Right Content Column (Cards) */}
-                  <div className="flex-1 min-w-0">
-                    {/* Step 1: Clear your head */}
-                    <div className="space-y-3">
-                      <div className="text-[10px] font-bold uppercase tracking-widest text-primary md:hidden">
-                        Step 1: Clear your head
-                      </div>
-                      <div className="bg-surface-container-low p-4 sm:p-5 md:p-6 rounded-2xl border border-outline-variant/15 space-y-3 sm:space-y-4 relative">
-                        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none rounded-2xl" />
-                        <div className="relative z-10 space-y-4">
-                          <label className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-                            What&apos;s blocking you right now?
-                          </label>
-                          <textarea
-                            ref={textareaRef}
-                            value={heroStressor}
-                            onChange={(e) => setHeroStressor(e.target.value)}
-                            placeholder="e.g. Can't focus, pitch deck panic, feeling like a fraud..."
-                            rows={2}
-                            className="w-full bg-surface-container-highest border-none rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50 text-on-surface placeholder:text-on-surface-variant/40 resize-none"
-                          />
-                          <div className="flex flex-wrap gap-2">
-                            {heroSuggestions.map((s) => (
-                              <button
-                                key={s}
-                                onClick={() => {
-                                  setHeroStressor(s);
-                                  textareaRef.current?.focus();
-                                }}
-                                className="text-[10px] px-2.5 py-1 rounded-lg bg-surface-container-highest/60 hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface transition-all"
-                              >
-                                {s}
-                              </button>
-                            ))}
-                          </div>
-
-                          {/* Inline Customization Controls */}
-                          <div className="grid grid-cols-3 gap-2 sm:gap-4 pt-1 pb-2">
-                            {/* Reset Duration */}
-                            <div className="space-y-1.5">
-                              <label className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant/60">
-                                Duration
-                              </label>
-                              <CustomSelect
-                                size="sm"
-                                value={durationMins > 5 ? "deep" : "quick"}
-                                onChange={(val) => setDurationMins(val === "deep" ? 7 : 3)}
-                                options={[
-                                  { value: "quick", label: "Quick (2–5 min)" },
-                                  { value: "deep", label: "Deep (5–10 min)" },
-                                ]}
-                              />
-                            </div>
-
-                            {/* Voice */}
-                            <div className="space-y-1.5">
-                              <label className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant/60">
-                                Voice Guide
-                              </label>
-                              <CustomSelect
-                                size="sm"
-                                value={voice}
-                                onChange={setVoice}
-                                options={[
-                                  { value: "gentle_female", label: "Calm" },
-                                  { value: "soft_male", label: "Steady" },
-                                ]}
-                              />
-                            </div>
-
-                            {/* Background Audio */}
-                            <div className="space-y-1.5">
-                              <label className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant/60">
-                                Audio
-                              </label>
-                              <CustomSelect
-                                size="sm"
-                                value={music}
-                                onChange={setMusic}
-                                options={[
-                                  { value: "none", label: "Voice Only" },
-                                  { value: "meditation_impromptu", label: "Calm Ambient Synth" },
-                                  { value: "flute", label: "Serene Flute Meditation" },
-                                ]}
-                              />
-                            </div>
-                          </div>
-
-                          <button
-                            onClick={handleStartReset}
-                            disabled={!heroStressor.trim() || !!session}
-                            className={`w-full glow-button py-3.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 ${(!heroStressor.trim() || !!session) ? "opacity-50 pointer-events-none" : "hover:scale-[1.01] active:scale-95"
-                              }`}
-                          >
-                            ⚡ Start Guided Session
-                          </button>
-
-                          {/* Breathing Quick Relief Option */}
-                          {!session && (
-                            <div className="mt-4 sm:mt-5 pt-3 sm:pt-4 border-t border-outline-variant/20 flex flex-col sm:flex-row items-center sm:justify-between gap-2 sm:gap-0 text-xs sm:text-sm text-on-surface-variant/70">
-                              <span>Need quick relief?</span>
-                              <button
-                                onClick={() => handleTabChange("breathing")}
-                                className="text-primary hover:text-primary-container font-semibold transition-all flex items-center gap-1.5 cursor-pointer hover:bg-primary/5 px-3 py-1.5 sm:-mr-3 rounded-lg"
-                              >
-                                Try a breathing exercise &rarr;
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                      {/* Right: Vibrant CTA Button */}
+                      <button
+                        onClick={handleStartReset}
+                        disabled={!heroStressor.trim() || !!session}
+                        className={`px-6 py-2.5 rounded-full text-xs font-bold flex items-center justify-center gap-2 transition-all shrink-0 cursor-pointer ${
+                          (!heroStressor.trim() || !!session)
+                            ? "bg-surface-container-highest/80 text-on-surface-variant/40 border border-outline-variant/10 cursor-not-allowed"
+                            : "bg-[#FF8C53] hover:bg-[#FF7A38] text-slate-950 font-bold shadow-md hover:scale-[1.02] active:scale-95"
+                        }`}
+                      >
+                        ⚡ Start Guided Session
+                      </button>
                     </div>
 
-                    {/* Step 2: Focus Session (Get to Work) Banner */}
+                    {/* Embedded Breathing Quick Relief Option inside Card Footer */}
                     {!session && (
-                      <div className="mt-5 sm:mt-8 md:mt-10 space-y-2 sm:space-y-3">
-                        <div className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/50 ml-1">
-                          <span className="md:hidden">Step 2: Get to work</span>
-                          <span className="hidden md:inline">Ready to work?</span>
-                        </div>
+                      <div className="pt-3 border-t border-outline-variant/10 flex items-center justify-between text-xs text-on-surface-variant/60">
+                        <span>Need quick relief?</span>
                         <button
-                          onClick={handleStartFocusDirectly}
-                          className="w-full glass-panel bg-surface-container-low/50 hover:bg-surface-container-low border border-outline-variant/10 hover:border-primary/20 rounded-2xl p-4 sm:p-6 flex items-center justify-between transition-all group hover:scale-[1.01] active:scale-[0.98] cursor-pointer"
+                          onClick={() => handleTabChange("breathing")}
+                          className="text-primary hover:text-primary-container font-semibold transition-colors flex items-center gap-1 cursor-pointer group"
                         >
-                          <span className="flex items-center gap-4 text-left">
-                            <span className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                              <svg
-                                className="w-5 h-5"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                strokeWidth={2}
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
-                                />
-                              </svg>
-                            </span>
-                            <span className="flex flex-col">
-                              <span className="text-sm font-semibold text-on-surface group-hover:text-primary transition-colors">
-                                Focus Session
-                              </span>
-                              <span className="text-xs text-on-surface-variant/60">
-                                For when you&apos;re ready to get straight to work.
-                              </span>
-                            </span>
-                          </span>
-                          <span className="text-xs font-bold text-primary group-hover:translate-x-1 transition-transform flex items-center gap-1 whitespace-nowrap shrink-0">
-                            <span className="sm:hidden">Start</span>
-                            <span className="hidden sm:inline">Start Focus</span>
-                            <span>&rarr;</span>
-                          </span>
+                          <span>Try a breathing exercise</span>
+                          <span className="group-hover:translate-x-0.5 transition-transform">&rarr;</span>
                         </button>
                       </div>
                     )}
                   </div>
+
+                  {/* Example Prompts — Centered */}
+                  <div className="pt-1 text-center">
+                    <div className="flex flex-wrap justify-center gap-2">
+                      {heroSuggestions.map((s, i) => (
+                        <button
+                          key={s}
+                          onClick={() => {
+                            setHeroStressor(s);
+                            textareaRef.current?.focus();
+                          }}
+                          className={`text-xs px-3.5 py-1.5 rounded-full bg-surface-container-low/50 hover:bg-surface-container-low text-on-surface-variant/80 hover:text-on-surface transition-all cursor-pointer border border-outline-variant/10 hover:border-outline-variant/30 shadow-xs${i >= 3 ? " hidden sm:inline-flex" : ""}`}
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Section 2: Direct Focus Session */}
+                  {!session && (
+                    <div className="space-y-2 pt-4 text-center">
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/40">
+                        READY TO WORK?
+                      </div>
+                      <button
+                        onClick={handleStartFocusDirectly}
+                        className="w-full glass-panel bg-surface-container-low/90 hover:bg-surface-container-low backdrop-blur-xl border border-outline-variant/20 hover:border-primary/40 rounded-2xl p-4 sm:p-5 flex items-center justify-between transition-all group hover:scale-[1.01] active:scale-[0.98] cursor-pointer shadow-lg"
+                      >
+                        <span className="flex items-center gap-4 text-left">
+                          <span className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-surface-container-highest flex items-center justify-center text-primary shrink-0 group-hover:scale-105 transition-transform">
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth={2}
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
+                            </svg>
+                          </span>
+                          <span className="flex flex-col">
+                            <span className="text-sm font-semibold text-on-surface group-hover:text-primary transition-colors">
+                              Focus Session
+                            </span>
+                            <span className="text-xs text-on-surface-variant/60">
+                              <span className="sm:hidden">To get straight to work.</span>
+                              <span className="hidden sm:inline">For when you&apos;re ready to get straight to work.</span>
+                            </span>
+                          </span>
+                        </span>
+                        <span className="text-xs font-bold text-primary group-hover:translate-x-1 transition-transform flex items-center gap-1 whitespace-nowrap shrink-0">
+                          <span className="sm:hidden">Start</span>
+                          <span className="hidden sm:inline">Start Focus</span>
+                          <span>&rarr;</span>
+                        </span>
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Mobile-only inline widgets */}
@@ -605,7 +579,6 @@ function DashboardContent() {
                     </div>
                   </div>
                 </div>
-
               </div>
             </div>
             {session && (

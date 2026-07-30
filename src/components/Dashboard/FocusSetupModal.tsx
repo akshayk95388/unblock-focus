@@ -130,6 +130,7 @@ export default function FocusSetupModal({
               </label>
               <CustomSelect
                 size="sm"
+                showChevron
                 value={showFocusCustom ? "custom" : focusDuration}
                 onChange={(val) => {
                   if (!canUseFocusDuration(planType, val)) {
@@ -179,6 +180,7 @@ export default function FocusSetupModal({
                 </label>
                 <CustomSelect
                   size="sm"
+                  showChevron
                   value={selectedHabitId}
                   onChange={setSelectedHabitId}
                   options={[
