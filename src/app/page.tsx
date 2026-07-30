@@ -445,6 +445,104 @@ export default function Home() {
           </div>
         </section>
 
+        {/* ===== Testimonials Section ===== */}
+        <section
+          id="testimonials"
+          className="py-20 md:py-28 px-6 md:px-12 max-w-7xl mx-auto"
+        >
+          <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-on-surface">
+              Loved by people who hate procrastinating
+            </h2>
+            <p className="text-on-surface-variant text-base md:text-lg">
+              See how others break mental friction and get straight to work.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Testimonial 1 */}
+            <div className="bg-surface-container-low border border-outline-variant/15 rounded-2xl p-8 hover:bg-surface-container hover:border-outline-variant/30 transition-all duration-300 flex flex-col justify-between space-y-6">
+              <div className="space-y-4">
+                {/* 5-star rating */}
+                <div className="flex items-center gap-1 text-primary">
+                  {[...Array(5)].map((_, i) => (
+                    <svg key={i} className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
+                </div>
+                <p className="text-on-surface-variant text-sm leading-relaxed">
+                  &ldquo;I used to waste hours overthinking pitch decks and investor updates. A 3-minute reset clears the anxiety so I can just sit down and finish what used to take me days.&rdquo;
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3 pt-4 border-t border-outline-variant/10">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary-container/30 border border-primary/30 flex items-center justify-center font-bold text-xs text-primary-container">
+                  AC
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-on-surface">Alex Chen</h3>
+                  <p className="text-xs text-on-surface-variant/70">Founder & Entrepreneur</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Testimonial 2 */}
+            <div className="bg-surface-container-low border border-outline-variant/15 rounded-2xl p-8 hover:bg-surface-container hover:border-outline-variant/30 transition-all duration-300 flex flex-col justify-between space-y-6">
+              <div className="space-y-4">
+                {/* 5-star rating */}
+                <div className="flex items-center gap-1 text-primary">
+                  {[...Array(5)].map((_, i) => (
+                    <svg key={i} className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
+                </div>
+                <p className="text-on-surface-variant text-sm leading-relaxed">
+                  &ldquo;Whenever I have to start a tricky refactor or dive into a complex codebase, my brain tries to procrastinate. Unblock clears that initial friction so I can jump straight into coding.&rdquo;
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3 pt-4 border-t border-outline-variant/10">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-secondary/20 to-secondary/40 border border-secondary/30 flex items-center justify-center font-bold text-xs text-secondary">
+                  MV
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-on-surface">Marcus Vance</h3>
+                  <p className="text-xs text-on-surface-variant/70">Software Engineer</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Testimonial 3 */}
+            <div className="bg-surface-container-low border border-outline-variant/15 rounded-2xl p-8 hover:bg-surface-container hover:border-outline-variant/30 transition-all duration-300 flex flex-col justify-between space-y-6">
+              <div className="space-y-4">
+                {/* 5-star rating */}
+                <div className="flex items-center gap-1 text-primary">
+                  {[...Array(5)].map((_, i) => (
+                    <svg key={i} className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
+                </div>
+                <p className="text-on-surface-variant text-sm leading-relaxed">
+                  &ldquo;Staring at a blank document used to lead to hours of research rabbit holes instead of writing. Unblock breaks that initial paralysis so I can actually start drafting.&rdquo;
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3 pt-4 border-t border-outline-variant/10">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-tertiary/20 to-tertiary/40 border border-tertiary/30 flex items-center justify-center font-bold text-xs text-tertiary">
+                  SJ
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-on-surface">Sarah Jenkins</h3>
+                  <p className="text-xs text-on-surface-variant/70">Writer & Researcher</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* ===== Pricing Section ===== */}
         <section
           id="pricing"
