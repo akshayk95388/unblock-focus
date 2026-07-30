@@ -104,6 +104,9 @@ export default function TermsPage() {
                 By making a purchase, you agree to provide valid payment details.
               </li>
               <li>Any applicable taxes are your responsibility.</li>
+              <li>
+                Due to the nature of the product, all sales are final and non-refundable unless required by applicable law.
+              </li>
             </ul>
           </div>
 
