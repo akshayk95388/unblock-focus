@@ -136,6 +136,12 @@ export default function Home() {
               Features
             </a>
             <a
+              href="#pricing"
+              className="text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors duration-300"
+            >
+              Pricing
+            </a>
+            <a
               href="mailto:support@unblockfocus.com"
               className="text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors duration-300"
             >
@@ -663,6 +669,12 @@ export default function Home() {
                 className="text-xs font-medium text-on-surface-variant hover:text-on-surface transition-colors duration-300"
               >
                 Features
+              </a>
+              <a
+                href="#pricing"
+                className="text-xs font-medium text-on-surface-variant hover:text-on-surface transition-colors duration-300"
+              >
+                Pricing
               </a>
               <a
                 href="mailto:support@unblockfocus.com"
