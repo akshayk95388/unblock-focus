@@ -198,9 +198,9 @@ export default function FocusSetupModal({
           {/* CTA */}
           <button
             onClick={handleStartClick}
-            className="w-full glow-button py-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-95 transition-all cursor-pointer"
+            className="w-full glow-button py-4 rounded-xl text-sm font-bold flex items-center justify-center transition-all hover:scale-[1.01] active:scale-95 cursor-pointer"
           >
-            ⚡ Start Focus Session
+            Start Focus Session
           </button>
         </div>
       </div>

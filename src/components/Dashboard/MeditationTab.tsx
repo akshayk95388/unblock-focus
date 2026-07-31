@@ -1442,9 +1442,9 @@ export default function MeditationTab({
               <div className="w-full space-y-4 pt-4">
                 <button
                   onClick={onOpenFocusSetup}
-                  className="w-full glow-button py-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-95 transition-all cursor-pointer shadow-lg"
+                  className="w-full glow-button py-4 rounded-xl text-sm font-bold flex items-center justify-center transition-all hover:scale-[1.01] active:scale-95 cursor-pointer shadow-lg"
                 >
-                  ⚡ Set up Focus Session
+                  Set up Focus Session
                 </button>
 
                 {resetDone && (

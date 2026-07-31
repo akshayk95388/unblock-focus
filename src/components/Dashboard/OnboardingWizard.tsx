@@ -452,7 +452,7 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
                     Setting up...
                   </span>
                 ) : (
-                  <>⚡ Get Started</>
+                  <>Get Started</>
                 )}
               </button>
             )}

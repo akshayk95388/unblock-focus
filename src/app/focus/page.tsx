@@ -469,13 +469,13 @@ function DashboardContent() {
                       <button
                         onClick={handleStartReset}
                         disabled={!heroStressor.trim() || !!session}
-                        className={`px-6 py-2.5 rounded-full text-xs font-bold flex items-center justify-center gap-2 transition-all shrink-0 cursor-pointer ${
+                        className={`px-6 py-2.5 rounded-full text-xs font-bold flex items-center justify-center transition-all shrink-0 cursor-pointer ${
                           (!heroStressor.trim() || !!session)
                             ? "bg-surface-container-highest/80 text-on-surface-variant/40 border border-outline-variant/10 cursor-not-allowed"
                             : "bg-[#FF8C53] hover:bg-[#FF7A38] text-slate-950 font-bold shadow-md hover:scale-[1.02] active:scale-95"
                         }`}
                       >
-                        ⚡ Start Guided Session
+                        Start Guided Session
                       </button>
                     </div>
 

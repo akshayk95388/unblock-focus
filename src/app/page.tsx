@@ -22,9 +22,8 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
       >
         <span id={questionId} className="font-bold text-on-surface text-base md:text-lg pr-4">{question}</span>
         <span
-          className={`flex-shrink-0 w-8 h-8 rounded-full bg-surface-container-highest group-hover:bg-primary-container group-hover:text-on-primary-container flex items-center justify-center text-on-surface-variant transition-all duration-300 ${
-            isOpen ? "rotate-180 bg-primary-container text-on-primary-container" : ""
-          }`}
+          className={`flex-shrink-0 w-8 h-8 rounded-full bg-surface-container-highest group-hover:bg-primary-container group-hover:text-on-primary-container flex items-center justify-center text-on-surface-variant transition-all duration-300 ${isOpen ? "rotate-180 bg-primary-container text-on-primary-container" : ""
+            }`}
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
@@ -35,9 +34,8 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
         id={answerId}
         role="region"
         aria-labelledby={questionId}
-        className={`transition-all duration-300 ease-in-out overflow-hidden ${
-          isOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
-        }`}
+        className={`transition-all duration-300 ease-in-out overflow-hidden ${isOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+          }`}
       >
         <div className="p-6 text-on-surface-variant text-sm md:text-base leading-relaxed border-t border-outline-variant/10">
           {answer}
@@ -187,9 +185,9 @@ export default function Home() {
               </div>
 
               <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-on-surface leading-[1.05]">
-                Break the loop.
+                Break the loop
                 <br />
-                <span className="text-primary-container">Get to work.</span>
+                <span className="text-primary-container">Get to work</span>
               </h1>
 
               <p className="text-on-surface-variant text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
@@ -258,13 +256,12 @@ export default function Home() {
                   <button
                     type="submit"
                     disabled={!stressor.trim()}
-                    className={`px-6 py-2.5 rounded-full text-xs font-bold flex items-center justify-center gap-2 transition-all shrink-0 cursor-pointer ${
-                      !stressor.trim()
+                    className={`px-6 py-2.5 rounded-full text-xs font-bold flex items-center justify-center transition-all shrink-0 cursor-pointer ${!stressor.trim()
                         ? "bg-surface-container-highest/80 text-on-surface-variant/40 border border-outline-variant/10 cursor-not-allowed"
                         : "bg-[#FF8C53] hover:bg-[#FF7A38] text-slate-950 font-bold shadow-md hover:scale-[1.02] active:scale-95"
-                    }`}
+                      }`}
                   >
-                    ⚡ Get Unblocked
+                    Get Unblocked
                   </button>
                 </div>
               </div>
@@ -400,7 +397,7 @@ export default function Home() {
 
             {/* Feature 2 */}
             <div className="bg-surface-container-low border border-outline-variant/15 rounded-2xl p-8 hover:bg-surface-container hover:border-outline-variant/30 transition-all duration-300">
-              <div className="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center mb-6 text-secondary">
+              <div className="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center mb-6 text-primary">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.23-1.591 1.591M5.25 12H3m4.23-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
                 </svg>
@@ -415,7 +412,7 @@ export default function Home() {
 
             {/* Feature 3 */}
             <div className="bg-surface-container-low border border-outline-variant/15 rounded-2xl p-8 hover:bg-surface-container hover:border-outline-variant/30 transition-all duration-300">
-              <div className="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center mb-6 text-tertiary">
+              <div className="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center mb-6 text-primary">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
                 </svg>
@@ -478,7 +475,7 @@ export default function Home() {
               </div>
 
               <div className="flex items-center gap-3 pt-4 border-t border-outline-variant/10">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary-container/30 border border-primary/30 flex items-center justify-center font-bold text-xs text-primary-container">
+                <div className="w-10 h-10 rounded-full bg-surface-container-highest border border-outline-variant/20 flex items-center justify-center font-bold text-xs text-on-surface shrink-0">
                   AC
                 </div>
                 <div>
@@ -505,7 +502,7 @@ export default function Home() {
               </div>
 
               <div className="flex items-center gap-3 pt-4 border-t border-outline-variant/10">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-secondary/20 to-secondary/40 border border-secondary/30 flex items-center justify-center font-bold text-xs text-secondary">
+                <div className="w-10 h-10 rounded-full bg-surface-container-highest border border-outline-variant/20 flex items-center justify-center font-bold text-xs text-on-surface shrink-0">
                   MV
                 </div>
                 <div>
@@ -532,7 +529,7 @@ export default function Home() {
               </div>
 
               <div className="flex items-center gap-3 pt-4 border-t border-outline-variant/10">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-tertiary/20 to-tertiary/40 border border-tertiary/30 flex items-center justify-center font-bold text-xs text-tertiary">
+                <div className="w-10 h-10 rounded-full bg-surface-container-highest border border-outline-variant/20 flex items-center justify-center font-bold text-xs text-on-surface shrink-0">
                   SJ
                 </div>
                 <div>
@@ -563,21 +560,19 @@ export default function Home() {
             <div className="flex gap-1 bg-surface-container-highest/50 p-1 rounded-xl">
               <button
                 onClick={() => setPricingCycle("monthly")}
-                className={`px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
-                  pricingCycle === "monthly"
+                className={`px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${pricingCycle === "monthly"
                     ? "bg-surface-container-low text-on-surface shadow-sm"
                     : "text-on-surface-variant hover:text-on-surface"
-                }`}
+                  }`}
               >
                 Monthly
               </button>
               <button
                 onClick={() => setPricingCycle("yearly")}
-                className={`px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 ${
-                  pricingCycle === "yearly"
+                className={`px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 ${pricingCycle === "yearly"
                     ? "bg-surface-container-low text-on-surface shadow-sm"
                     : "text-on-surface-variant hover:text-on-surface"
-                }`}
+                  }`}
               >
                 Yearly
                 <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/15 text-primary font-bold normal-case">

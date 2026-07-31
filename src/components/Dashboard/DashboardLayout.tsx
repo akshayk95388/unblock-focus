@@ -101,7 +101,7 @@ export default function DashboardLayout({
           )}
           <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-outline-variant/10">
             {!user?.user_metadata?.avatar_url || isDefaultGoogleAvatar(user.user_metadata.avatar_url) ? (
-              <div className="w-full h-full bg-gradient-to-br from-primary-container to-primary flex items-center justify-center text-xs font-black text-on-primary-container uppercase shadow-inner">
+              <div className="w-full h-full bg-surface-container-highest flex items-center justify-center text-xs font-bold text-on-surface uppercase">
                 {userInitial}
               </div>
             ) : (
@@ -310,7 +310,7 @@ export default function DashboardLayout({
           >
             <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-outline-variant/10">
               {!user?.user_metadata?.avatar_url || isDefaultGoogleAvatar(user.user_metadata.avatar_url) ? (
-                <div className="w-full h-full bg-gradient-to-br from-primary-container to-primary flex items-center justify-center text-xs font-black text-on-primary-container uppercase">
+                <div className="w-full h-full bg-surface-container-highest flex items-center justify-center text-xs font-bold text-on-surface uppercase">
                   {userInitial}
                 </div>
               ) : (
