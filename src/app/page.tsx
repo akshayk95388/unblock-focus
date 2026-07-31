@@ -74,7 +74,7 @@ export default function Home() {
     {
       question: "How does Unblock help me start working?",
       answer:
-        "If you're feeling stuck, overwhelmed, or anxious about a task, Unblock helps you get unstuck. First, you type what's bothering you, and we build a short 2-to-10 minute guided session to clear your mind. Right after, we start a focus session to help you get straight into deep work.",
+        "If you're feeling stuck, overwhelmed, or anxious about a task, Unblock helps you get unstuck. First, you type what's bothering you, and we build a short, personalized guided session to clear your mind. Right after, we start a focus session to help you get straight into deep work.",
     },
     {
       question: "Are the guided sessions pre-recorded?",
@@ -89,7 +89,7 @@ export default function Home() {
     {
       question: "Why are guided sessions kept under 10 minutes?",
       answer:
-        "Because the goal is action, not productive procrastination. If your mind is asking for a 30-minute meditation, that is often a subtle delay tactic. Unblock guided sessions are intentionally 2 to 10 minutes to clear your mental blocker fast and get you straight into work with high energy.",
+        "Because the goal is action, not productive procrastination. If your mind is asking for a 30-minute meditation, that is often a subtle delay tactic. Unblock guided sessions are intentionally kept short (under 10 minutes) to clear your mental blocker fast and get you straight into work with high energy.",
     },
     {
       question: "Does Unblock work on mobile and tablet?",
@@ -319,10 +319,10 @@ export default function Home() {
                 </div>
               </div>
               <h3 className="text-lg font-bold text-on-surface mb-3">
-                Describe Your Mental Block
+                Tell Us What&apos;s Blocking You
               </h3>
               <p className="text-on-surface-variant text-sm leading-relaxed flex-1">
-                Type the exact obstacle in front of you—whether it&apos;s pitch deck panic, exam anxiety, or phone distraction. No generic templates.
+                Type the exact obstacle you&apos;re facing—whether it&apos;s deadline panic, overthinking, or phone distraction.
               </p>
             </div>
 
@@ -339,10 +339,10 @@ export default function Home() {
                 </div>
               </div>
               <h3 className="text-lg font-bold text-on-surface mb-3">
-                3 to 5 Minute Guided Reset
+                Personalized Guided Reset
               </h3>
               <p className="text-on-surface-variant text-sm leading-relaxed flex-1">
-                Listen to a personalized audio reset generated for your situation—combining targeted breathing and mindset reframes to clear anxiety.
+                Listen to a short audio reset generated for your exact situation—combining guided breathwork, grounding, and mindset shifts to clear anxiety in minutes.
               </p>
             </div>
 
@@ -359,10 +359,10 @@ export default function Home() {
                 </div>
               </div>
               <h3 className="text-lg font-bold text-on-surface mb-3">
-                Timed Deep Work
+                Timed Focus Session
               </h3>
               <p className="text-on-surface-variant text-sm leading-relaxed flex-1">
-                Transition seamlessly into a timed focus session with the Stay-Focused Guard keeping your momentum on track when motivation dips.
+                Transition seamlessly into a timed focus session to build momentum, protect your flow state, and finish what you started.
               </p>
             </div>
           </div>
@@ -391,7 +391,7 @@ export default function Home() {
                 </svg>
               </div>
               <h3 className="text-lg font-bold text-on-surface mb-3">
-                Built for Your Situation
+                Personalized AI Resets
               </h3>
               <p className="text-on-surface-variant text-sm leading-relaxed">
                 Tell the app what&apos;s blocking you. Get a custom audio reset designed for your exact obstacle—deadlines, burnout, or feeling overwhelmed.
@@ -737,7 +737,7 @@ export default function Home() {
                 Start Guided Session
               </a>
               <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">
-                Start for free. No credit card required.
+                Start for free. Includes 3 free AI guided sessions.
               </p>
             </div>
           </div>
