@@ -413,7 +413,7 @@ function DashboardContent() {
                 {/* Main Content Layout */}
                 <div className="space-y-6">
                   {/* AI Hero Prompt Card */}
-                  <div className="bg-surface-container-low/90 backdrop-blur-xl border border-outline-variant/20 hover:border-outline-variant/35 focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20 focus-within:shadow-[0_0_30px_rgba(255,130,60,0.12)] rounded-3xl p-5 md:p-6 space-y-4 transition-all shadow-2xl relative">
+                  <div className="bg-surface-container-low/90 backdrop-blur-xl border border-outline-variant/20 hover:not-focus-within:border-outline-variant/35 focus-within:border-primary/30 focus-within:ring-1 focus-within:ring-primary/20 focus-within:shadow-[0_0_30px_rgba(255,130,60,0.12)] rounded-3xl p-5 md:p-6 space-y-4 transition-all shadow-2xl relative">
                     <textarea
                       ref={textareaRef}
                       value={heroStressor}
@@ -520,7 +520,7 @@ function DashboardContent() {
                       </div>
                       <button
                         onClick={handleStartFocusDirectly}
-                        className="w-full glass-panel bg-surface-container-low/90 hover:bg-surface-container-low backdrop-blur-xl border border-outline-variant/20 hover:border-primary/40 rounded-2xl p-4 sm:p-5 flex items-center justify-between transition-all group hover:scale-[1.01] active:scale-[0.98] cursor-pointer shadow-lg"
+                        className="w-full glass-panel bg-surface-container-low/90 hover:bg-surface-container-low backdrop-blur-xl border border-outline-variant/20 hover:border-primary/30 rounded-2xl p-4 sm:p-5 flex items-center justify-between transition-all group hover:scale-[1.01] active:scale-[0.98] cursor-pointer shadow-lg"
                       >
                         <span className="flex items-center gap-4 text-left">
                           <span className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-surface-container-highest flex items-center justify-center text-primary shrink-0 group-hover:scale-105 transition-transform">

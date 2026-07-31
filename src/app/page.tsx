@@ -202,7 +202,7 @@ export default function Home() {
             {/* Minimalist Input Card + Example Prompts Below */}
             <form onSubmit={handleGetUnblocked} className="w-full space-y-4 max-w-3xl mx-auto text-left pt-2">
               {/* Primary Input Card */}
-              <div className="bg-surface-container-low/90 backdrop-blur-xl border border-outline-variant/20 hover:border-outline-variant/35 focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20 focus-within:shadow-[0_0_30px_rgba(255,130,60,0.12)] rounded-3xl p-5 md:p-6 space-y-4 transition-all shadow-2xl">
+              <div className="bg-surface-container-low/90 backdrop-blur-xl border border-outline-variant/20 hover:not-focus-within:border-outline-variant/35 focus-within:border-primary/30 focus-within:ring-1 focus-within:ring-primary/20 focus-within:shadow-[0_0_30px_rgba(255,130,60,0.12)] rounded-3xl p-5 md:p-6 space-y-4 transition-all shadow-2xl">
                 <textarea
                   ref={textareaRef}
                   value={stressor}
