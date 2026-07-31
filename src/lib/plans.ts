@@ -2,8 +2,8 @@
 
 // --- Product IDs (from Polar dashboard) ---
 export const POLAR_PRODUCTS = {
-  pro_monthly: "a3f346b7-a0c6-420f-b486-e9d398d5099d",
-  pro_yearly: "2ae81c0c-62ea-475e-89a1-7e1cde809d3e",
+  pro_monthly: "cf1869cc-ef9e-483e-8b8e-0cc0b3fabb0a",
+  pro_yearly: "ad7a220f-9e03-4f85-92c0-b27b85349a81",
 } as const;
 
 // --- Credit Limits ---
