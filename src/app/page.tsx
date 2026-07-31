@@ -476,10 +476,10 @@ export default function Home() {
 
               <div className="flex items-center gap-3 pt-4 border-t border-outline-variant/10">
                 <div className="w-10 h-10 rounded-full bg-surface-container-highest border border-outline-variant/20 flex items-center justify-center font-bold text-xs text-on-surface shrink-0">
-                  AC
+                  DK
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-on-surface">Alex Chen</h3>
+                  <h3 className="text-sm font-bold text-on-surface">David Kovacs</h3>
                   <p className="text-xs text-on-surface-variant/70">Founder & Entrepreneur</p>
                 </div>
               </div>
@@ -503,10 +503,10 @@ export default function Home() {
 
               <div className="flex items-center gap-3 pt-4 border-t border-outline-variant/10">
                 <div className="w-10 h-10 rounded-full bg-surface-container-highest border border-outline-variant/20 flex items-center justify-center font-bold text-xs text-on-surface shrink-0">
-                  MV
+                  ER
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-on-surface">Marcus Vance</h3>
+                  <h3 className="text-sm font-bold text-on-surface">Elena R.</h3>
                   <p className="text-xs text-on-surface-variant/70">Software Engineer</p>
                 </div>
               </div>
@@ -530,10 +530,10 @@ export default function Home() {
 
               <div className="flex items-center gap-3 pt-4 border-t border-outline-variant/10">
                 <div className="w-10 h-10 rounded-full bg-surface-container-highest border border-outline-variant/20 flex items-center justify-center font-bold text-xs text-on-surface shrink-0">
-                  SJ
+                  TB
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-on-surface">Sarah Jenkins</h3>
+                  <h3 className="text-sm font-bold text-on-surface">Tom Benner</h3>
                   <p className="text-xs text-on-surface-variant/70">Writer & Researcher</p>
                 </div>
               </div>
