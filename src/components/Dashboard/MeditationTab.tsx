@@ -1234,23 +1234,22 @@ export default function MeditationTab({
               />
             </div>
 
-            <div className="w-full flex items-center justify-between border-b border-outline-variant/10 pb-4 z-10">
-              <div className="flex items-center gap-3">
-                <span className={`hidden sm:inline text-xs px-2 py-0.5 rounded font-bold uppercase tracking-wider ${isReplay ? "bg-tertiary/20 text-tertiary" : "bg-primary/20 text-primary"}`}>
+            <div className="w-full flex items-center justify-between border-b border-outline-variant/10 pb-4 z-10 gap-3">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <span className={`inline-flex items-center text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider shrink-0 ${
+                  isReplay 
+                    ? "bg-surface-container-highest text-on-surface-variant border border-outline-variant/20" 
+                    : restoredPaused 
+                      ? "bg-amber-500/15 text-amber-400 border border-amber-500/30" 
+                      : "bg-primary/15 text-primary border border-primary/25"
+                }`}>
                   {isReplay ? "Replaying" : restoredPaused ? "Restored" : "Active Session"}
                 </span>
-                <h3 className="text-sm font-bold text-on-surface">
+                <h3 className="text-xs sm:text-sm font-bold text-on-surface truncate max-w-[140px] sm:max-w-xs md:max-w-md">
                   {restoredPaused ? "Tap play to continue" : title}
                 </h3>
               </div>
-              {isReplay ? (
-                <button
-                  onClick={handleResetAll}
-                  className="text-xs font-bold text-on-surface-variant hover:text-on-surface transition-colors"
-                >
-                  ← Exit Replay
-                </button>
-              ) : (
+              {!isReplay && (
                 <button
                   onClick={() => {
                     if (audioRef.current) {
@@ -1259,9 +1258,10 @@ export default function MeditationTab({
                     setIsPlaying(false);
                     setStatus("post_reset");
                   }}
-                  className="text-xs font-bold text-on-surface-variant hover:text-on-surface transition-colors"
+                  className="text-xs font-semibold text-on-surface-variant hover:text-on-surface transition-colors flex items-center gap-1 cursor-pointer shrink-0"
                 >
-                  I&apos;m ready to work →
+                  <span className="hidden sm:inline">I&apos;m ready to work →</span>
+                  <span className="sm:hidden">Work →</span>
                 </button>
               )}
             </div>
