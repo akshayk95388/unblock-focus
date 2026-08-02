@@ -8,6 +8,7 @@ import { useUserPlan } from "@/hooks/useUserPlan";
 import { isPro } from "@/lib/plans";
 import Skeleton from "@/components/ui/Skeleton";
 import PreferencesModal from "@/components/Dashboard/PreferencesModal";
+import PaywallModal from "@/components/ui/PaywallModal";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -27,6 +28,7 @@ export default function DashboardLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [preferencesOpen, setPreferencesOpen] = useState(false);
+  const [paywallOpen, setPaywallOpen] = useState(false);
   const { user, signOut } = useAuth();
   const router = useRouter();
   const { streak } = useStreak();
@@ -188,9 +190,9 @@ export default function DashboardLayout({
         ) : (
           !userIsPro && (
             <div className="px-3 mt-6">
-              <a
-                href="/api/checkout?plan=pro_monthly"
-                className="block bg-gradient-to-br from-primary/8 to-primary-container/5 border border-primary/10 rounded-xl p-4 hover:border-primary/25 transition-all group"
+              <button
+                onClick={() => setPaywallOpen(true)}
+                className="w-full text-left bg-gradient-to-br from-primary/8 to-primary-container/5 border border-primary/10 rounded-xl p-4 hover:border-primary/25 transition-all group cursor-pointer"
               >
                 <p className="text-[10px] font-bold uppercase tracking-widest text-primary-container mb-1">
                   Unlock Unlimited
@@ -201,7 +203,7 @@ export default function DashboardLayout({
                 <span className="inline-block mt-2 text-[10px] font-bold text-primary group-hover:text-primary-container transition-colors">
                   Upgrade to Pro →
                 </span>
-              </a>
+              </button>
             </div>
           )
         )}
@@ -258,15 +260,18 @@ export default function DashboardLayout({
 
               {/* Upgrade (Free users) */}
               {!userIsPro && (
-                <a
-                  href="/api/checkout?plan=pro_monthly"
-                  className="w-full flex items-center gap-2 px-3 py-2 text-primary hover:text-primary-container hover:bg-primary/5 rounded-xl transition-all text-xs font-semibold"
+                <button
+                  onClick={() => {
+                    setPaywallOpen(true);
+                    setProfileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-primary hover:text-primary-container hover:bg-primary/5 rounded-xl transition-all text-xs font-semibold cursor-pointer"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 0 0-2.455 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
                   </svg>
                   Upgrade to Pro
-                </a>
+                </button>
               )}
 
               {/* Preferences (All users) */}
@@ -356,11 +361,20 @@ export default function DashboardLayout({
           {rightSidebar}
         </aside>
       )}
+
       {/* Preferences Modal Overlay */}
       <PreferencesModal
         isOpen={preferencesOpen}
         onClose={() => setPreferencesOpen(false)}
       />
+
+      {/* Paywall Modal Overlay */}
+      {paywallOpen && (
+        <PaywallModal
+          trigger="upgrade"
+          onClose={() => setPaywallOpen(false)}
+        />
+      )}
     </div>
   );
 }
