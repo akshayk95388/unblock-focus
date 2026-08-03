@@ -519,15 +519,8 @@ async def tts_generator_node(state: MeditationEngineState) -> dict:
                 prev_text = prev_event.text if prev_event else None
                 next_text = next_event.text if next_event else None
 
-                if current_section in ("breathing_reset", "body_release", "core_reset", "breathing"):
-                    rate = "-6%"
-                    speed = 0.94
-                elif current_section in ("reframe", "closing"):
-                    rate = "+4%"
-                    speed = 1.04
-                else:
-                    rate = "+0%"
-                    speed = 1.0
+                rate = "-6%"
+                speed = 0.94
 
                 path = tmp_dir / f"{event.segment_id}.mp3"
                 duration = await generate_one_segment(

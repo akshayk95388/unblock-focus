@@ -31,8 +31,8 @@ class EdgeTTSProvider(TTSProvider):
         text: str,
         voice_id: str,
         output_path: str,
-        rate: str = "+0%",
-        speed: float = 1.0,
+        rate: str = "-6%",
+        speed: float = 0.94,
         previous_text: Optional[str] = None,
         next_text: Optional[str] = None,
     ) -> None:
@@ -53,8 +53,8 @@ class EdgeTTSProvider(TTSProvider):
         self,
         text: str,
         voice_id: str,
-        rate: str = "+0%",
-        speed: float = 1.0,
+        rate: str = "-6%",
+        speed: float = 0.94,
         previous_text: Optional[str] = None,
         next_text: Optional[str] = None,
     ) -> dict:
