@@ -27,6 +27,7 @@ def get_chat_model(
     # default_model: str = "gpt-4o-mini",
     default_model: str = "gpt-4o",
     default_provider: str = "openai",
+    max_tokens: Optional[int] = 4096,
 ) -> BaseChatModel:
     """Initialize a ChatModel instance dynamically.
 
@@ -39,6 +40,7 @@ def get_chat_model(
         temperature: Model sampling temperature.
         default_model: Fallback model name if not configured.
         default_provider: Fallback model provider if not configured.
+        max_tokens: Maximum tokens for model generation. Defaults to 4096.
 
     Returns:
         BaseChatModel instance.
@@ -72,6 +74,8 @@ def get_chat_model(
         "model_provider": provider_param,
         "temperature": temperature,
     }
+    if max_tokens is not None:
+        kwargs["max_tokens"] = max_tokens
     if api_key:
         kwargs["api_key"] = api_key
 
