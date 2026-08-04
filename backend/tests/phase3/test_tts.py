@@ -213,5 +213,5 @@ async def test_try_generate_adaptive_tts(tmp_path):
 
     assert segments is not None
     assert len(segments) == 2
-    assert (tmp_path / "seg_000.mp3").exists()
-    assert (tmp_path / "seg_001.mp3").exists()
+    assert (tmp_path / "seg_000.wav").exists()
+    assert (tmp_path / "seg_001.wav").exists()

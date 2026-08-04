@@ -283,8 +283,8 @@ async def _generate_single_shot_session(
         )
 
         if item.kind == "speech":
-            path = tmp_dir / f"{item.item_id}.mp3"
-            slice_clip.export(str(path), format="mp3", bitrate="128k")
+            path = tmp_dir / f"{item.item_id}.wav"
+            slice_clip.export(str(path), format="wav")
             speech_segments.append(SpeechSegment(
                 segment_id=item.item_id,
                 path=str(path),
@@ -292,8 +292,8 @@ async def _generate_single_shot_session(
                 words=words if words else None,
             ))
         elif item.kind == "breath_cue":
-            path = tmp_dir / f"breath_{item.pattern}_{item.item_id}.mp3"
-            slice_clip.export(str(path), format="mp3", bitrate="128k")
+            path = tmp_dir / f"breath_{item.pattern}_{item.item_id}.wav"
+            slice_clip.export(str(path), format="wav")
 
     logger.info(
         f"Single-Shot Session successful! Sliced {len(speech_segments)} speech segments "
@@ -383,8 +383,8 @@ async def _generate_chunked_session(
                 end_ms = start_ms + 500
 
             slice_clip = chunk_audio[start_ms:end_ms]
-            path = tmp_dir / f"{segment_id}.mp3"
-            slice_clip.export(str(path), format="mp3", bitrate="128k")
+            path = tmp_dir / f"{segment_id}.wav"
+            slice_clip.export(str(path), format="wav")
 
             words = _extract_words_for_slice(
                 characters=characters,
@@ -477,11 +477,12 @@ async def tts_generator_node(state: MeditationEngineState) -> dict:
         logger.info(f"Attempting session audio generation with provider: {provider.provider_id}")
 
         # Clean any partial audio files in tmp_dir before trying this provider
-        for f in tmp_dir.glob("*.mp3"):
-            try:
-                f.unlink()
-            except Exception:
-                pass
+        for ext in ("*.mp3", "*.wav"):
+            for f in tmp_dir.glob(ext):
+                try:
+                    f.unlink()
+                except Exception:
+                    pass
 
         # 1. Attempt adaptive continuous pass if supported
         phase_segments = await try_generate_adaptive_tts(
