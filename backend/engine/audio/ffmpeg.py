@@ -54,9 +54,11 @@ def build_mastering_command(
         )
         inputs = ["-i", voice_path, "-i", music_path]
     else:
+        # Voice-only: ElevenLabs audio is already normalized at ~-14 LUFS,
+        # so skip loudnorm to avoid redundant re-normalization and volume drop.
+        # Only apply the final fade-out.
         filter_graph = (
-            f"[0:a]loudnorm=I=-14:TP=-1.5:LRA=7[normed];"
-            f"[normed]afade=t=out:st={fade_out_start:.1f}:d=3[final]"
+            f"[0:a]afade=t=out:st={fade_out_start:.1f}:d=3[final]"
         )
         inputs = ["-i", voice_path]
 

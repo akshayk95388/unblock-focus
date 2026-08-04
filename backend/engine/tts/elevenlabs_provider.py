@@ -51,7 +51,7 @@ class ElevenLabsTTSProvider(TTSProvider):
             "voice_id": resolved_voice,
             "text": text,
             "model_id": "eleven_flash_v2_5",
-            "output_format": "mp3_44100_128",
+            "output_format": "mp3_44100_192",
         }
         effective_speed = speed if speed != 1.0 else 0.94
         convert_kwargs["voice_settings"] = {
@@ -104,7 +104,7 @@ class ElevenLabsTTSProvider(TTSProvider):
             "voice_id": resolved_voice,
             "text": text,
             "model_id": "eleven_flash_v2_5",
-            "output_format": "mp3_44100_128",
+            "output_format": "mp3_44100_192",
             "voice_settings": {
                 "stability": 0.5,
                 "similarity_boost": 0.75,
