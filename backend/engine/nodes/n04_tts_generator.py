@@ -467,6 +467,7 @@ async def tts_generator_node(state: MeditationEngineState) -> dict:
     speech_events = [e for e in timeline.events if isinstance(e, SpeechEvent)]
     total_segments = len(speech_events)
     voice_key = state.get("voice_key", "calm_female")
+    logger.info(f"TTS Generator initialized with voice_key: {voice_key}")
 
     winning_provider: Optional[TTSProvider] = None
     speech_segments: List[SpeechSegment] = []
