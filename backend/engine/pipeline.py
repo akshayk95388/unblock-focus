@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 async def run_full_pipeline(
     stressor: str,
     duration_mins: int,
-    voice_key: str = "gentle_female",
+    voice_key: str = "calm_female",
     music_key: str = "none",
     job_id: Optional[str] = None,
 ) -> dict:

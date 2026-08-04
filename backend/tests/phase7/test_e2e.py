@@ -279,7 +279,7 @@ async def test_full_pipeline_mock_llm(stressor, duration_mins, expected_type):
         result = await run_full_pipeline(
             stressor=stressor,
             duration_mins=duration_mins,
-            voice_key="gentle_female",
+            voice_key="calm_female",
             music_key="none",
         )
 
@@ -326,7 +326,7 @@ async def test_pipeline_produces_valid_mp3():
         result = await run_full_pipeline(
             stressor="test anxiety",
             duration_mins=3,
-            voice_key="gentle_female",
+            voice_key="calm_female",
             music_key="none",
         )
 
@@ -363,7 +363,7 @@ async def test_pipeline_subtitles_have_timing():
         result = await run_full_pipeline(
             stressor="need to focus",
             duration_mins=3,
-            voice_key="gentle_female",
+            voice_key="calm_female",
             music_key="none",
         )
 

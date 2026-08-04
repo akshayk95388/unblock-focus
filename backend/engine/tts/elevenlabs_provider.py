@@ -13,10 +13,8 @@ class ElevenLabsTTSProvider(TTSProvider):
     """TTS provider using the ElevenLabs SDK."""
 
     VOICE_MAP = {
-        "gentle_female": "EXAVITQu4vr4xnSDxMaL",  # Sarah (standard built-in female voice)
-        "calm_male": "JBFqnCBsd6RMkjVDRZzb",       # George (standard built-in male voice)
-        "soft_male": "JBFqnCBsd6RMkjVDRZzb",       # George
-        "male": "JBFqnCBsd6RMkjVDRZzb",            # George
+        "calm_female": "EXAVITQu4vr4xnSDxMaL",  # Sarah (Female)
+        "warm_male": "JBFqnCBsd6RMkjVDRZzb",    # George (Male)
     }
 
     def __init__(self, api_key: str):
@@ -55,7 +53,7 @@ class ElevenLabsTTSProvider(TTSProvider):
         }
         effective_speed = speed if speed != 1.0 else 0.94
         convert_kwargs["voice_settings"] = {
-            "stability": 0.5,
+            "stability": 0.60,
             "similarity_boost": 0.75,
             "speed": round(effective_speed, 2),
         }
@@ -106,7 +104,7 @@ class ElevenLabsTTSProvider(TTSProvider):
             "model_id": "eleven_flash_v2_5",
             "output_format": "mp3_44100_192",
             "voice_settings": {
-                "stability": 0.5,
+                "stability": 0.60,
                 "similarity_boost": 0.75,
                 "speed": round(effective_speed, 2),
             },

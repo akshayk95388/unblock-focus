@@ -74,7 +74,7 @@ async def test_generate_segment_with_mock_provider(tmp_path):
 
     duration = await generate_one_segment(
         text="Find a comfortable position.",
-        voice_key="gentle_female",
+        voice_key="calm_female",
         output_path=str(out),
         provider=provider,
     )
@@ -93,7 +93,7 @@ async def test_provider_failure_raises(tmp_path):
     with pytest.raises(RuntimeError, match="TTS provider 'failing' failed"):
         await generate_one_segment(
             "This will fail.",
-            "gentle_female", str(out),
+            "calm_female", str(out),
             provider=MockFailingProvider(),
         )
 
@@ -109,7 +109,7 @@ async def test_edge_tts_generates_real_audio(tmp_path):
 
     await provider.generate(
         text="Find a comfortable position.",
-        voice_id="gentle_female",
+        voice_id="calm_female",
         output_path=str(out),
     )
 
@@ -127,7 +127,7 @@ async def test_edge_tts_full_segment_flow(tmp_path):
 
     duration = await generate_one_segment(
         text="Allow your body to relax.",
-        voice_key="gentle_female",
+        voice_key="calm_female",
         output_path=str(out),
         provider=provider,
     )

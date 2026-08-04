@@ -62,7 +62,7 @@ async def seeded_job(test_db):
             status="pending",
             stressor="test anxiety",
             duration_mins=5,
-            voice="gentle_female",
+            voice="calm_female",
             music="none",
             created_at=datetime.utcnow(),
         )
@@ -81,7 +81,7 @@ async def completed_job(test_db):
             status="complete",
             stressor="test stress",
             duration_mins=5,
-            voice="gentle_female",
+            voice="calm_female",
             music="none",
             meditation_type="anxiety",
             title="Finding Calm",
@@ -114,7 +114,7 @@ async def test_generate_returns_job_id(async_client):
     response = await async_client.post("/api/generate", json={
         "stressor": "anxiety about a meeting",
         "duration_mins": 3,
-        "voice": "gentle_female",
+        "voice": "calm_female",
         "music": "ambient",
     })
     assert response.status_code == 200
@@ -224,7 +224,7 @@ async def test_history_pagination(async_client, test_db):
                 status="complete",
                 stressor=f"stressor {i}",
                 duration_mins=5,
-                voice="gentle_female",
+                voice="calm_female",
                 music="none",
                 created_at=datetime.utcnow(),
             )
@@ -281,7 +281,7 @@ async def test_db_model_fields(test_db):
             status="complete",
             stressor="test",
             duration_mins=5,
-            voice="gentle_female",
+            voice="calm_female",
             music="none",
             meditation_type="anxiety",
             title="Test Meditation",

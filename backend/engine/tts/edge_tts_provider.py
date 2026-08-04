@@ -13,9 +13,8 @@ class EdgeTTSProvider(TTSProvider):
     """TTS provider using Microsoft Edge TTS (free, high quality)."""
 
     VOICE_MAP = {
-        "gentle_female": "en-US-EmmaMultilingualNeural",
-        "calm_male": "en-US-AndrewNeural",
-        "soft_male": "en-US-AndrewNeural",
+        "calm_female": "en-US-EmmaMultilingualNeural",  # Emma (Female)
+        "warm_male": "en-US-AndrewNeural",            # Andrew (Male)
     }
 
     @property

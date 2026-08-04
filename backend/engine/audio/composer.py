@@ -51,7 +51,7 @@ async def audio_composer_node(state: MeditationEngineState) -> dict:
                 breath_audio = render_breath_cycle(
                     pattern=pattern,
                     cycles=event.cycles,
-                    voice_key=state.get("voice_key", "gentle_female"),
+                    voice_key=state.get("voice_key", "calm_female"),
                     breath_cues=state.get("breath_cues", {}),
                 )
                 voice_track += breath_audio

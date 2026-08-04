@@ -27,7 +27,7 @@ async def test_real_e2e_anxiety_3min():
     result = await run_full_pipeline(
         stressor="anxiety about presenting to a large audience tomorrow",
         duration_mins=3,
-        voice_key="gentle_female",
+        voice_key="calm_female",
         music_key="none",
     )
 
@@ -97,7 +97,7 @@ async def test_real_e2e_sleep_5min():
     result = await run_full_pipeline(
         stressor="racing thoughts keeping me up at night",
         duration_mins=5,
-        voice_key="gentle_female",
+        voice_key="calm_female",
         music_key="none",
     )
 

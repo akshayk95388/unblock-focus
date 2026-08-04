@@ -154,7 +154,7 @@ def build_script_generator_graph(checkpointer: Optional[Any] = None) -> StateGra
 async def run_script_generator_agent(
     stressor: str,
     duration_mins: int = 3,
-    voice_key: str = "gentle_female",
+    voice_key: str = "calm_female",
     music_key: str = "none",
     job_id: Optional[str] = None,
     checkpointer: Optional[Any] = None,
@@ -207,7 +207,7 @@ from typing import AsyncGenerator, Tuple
 async def stream_script_generator_agent(
     stressor: str,
     duration_mins: int = 3,
-    voice_key: str = "gentle_female",
+    voice_key: str = "calm_female",
     music_key: str = "none",
     job_id: Optional[str] = None,
     checkpointer: Optional[Any] = None,

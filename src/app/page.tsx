@@ -233,8 +233,8 @@ export default function Home() {
                       value={voice}
                       onChange={setVoice}
                       options={[
-                        { value: "gentle_female", label: "Calm" },
-                        { value: "soft_male", label: "Steady" },
+                        { value: "calm_female", label: "Aria · Calm" },
+                        { value: "warm_male", label: "Kai · Warm" },
                       ]}
                     />
 
