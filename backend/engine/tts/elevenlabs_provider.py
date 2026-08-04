@@ -13,8 +13,10 @@ class ElevenLabsTTSProvider(TTSProvider):
     """TTS provider using the ElevenLabs SDK."""
 
     VOICE_MAP = {
-        "calm_female": "EXAVITQu4vr4xnSDxMaL",  # Sarah (Female)
-        "warm_male": "JBFqnCBsd6RMkjVDRZzb",    # George (Male)
+        # "calm_female": "EXAVITQu4vr4xnSDxMaL",  # Sarah (Female)
+        # "warm_male": "JBFqnCBsd6RMkjVDRZzb",    # George (Male)
+        "calm_female": "OOk3INdXVLRmSaQoAX9D",  # Alicia (Female)
+        "warm_male": "a4CnuaYbALRvW39mDitg",    # Dan (Male)
     }
 
     def __init__(self, api_key: str):
