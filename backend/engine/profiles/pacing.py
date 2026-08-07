@@ -28,6 +28,7 @@ PACING_PROFILES = {
     "imposter":      {"wpm": 100, "profile": "steady"},
     "exam":          {"wpm": 110, "profile": "conversational"},
     "general":       {"wpm": 105, "profile": "conversational"},
+    "visualization": {"wpm": 100, "profile": "gentle"},
 }
 
 # Speech density: what fraction of total duration should be speech
@@ -40,4 +41,5 @@ SPEECH_DENSITY = {
     "imposter":      0.50,
     "exam":          0.55,
     "general":       0.50,
+    "visualization": 0.45,   # more silence — space for mental imagery
 }

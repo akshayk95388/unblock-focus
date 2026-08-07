@@ -20,6 +20,8 @@ class MeditationJob(Base):
     voice = Column(String(50))
     music = Column(String(50))
     meditation_type = Column(String(20))
+    intent = Column(String(20))          # work | decompress | prime
+    preset = Column(String(30))          # guided_session | visualization | unblock_reel
     title = Column(String(200))
     storage_url = Column(Text)
     actual_duration_s = Column(Float)

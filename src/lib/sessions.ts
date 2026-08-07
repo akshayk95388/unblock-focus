@@ -17,7 +17,7 @@ export interface SessionRecord {
   duration_seconds: number;
   completed_at: string; // ISO date
   aborted: boolean;
-  session_type: string; // 'guided', 'focus', 'breathing'
+  session_type: string; // 'guided', 'focus', 'breathing', 'vision'
   audio_url?: string | null;
   subtitles?: SubtitleEntry[] | null;
   is_favorite: boolean;

@@ -46,8 +46,11 @@ For each stage, follow its purpose:
   * general: help them name what's in their control and let go of what isn't
 
 - reframe: The action bridge & micro-step. Use a 2-line contrast pattern: first release what they don't need to finish right now (e.g. "You don't need to finish the whole project today."), then pivot to their single micro-step. Tailor the micro-step specifically to their task if provided (e.g. "draft the first slide of your deck"); if their stressor is general, keep it universal ("focus on the single next action in front of you") without inventing unmentioned tasks. Focus purely on shrinking the scope and setting the micro-step mindset (save the physical send-off command for the closing stage).
+  When the person's intent is decompression (burnout, emotional relief, no work goal), skip the micro-step entirely. Instead, focus on emotional release and perspective — help them see that rest IS productive and they don't owe anyone output right now.
 
-- closing: One warm, grounded, complete closing sentence (8–14 words). Direct them naturally back to their work to begin — if they mentioned a specific task or tool, reference it directly (e.g. "Bring your attention back to your file, open your draft, and take that first step."); if general, keep it naturally grounded (e.g. "Bring your attention back to your space and take that first step."). Do NOT repeat the micro-step details already stated in reframe. NEVER write abrupt 1-2 word sendoffs like "Go.", "Go do.", "Go do one thing.", or "Do it."
+- closing: One warm, grounded, complete closing sentence (8–14 words).
+  When the person's intent is work: Direct them naturally back to their work to begin — if they mentioned a specific task or tool, reference it directly (e.g. "Bring your attention back to your file, open your draft, and take that first step."); if general, keep it naturally grounded (e.g. "Bring your attention back to your space and take that first step."). Do NOT repeat the micro-step details already stated in reframe. NEVER write abrupt 1-2 word sendoffs like "Go.", "Go do.", "Go do one thing.", or "Do it."
+  When the person's intent is decompression: Do NOT reference work, tasks, or productivity. End with a calmer closing that honors rest: "Take this quiet clarity with you. You don't need to do anything right now." or "Carry this calm with you into the rest of your day."
 
 CRITICAL: Output ONLY the sections listed in the stage plan above. Do not add or invent extra sections.
 
@@ -66,6 +69,41 @@ Pause duration rules (pause_s values):
 - 4–6: after grounding or body awareness cues
 - 7–15: during core_reset, giving them space to process
 - Use 5–8s on the final closing line.
+
+"breath_cycle" must be null or one of: box_4, sleep_478, calm_46, focus_44
+Only sections with breathing in the plan should set breath_cycle."""
+
+VISUALIZATION_PROMPT = """Write a {duration_mins}-minute goal visualization for someone working toward: "{stressor}"
+Target narration: {target_word_count} words (spoken at 95-105 words per minute)
+
+Structure the visualization through these stages in order:
+{sections_with_durations}
+
+For each stage, follow its purpose:
+
+- intention_clarity: Frame their goal as a clear, specific, inevitable outcome. Help them name exactly what they are building or achieving. One warm opening sentence that grounds them in the present moment, then transition to naming their vision. Do NOT use spiritual or manifestation language.
+
+- breathing_anchor: CRITICAL — write a MAXIMUM of 2 sentences. Your only job is to announce that an automated breathing cue is starting. Do NOT write steps like "breathe in" or "breathe out". Examples: "Let's take a moment to breathe and settle into this." (Use as inspiration — adapt naturally.)
+
+- sensory_immersion: This is the CORE of the visualization. Guide them to vividly imagine the moment they have already achieved their goal. Use rich sensory detail — what do they see, hear, and feel? Describe the room, the people around them, their posture, their emotional state. Write as if it has already happened. Each line should paint one specific, vivid detail. Do NOT use abstract or vague language.
+
+- identity_anchor: Help them feel the quiet, grounded confidence of their future self. This is about identity — who they ARE as the person who achieved this, not what they did. Help them feel gratitude and certainty without being preachy.
+
+- execution_bridge: Bring them back gently to the present moment. Connect the vision to ONE small, concrete action they can take today that moves them toward that future. Keep it grounded and practical. End with a warm, complete closing sentence.
+
+CRITICAL: Output ONLY the sections listed in the stage plan above. Do not add or invent extra sections.
+
+Sentence depth (scales with session length):
+- Quick (3 min): each spoken line is 8–12 words — one clear, warm, vivid thought
+- Deep (5 min): each spoken line is 12–18 words — fuller sentences with texture and imagery
+Never write fragments under 6 words.
+
+Pause duration rules (pause_s values):
+- 1–2: after a quick instruction or transition phrase
+- 3–4: after a transition between ideas
+- 5–8: during sensory_immersion, giving them space to picture the scene
+- 8–12: after key identity_anchor moments — long pauses for feeling
+- 5–8: on the final closing line
 
 "breath_cycle" must be null or one of: box_4, sleep_478, calm_46, focus_44
 Only sections with breathing in the plan should set breath_cycle."""

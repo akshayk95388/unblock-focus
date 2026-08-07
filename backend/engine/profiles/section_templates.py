@@ -37,6 +37,14 @@ UNBLOCK_REEL = [
     SectionTemplate("closing",         0.15, None,       0),
 ]
 
+VISUALIZATION = [
+    SectionTemplate("intention_clarity",    0.15, None,       0),  # Name the goal clearly
+    SectionTemplate("breathing_anchor",     0.15, "calm_46",  3),  # Deep calm state
+    SectionTemplate("sensory_immersion",    0.35, None,       0),  # Vividly picture having achieved it
+    SectionTemplate("identity_anchor",      0.20, None,       0),  # Feel the gratitude & confidence
+    SectionTemplate("execution_bridge",     0.15, None,       0),  # Bridge back to one action today
+]
+
 
 def get_template_for_preset(preset: str, duration_category: str) -> List[SectionTemplate]:
     """Return structural template based on preset or duration category."""

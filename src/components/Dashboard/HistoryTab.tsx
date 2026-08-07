@@ -98,7 +98,7 @@ export default function HistoryTab({ onReplaySession }: HistoryTabProps) {
   let guidedIndex = 0;
   const guidedSessionIndexMap = new Map<string, number>();
   for (const session of sessions) {
-    if (session.session_type === "guided" && session.audio_url) {
+    if ((session.session_type === "guided" || session.session_type === "vision") && session.audio_url) {
       guidedSessionIndexMap.set(session.id, guidedIndex);
       guidedSessionIds.add(session.id);
       guidedIndex++;
@@ -106,7 +106,7 @@ export default function HistoryTab({ onReplaySession }: HistoryTabProps) {
   }
 
   const canReplay = (session: SessionRecord) =>
-    session.session_type === "guided" && !!session.audio_url;
+    (session.session_type === "guided" || session.session_type === "vision") && !!session.audio_url;
 
   const isReplayLocked = (session: SessionRecord) => {
     if (userIsPro) return false;
@@ -225,6 +225,12 @@ export default function HistoryTab({ onReplaySession }: HistoryTabProps) {
                           </div>
                           <div className="min-w-0">
                             <h4 className={`font-semibold text-sm md:text-base truncate ${session.aborted ? "text-on-surface-variant line-through" : "text-on-surface"}`}>
+                              {session.session_type === "vision" && (
+                                <span className="mr-1.5" title="Visualize">✨</span>
+                              )}
+                              {session.session_type === "breathing" && (
+                                <span className="mr-1.5" title="Breathing">🫁</span>
+                              )}
                               {session.intent}
                             </h4>
                             {habit && (

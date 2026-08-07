@@ -17,11 +17,20 @@ CategoryType = Literal[
     "general",
 ]
 
+IntentType = Literal[
+    "work",
+    "decompress",
+]
+
 
 class ClassifierResponseSchema(BaseModel):
     """Schema for LLM stressor category classification."""
     type: CategoryType = Field(
         description="Exact category of the blocker: deadline, presentation, burnout, distraction, overthinking, imposter, exam, or general."
+    )
+    intent: IntentType = Field(
+        default="work",
+        description="Intent of the person: work (wants to get back to a task) or decompress (needs emotional relief with no specific work goal)."
     )
 
 

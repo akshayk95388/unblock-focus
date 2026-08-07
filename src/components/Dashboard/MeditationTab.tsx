@@ -58,6 +58,8 @@ interface MeditationTabProps {
   /** Restore an in-progress guided/focus session after a page refresh. */
   restoreSnapshot?: GuidedSnapshot | null;
   onOpenFocusSetup?: () => void;
+  /** Preset type for the session (e.g. "guided_session" or "visualization"). */
+  initialPreset?: string;
 }
 
 // ===== Breathing Guide shown during AI generation =====
@@ -169,6 +171,7 @@ export default function MeditationTab({
   onClearAutoStart,
   restoreSnapshot = null,
   onOpenFocusSetup,
+  initialPreset = "guided_session",
 }: MeditationTabProps) {
   // Input settings
   const [stressor, setStressor] = useState(restoreSnapshot?.stressor ?? initialStressor);
@@ -263,6 +266,9 @@ export default function MeditationTab({
   const [resetDone, setResetDone] = useState(
     replayConfig ? true : restoreSnapshot?.resetDone ?? false
   );
+
+  // Intent from the classifier (work | decompress | prime)
+  const [sessionIntent, setSessionIntent] = useState<string>("work");
 
   // True when a guided session was restored mid-playback — start paused, no autoplay.
   const [restoredPaused, setRestoredPaused] = useState(
@@ -539,6 +545,10 @@ export default function MeditationTab({
             setLlmFocusTask(data.focus_task);
           }
 
+          if (data.intent) {
+            setSessionIntent(data.intent);
+          }
+
           if (data.subtitles) {
             if (Array.isArray(data.subtitles)) {
               setSubtitles(data.subtitles);
@@ -626,6 +636,10 @@ export default function MeditationTab({
                 setLlmFocusTask(info.focus_task);
               }
 
+              if (info.intent) {
+                setSessionIntent(info.intent);
+              }
+
               if (info.subtitles) {
                 if (Array.isArray(info.subtitles)) {
                   setSubtitles(info.subtitles);
@@ -695,6 +709,9 @@ export default function MeditationTab({
             if (info.focus_task) {
               setLlmFocusTask(info.focus_task);
             }
+            if (info.intent) {
+              setSessionIntent(info.intent);
+            }
             if (info.subtitles) {
               if (Array.isArray(info.subtitles)) {
                 setSubtitles(info.subtitles);
@@ -749,6 +766,7 @@ export default function MeditationTab({
           duration_mins: durationMins,
           voice,
           music,
+          preset: initialPreset || "guided_session",
         }),
       });
 
@@ -958,8 +976,12 @@ export default function MeditationTab({
       totalSeconds += focusElapsed;
     }
 
-    const sessionName = resetDone ? `Guided: ${title}` : `Focus: ${workTask}`;
-    const sessionType = resetDone ? "guided" : "focus";
+    const sessionName = resetDone
+      ? (initialPreset === "visualization" ? `Visualize: ${title}` : `Guided: ${title}`)
+      : `Focus: ${workTask}`;
+    const sessionType = resetDone
+      ? (initialPreset === "visualization" ? "vision" : "guided")
+      : "focus";
     const saved = await saveSession(
       sessionName,
       totalSeconds,
@@ -1419,45 +1441,99 @@ export default function MeditationTab({
             <div className="relative z-10 max-w-md mx-auto space-y-8 flex flex-col items-center">
               {/* Success Checkmark Circle */}
               {resetDone && (
-                <div className="w-20 h-20 rounded-full bg-green-500/10 flex items-center justify-center mb-2">
-                  <svg className="w-10 h-10 text-green-400" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                  </svg>
+                <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mb-2 text-primary">
+                  {initialPreset === "visualization" ? (
+                    <span className="text-3xl">✨</span>
+                  ) : (
+                    <svg className="w-8 h-8 text-primary" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                    </svg>
+                  )}
                 </div>
               )}
 
               {/* Text context */}
               <div className="space-y-2">
                 <h3 className="text-3xl font-black tracking-tight text-on-surface">
-                  {resetDone ? "Ready to focus?" : "Start Focus Session"}
+                  {!resetDone
+                    ? "Start Focus Session"
+                    : initialPreset === "visualization"
+                      ? "Vision set"
+                      : sessionIntent === "decompress"
+                        ? "Feeling lighter?"
+                        : "Ready to focus?"}
                 </h3>
                 <p className="text-on-surface-variant text-sm leading-relaxed">
-                  {resetDone
-                    ? "You are clear-headed and calm. Now is the perfect time to get to work."
-                    : "Configure your session and get straight into flow state."}
+                  {!resetDone
+                    ? "Configure your session and get straight into flow state."
+                    : initialPreset === "visualization"
+                      ? "Carry this clarity into your work."
+                      : sessionIntent === "decompress"
+                        ? "You needed this pause. Carry this calm with you."
+                        : "You are clear-headed and calm. Now is the perfect time to get to work."}
                 </p>
               </div>
 
               {/* Action Buttons */}
               <div className="w-full space-y-4 pt-4">
-                <button
-                  onClick={onOpenFocusSetup}
-                  className="w-full glow-button py-4 rounded-xl text-sm font-bold flex items-center justify-center transition-all hover:scale-[1.01] active:scale-95 cursor-pointer shadow-lg"
-                >
-                  Set up Focus Session
-                </button>
+                {/* Primary CTA — changes based on preset/intent */}
+                {initialPreset === "visualization" ? (
+                  <button
+                    onClick={() => {
+                      handleLogSession();
+                      setStatus("session_complete");
+                    }}
+                    className="w-full glow-button py-4 rounded-xl text-sm font-bold flex items-center justify-center transition-all hover:scale-[1.01] active:scale-95 cursor-pointer shadow-lg"
+                  >
+                    Back to Dashboard &rarr;
+                  </button>
+                ) : sessionIntent === "decompress" ? (
+                  <button
+                    onClick={() => {
+                      handleLogSession();
+                      setStatus("session_complete");
+                    }}
+                    className="w-full glow-button py-4 rounded-xl text-sm font-bold flex items-center justify-center transition-all hover:scale-[1.01] active:scale-95 cursor-pointer shadow-lg"
+                  >
+                    I feel better. Back to my day &rarr;
+                  </button>
+                ) : (
+                  <button
+                    onClick={onOpenFocusSetup}
+                    className="w-full glow-button py-4 rounded-xl text-sm font-bold flex items-center justify-center transition-all hover:scale-[1.01] active:scale-95 cursor-pointer shadow-lg"
+                  >
+                    Set up Focus Session &rarr;
+                  </button>
+                )}
 
                 {resetDone && (
                   <div className="flex flex-col items-center gap-3 pt-2">
-                    <button
-                      onClick={() => {
-                        handleLogSession();
-                        setStatus("session_complete");
-                      }}
-                      className="text-sm font-medium text-on-surface-variant/60 hover:text-on-surface transition-colors cursor-pointer"
-                    >
-                      I feel better now. That&apos;s all I needed. &rarr;
-                    </button>
+                    {/* Secondary CTAs */}
+                    {initialPreset === "visualization" ? (
+                      <button
+                        onClick={onOpenFocusSetup}
+                        className="text-sm font-medium text-on-surface-variant/60 hover:text-on-surface transition-colors cursor-pointer"
+                      >
+                        Set up Focus Session &rarr;
+                      </button>
+                    ) : sessionIntent === "decompress" ? (
+                      <button
+                        onClick={onOpenFocusSetup}
+                        className="text-sm font-medium text-on-surface-variant/60 hover:text-on-surface transition-colors cursor-pointer"
+                      >
+                        Set up Focus Session &rarr;
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          handleLogSession();
+                          setStatus("session_complete");
+                        }}
+                        className="text-sm font-medium text-on-surface-variant/60 hover:text-on-surface transition-colors cursor-pointer"
+                      >
+                        I feel better now. That&apos;s all I needed. &rarr;
+                      </button>
+                    )}
 
                     <button
                       onClick={() => {

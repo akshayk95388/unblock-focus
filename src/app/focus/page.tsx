@@ -13,6 +13,7 @@ import PaywallModal from "@/components/ui/PaywallModal";
 import SidebarSessionCard from "@/components/Dashboard/SidebarSessionCard";
 import FocusSetupModal from "@/components/Dashboard/FocusSetupModal";
 import BreathingSetupModal from "@/components/Dashboard/BreathingSetupModal";
+import VisualizeSetupModal from "@/components/Dashboard/VisualizeSetupModal";
 import { ActiveSessionProvider, useActiveSession } from "@/components/ActiveSessionContext";
 import { saveSession, type SessionRecord } from "@/lib/sessions";
 import {
@@ -77,6 +78,8 @@ function DashboardContent() {
   const [modalSelectedHabitId, setModalSelectedHabitId] = useState("");
   const [autoStartFocus, setAutoStartFocus] = useState(false);
   const [showBreathingSetupModal, setShowBreathingSetupModal] = useState(false);
+  const [showVisualizeSetupModal, setShowVisualizeSetupModal] = useState(false);
+  const [pendingPreset, setPendingPreset] = useState("guided_session");
 
   // Inline stressor input on dashboard hero
   const [heroStressor, setHeroStressor] = useState("");
@@ -236,6 +239,7 @@ function DashboardContent() {
     setPendingStressor("");
     setDirectFocusMode(false);
     setRestoreSnapshot(null); // Consumed — don't re-restore on a future mount
+    setPendingPreset("guided_session"); // Reset preset
     // Cleanup modal setup presets
     setModalWorkTask("");
     setModalFocusDuration(25);
@@ -297,6 +301,21 @@ function DashboardContent() {
     setShowBreathingSetupModal(false);
     setCurrentTab("breathing");
   }, [handleStartBreathing]);
+
+  const handleVisualizeStart = useCallback((goal: string, durationMins: number, voiceOption: string, habitId?: string) => {
+    track("visualize_session_started", { duration_mins: durationMins });
+    setPendingStressor(goal);
+    setDurationMins(durationMins);
+    setVoice(voiceOption);
+    setMusic("none");
+    setPendingPreset("visualization");
+    if (habitId) {
+      setModalSelectedHabitId(habitId);
+    }
+    setDirectFocusMode(false);
+    setShowVisualizeSetupModal(false);
+    setCurrentTab("meditation");
+  }, []);
 
   const handleBreathingComplete = useCallback(async (durationSeconds: number) => {
     setSession(null); // Clear active session from context
@@ -469,34 +488,20 @@ function DashboardContent() {
                       <button
                         onClick={handleStartReset}
                         disabled={!heroStressor.trim() || !!session}
-                        className={`px-6 py-2.5 rounded-full text-xs font-bold flex items-center justify-center transition-all shrink-0 cursor-pointer ${
-                          (!heroStressor.trim() || !!session)
+                        className={`px-6 py-2.5 rounded-full text-xs font-bold flex items-center justify-center transition-all shrink-0 cursor-pointer ${(!heroStressor.trim() || !!session)
                             ? "bg-surface-container-highest/80 text-on-surface-variant/40 border border-outline-variant/10 cursor-not-allowed"
                             : "bg-[#FF8C53] hover:bg-[#FF7A38] text-slate-950 font-bold shadow-md hover:scale-[1.02] active:scale-95"
-                        }`}
+                          }`}
                       >
                         Start Guided Session
                       </button>
                     </div>
 
-                    {/* Embedded Breathing Quick Relief Option inside Card Footer */}
-                    {!session && (
-                      <div className="pt-3 border-t border-outline-variant/10 flex items-center justify-between text-xs text-on-surface-variant/60">
-                        <span>Need quick relief?</span>
-                        <button
-                          onClick={() => handleTabChange("breathing")}
-                          className="text-primary hover:text-primary-container font-semibold transition-colors flex items-center gap-1 cursor-pointer group"
-                        >
-                          <span>Try a breathing exercise</span>
-                          <span className="group-hover:translate-x-0.5 transition-transform">&rarr;</span>
-                        </button>
-                      </div>
-                    )}
                   </div>
 
-                  {/* Example Prompts — Centered */}
+                  {/* Example Prompts — Minimal Ghost Text Tags */}
                   <div className="pt-1 text-center">
-                    <div className="flex flex-wrap justify-center gap-2">
+                    <div className="flex flex-wrap justify-center items-center gap-1.5 sm:gap-2">
                       {heroSuggestions.map((s, i) => (
                         <button
                           key={s}
@@ -512,48 +517,73 @@ function DashboardContent() {
                     </div>
                   </div>
 
-                  {/* Section 2: Direct Focus Session */}
+                  {/* === Option 4: Laser-Focused Hierarchy === */}
                   {!session && (
-                    <div className="space-y-2 pt-4 text-center">
-                      <div className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/40">
-                        READY TO WORK?
+                    <div className="pt-2 mt-10 space-y-6">
+                      {/* Primary CTA — Focus Session */}
+                      <div className="space-y-2">
+                        <p className="text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant/50 text-center">
+                          Ready to work?
+                        </p>
+                        <button
+                          onClick={handleStartFocusDirectly}
+                          className="w-full bg-surface-container-low/90 hover:bg-surface-container-low backdrop-blur-xl border border-outline-variant/20 hover:border-primary/40 rounded-2xl p-4 flex items-center justify-between transition-all group hover:scale-[1.005] active:scale-[0.99] cursor-pointer shadow-md"
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0 group-hover:scale-105 transition-transform">
+                              <svg
+                                className="w-3.5 h-3.5"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={2}
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
+                              </svg>
+                            </span>
+                            <div className="text-left">
+                              <h4 className="text-sm font-semibold text-on-surface group-hover:text-primary transition-colors">
+                                Focus Session
+                              </h4>
+                              <p className="text-[11px] text-on-surface-variant/50">
+                                For when you&apos;re ready to get straight to work.
+                              </p>
+                            </div>
+                          </div>
+                          <span className="text-[11px] font-bold text-primary group-hover:translate-x-1 transition-transform flex items-center gap-1">
+                            <span>Start Focus</span>
+                            <span>&rarr;</span>
+                          </span>
+                        </button>
                       </div>
-                      <button
-                        onClick={handleStartFocusDirectly}
-                        className="w-full glass-panel bg-surface-container-low/90 hover:bg-surface-container-low backdrop-blur-xl border border-outline-variant/20 hover:border-primary/30 rounded-2xl p-4 sm:p-5 flex items-center justify-between transition-all group hover:scale-[1.01] active:scale-[0.98] cursor-pointer shadow-lg"
-                      >
-                        <span className="flex items-center gap-4 text-left">
-                          <span className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-surface-container-highest flex items-center justify-center text-primary shrink-0 group-hover:scale-105 transition-transform">
-                            <svg
-                              className="w-5 h-5"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              strokeWidth={2}
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
-                              />
-                            </svg>
-                          </span>
-                          <span className="flex flex-col">
-                            <span className="text-sm font-semibold text-on-surface group-hover:text-primary transition-colors">
-                              Focus Session
-                            </span>
-                            <span className="text-xs text-on-surface-variant/60">
-                              <span className="sm:hidden">To get straight to work.</span>
-                              <span className="hidden sm:inline">For when you&apos;re ready to get straight to work.</span>
-                            </span>
-                          </span>
-                        </span>
-                        <span className="text-xs font-bold text-primary group-hover:translate-x-1 transition-transform flex items-center gap-1 whitespace-nowrap shrink-0">
-                          <span className="sm:hidden">Start</span>
-                          <span className="hidden sm:inline">Start Focus</span>
-                          <span>&rarr;</span>
-                        </span>
-                      </button>
+
+                      {/* Secondary Tools Row */}
+                      <div className="space-y-2.5">
+                        <p className="text-[11px] font-medium text-on-surface-variant/40 text-center">
+                          Or try
+                        </p>
+                        <div className="flex items-center justify-center gap-6">
+                          <button
+                            onClick={() => setShowVisualizeSetupModal(true)}
+                            className="flex items-center gap-1.5 text-on-surface-variant/60 hover:text-primary transition-colors cursor-pointer"
+                          >
+                            <span className="text-xs">✨</span>
+                            <span className="text-xs font-medium">Visualize Goal</span>
+                          </button>
+                          <span className="text-outline-variant/20">·</span>
+                          <button
+                            onClick={() => handleTabChange("breathing")}
+                            className="flex items-center gap-1.5 text-on-surface-variant/60 hover:text-primary transition-colors cursor-pointer"
+                          >
+                            <span className="text-xs">🫁</span>
+                            <span className="text-xs font-medium">Breathing Exercise</span>
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -609,6 +639,7 @@ function DashboardContent() {
               onClearAutoStart={handleClearAutoStart}
               restoreSnapshot={restoreSnapshot}
               onOpenFocusSetup={() => setShowFocusSetupModal(true)}
+              initialPreset={pendingPreset}
             />
           </div>
         )}
@@ -716,6 +747,13 @@ function DashboardContent() {
         isOpen={showBreathingSetupModal}
         onClose={() => setShowBreathingSetupModal(false)}
         onStart={handleBreathingModalStart}
+      />
+
+      {/* Visualize Configuration Modal */}
+      <VisualizeSetupModal
+        isOpen={showVisualizeSetupModal}
+        onClose={() => setShowVisualizeSetupModal(false)}
+        onStart={handleVisualizeStart}
       />
 
       {/* ===== Sticky Resume Bar (Mobile Only) ===== */}

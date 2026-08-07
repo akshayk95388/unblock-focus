@@ -9,7 +9,7 @@ class GenerateRequest(BaseModel):
     duration_mins: Optional[int] = Field(default=None, ge=1, le=30)
     voice: str = Field(default="calm_female")
     music: str = Field(default="none")
-    preset: Optional[str] = Field(default="guided_session")  # "guided_session" | "unblock_reel"
+    preset: Optional[str] = Field(default="guided_session")  # "guided_session" | "visualization" | "unblock_reel"
     include_words_ts: Optional[bool] = Field(default=False)
 
 
@@ -26,6 +26,7 @@ class JobStatus(BaseModel):
     duration_s: Optional[float] = None
     title: Optional[str] = None
     error: Optional[str] = None
+    intent: Optional[str] = None
     focus_task: Optional[str] = None
     subtitles: Optional[List[dict]] = None
 

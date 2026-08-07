@@ -2,7 +2,7 @@
 
 from langchain_core.prompts import ChatPromptTemplate
 
-CLASSIFY_PROMPT = """Classify this person's blocker into exactly one category.
+CLASSIFY_PROMPT = """Classify this person's blocker into exactly one category and determine their intent.
 
 What's blocking them: "{stressor}"
 
@@ -15,6 +15,10 @@ Categories:
 - imposter: self-doubt, not good enough, comparing to others, feeling like a fraud
 - exam: test anxiety, study pressure, academic stress, grades
 - general: anything that doesn't clearly fit the categories above
+
+Intent categories:
+- work: the person wants to clear their block and get back to a task, project, or execution
+- decompress: the person is emotionally overwhelmed, burnt out, or just needs relief with no specific work goal
 """
 
 CLASSIFIER_PROMPT_TEMPLATE = ChatPromptTemplate.from_messages([
@@ -31,4 +35,9 @@ VALID_TYPES = {
     "imposter",
     "exam",
     "general",
+}
+
+VALID_INTENTS = {
+    "work",
+    "decompress",
 }

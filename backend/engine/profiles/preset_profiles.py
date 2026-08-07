@@ -5,8 +5,9 @@ from typing import Optional, List, Dict
 from engine.profiles.section_templates import (
     SectionTemplate,
     UNBLOCK_REEL,
+    VISUALIZATION,
 )
-from engine.prompts.script_prompts import SCRIPT_PROMPT, REEL_HUMAN_PROMPT
+from engine.prompts.script_prompts import SCRIPT_PROMPT, REEL_HUMAN_PROMPT, VISUALIZATION_PROMPT
 
 
 @dataclass
@@ -35,6 +36,14 @@ PRESET_PROFILES: Dict[str, PresetProfile] = {
         pause_mode="snappy",
         template=UNBLOCK_REEL,
         prompt_template=REEL_HUMAN_PROMPT,
+    ),
+    "visualization": PresetProfile(
+        name="visualization",
+        target_duration_s=None,        # Dynamic — scales with Quick/Deep
+        target_words=None,             # Dynamic — calculated from WPM
+        pause_mode="guided",           # Long pauses for mental imagery
+        template=VISUALIZATION,
+        prompt_template=VISUALIZATION_PROMPT,
     ),
 }
 

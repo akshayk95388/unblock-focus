@@ -14,6 +14,7 @@ from engine.prompts.classifier_prompts import (
     CLASSIFY_PROMPT,
     CLASSIFIER_PROMPT_TEMPLATE,
     VALID_TYPES,
+    VALID_INTENTS,
 )
 
 logger = logging.getLogger(__name__)
@@ -52,19 +53,6 @@ def scale_sections(template: list, total_duration_s: float) -> List[SectionPlan]
 
 async def classifier_node(state: MeditationEngineState, config: Optional[dict] = None) -> dict:
     """Classify the stressor and build a section plan using ChatPromptTemplate and structured output."""
-    llm = get_chat_model(config=config, temperature=0.1, default_model="gpt-4o-mini")
-    structured_llm = llm.with_structured_output(ClassifierResponseSchema)
-
-    messages = CLASSIFIER_PROMPT_TEMPLATE.format_messages(stressor=state["stressor"])
-
-    try:
-        response: ClassifierResponseSchema = await structured_llm.ainvoke(messages, config=config)
-        meditation_type = response.type
-    except Exception as e:
-        logger.warning(f"Structured output classification failed ({e}), falling back to direct invoke: {e}")
-        raw_res = await llm.ainvoke(messages, config=config)
-        meditation_type = parse_type(str(raw_res.content))
-
     duration_category = state.get("duration_category")
     duration_mins = state.get("duration_mins")
     preset = state.get("preset", "guided_session")
@@ -74,6 +62,50 @@ async def classifier_node(state: MeditationEngineState, config: Optional[dict] =
             duration_category = "deep"
         else:
             duration_category = "quick"
+
+    # ── Visualization preset: skip classification entirely ──
+    if preset == "visualization":
+        meditation_type = "visualization"
+        intent = "prime"
+        profile = get_preset_profile(preset)
+        template = profile.template
+        # Visualization uses slower, imagery-rich pacing
+        vis_wpm = PACING_PROFILES.get("visualization", {"wpm": 100, "profile": "gentle"})
+        vis_density = SPEECH_DENSITY.get("visualization", 0.45)
+        total_s = 300.0 if duration_category == "deep" else 180.0
+        duration_mins = 5 if duration_category == "deep" else 3
+        duration_target_s = duration_mins * 60
+        target_speech_s = total_s * vis_density
+        target_words = int((target_speech_s / 60) * vis_wpm["wpm"])
+
+        return {
+            "duration_category": duration_category,
+            "duration_mins": duration_mins,
+            "meditation_type": meditation_type,
+            "intent": intent,
+            "section_plan": scale_sections(template, total_s),
+            "pacing_profile": vis_wpm["profile"],
+            "target_word_count": target_words,
+            "duration_target_s": duration_target_s,
+            "current_stage": "classifying",
+            "progress_pct": 10.0,
+        }
+
+    # ── Standard guided session classification ──
+    llm = get_chat_model(config=config, temperature=0.1, default_model="gpt-4o-mini")
+    structured_llm = llm.with_structured_output(ClassifierResponseSchema)
+
+    messages = CLASSIFIER_PROMPT_TEMPLATE.format_messages(stressor=state["stressor"])
+
+    try:
+        response: ClassifierResponseSchema = await structured_llm.ainvoke(messages, config=config)
+        meditation_type = response.type
+        intent = response.intent if response.intent in VALID_INTENTS else "work"
+    except Exception as e:
+        logger.warning(f"Structured output classification failed ({e}), falling back to direct invoke: {e}")
+        raw_res = await llm.ainvoke(messages, config=config)
+        meditation_type = parse_type(str(raw_res.content))
+        intent = "work"  # Default on fallback
 
     profile = get_preset_profile(preset)
     template = profile.template or get_template_for_category(duration_category)
@@ -99,6 +131,7 @@ async def classifier_node(state: MeditationEngineState, config: Optional[dict] =
         "duration_category": duration_category,
         "duration_mins": duration_mins,
         "meditation_type": meditation_type,
+        "intent": intent,
         "section_plan": scale_sections(template, total_s),
         "pacing_profile": pacing["profile"],
         "target_word_count": target_words,

@@ -21,9 +21,11 @@ class MeditationEngineState(TypedDict, total=False):
     duration_mins: int
     voice_key: str
     music_key: str
+    preset: str                   # guided_session | visualization | unblock_reel
 
     # ── Classifier output ──
     meditation_type: str          # anxiety | sleep | focus
+    intent: str                   # work | decompress | prime
     section_plan: List[SectionPlan]
     pacing_profile: str           # normal | slow | very_slow
     target_word_count: int

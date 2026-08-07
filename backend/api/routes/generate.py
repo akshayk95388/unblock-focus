@@ -109,6 +109,8 @@ async def run_pipeline_task(job_id: str, request: GenerateRequest):
             if job:
                 job.status = "complete"
                 job.meditation_type = state.get("meditation_type")
+                job.intent = state.get("intent")
+                job.preset = state.get("preset", "guided_session")
                 job.title = state.get("timeline", {}).title if hasattr(state.get("timeline"), "title") else None
                 job.storage_url = state.get("storage_url")
                 job.actual_duration_s = state.get("actual_duration_s")
@@ -135,6 +137,7 @@ async def run_pipeline_task(job_id: str, request: GenerateRequest):
                        audio_url=state.get("storage_url"),
                        title=state.get("timeline").title if state.get("timeline") else None,
                        duration_s=state.get("actual_duration_s"),
+                       intent=state.get("intent"),
                        focus_task=state.get("raw_prose", {}).get("focus_task", "Focused Work"))
 
     except Exception as e:

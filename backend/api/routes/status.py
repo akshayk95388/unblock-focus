@@ -83,6 +83,7 @@ async def get_job_status(job_id: str, db: AsyncSession = Depends(get_db)):
         duration_s=job.actual_duration_s or progress.get("duration_s"),
         title=job.title or progress.get("title"),
         error=job.error_message or progress.get("error"),
+        intent=progress.get("intent") or getattr(job, "intent", None),
         focus_task=progress.get("focus_task") or focus_task_val,
         subtitles=subtitles_val,
     )
