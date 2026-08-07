@@ -399,6 +399,22 @@ export default function Home() {
             <div className="bg-surface-container-low border border-outline-variant/15 rounded-2xl p-8 hover:bg-surface-container hover:border-outline-variant/30 transition-all duration-300">
               <div className="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center mb-6 text-primary">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.573 16.49 16.638 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-bold text-on-surface mb-3">
+                Goal Visualization
+              </h3>
+              <p className="text-on-surface-variant text-sm leading-relaxed">
+                Prepare your mind like a top performer. Guided audio sessions align your mindset and focus toward your target.
+              </p>
+            </div>
+
+            {/* Feature 3 */}
+            <div className="bg-surface-container-low border border-outline-variant/15 rounded-2xl p-8 hover:bg-surface-container hover:border-outline-variant/30 transition-all duration-300">
+              <div className="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center mb-6 text-primary">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.23-1.591 1.591M5.25 12H3m4.23-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
                 </svg>
               </div>
@@ -410,7 +426,7 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Feature 3 */}
+            {/* Feature 4 */}
             <div className="bg-surface-container-low border border-outline-variant/15 rounded-2xl p-8 hover:bg-surface-container hover:border-outline-variant/30 transition-all duration-300">
               <div className="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center mb-6 text-primary">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -422,22 +438,6 @@ export default function Home() {
               </h3>
               <p className="text-on-surface-variant text-sm leading-relaxed">
                 Jump straight into work. Transition seamlessly from your reset into a timed focus session to build momentum without distraction.
-              </p>
-            </div>
-
-            {/* Feature 4 */}
-            <div className="bg-surface-container-low border border-outline-variant/15 rounded-2xl p-8 hover:bg-surface-container hover:border-outline-variant/30 transition-all duration-300">
-              <div className="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center mb-6 text-primary">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 18a3.75 3.75 0 0 0 .495-7.468 5.99 5.99 0 0 0-1.925 3.547 5.975 5.975 0 0 1-2.133-1.001A3.75 3.75 0 0 0 12 18Z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-bold text-on-surface mb-3">
-                Habit & Streak Tracking
-              </h3>
-              <p className="text-on-surface-variant text-sm leading-relaxed">
-                Build daily consistency. Track your focus streaks, completed sessions, and total deep work hours in your personal dashboard.
               </p>
             </div>
           </div>
