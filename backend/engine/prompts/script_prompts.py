@@ -23,6 +23,7 @@ Rules:
 
 SCRIPT_PROMPT = """Write a {duration_mins}-minute mental reset for someone blocked by: "{stressor}"
 Category: {meditation_type}
+Intent: {intent}
 Target narration: {target_word_count} words (spoken at 100-115 words per minute)
 
 Structure the reset through these stages in order:
@@ -46,8 +47,9 @@ For each stage, follow its purpose:
   * conflict: help them separate the external event (which they cannot change) from their own response. Validate the frustration without feeding it. Guide them to mentally release the parts outside their control
   * general: help them name what's in their control and let go of what isn't
 
-- reframe: The action bridge & micro-step. Use a 2-line contrast pattern: first release what they don't need to finish right now (e.g. "You don't need to finish the whole project today."), then pivot to their single micro-step. Tailor the micro-step specifically to their task if provided (e.g. "draft the first slide of your deck"); if their stressor is general, keep it universal ("focus on the single next action in front of you") without inventing unmentioned tasks. Focus purely on shrinking the scope and setting the micro-step mindset (save the physical send-off command for the closing stage).
-  When the person's intent is decompression (burnout, emotional relief, no work goal), skip the micro-step entirely. Instead, focus on emotional release and perspective — help them see that rest IS productive and they don't owe anyone output right now.
+- reframe: Adapt this section based on the person's intent.
+  When the person's intent is work: This is the action bridge & micro-step. Use a 2-line contrast pattern: first release what they don't need to finish right now (e.g. "You don't need to finish the whole project today."), then pivot to their single micro-step. Tailor the micro-step specifically to their task if provided (e.g. "draft the first slide of your deck"); if their stressor is general, keep it universal ("focus on the single next action in front of you") without inventing unmentioned tasks. Focus purely on shrinking the scope and setting the micro-step mindset (save the physical send-off command for the closing stage).
+  When the person's intent is decompression (burnout, emotional relief, conflict, no work goal): Do NOT mention work, tasks, action steps, or productivity. Focus entirely on emotional release and perspective — help them see that rest is productive and they don't owe anyone output right now.
 
 - closing: One warm, grounded, complete closing sentence (8–14 words).
   When the person's intent is work: Direct them naturally back to their work to begin — if they mentioned a specific task or tool, reference it directly (e.g. "Bring your attention back to your file, open your draft, and take that first step."); if general, keep it naturally grounded (e.g. "Bring your attention back to your space and take that first step."). Do NOT repeat the micro-step details already stated in reframe. NEVER write abrupt 1-2 word sendoffs like "Go.", "Go do.", "Go do one thing.", or "Do it."
@@ -111,6 +113,7 @@ Only sections with breathing in the plan should set breath_cycle."""
 
 REEL_HUMAN_PROMPT = """Write a 2-minute high-impact unblock reset for someone stuck on: "{stressor}"
 Category: {meditation_type}
+Intent: {intent}
 Target narration: {target_word_count} words (spoken at 130-140 words per minute)
 
 Structure the reset through these stages in order:

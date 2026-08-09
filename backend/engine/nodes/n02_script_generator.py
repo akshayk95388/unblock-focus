@@ -42,6 +42,7 @@ async def script_generator_node(state: MeditationEngineState, config: Optional[d
     prompt = script_prompt_template.format(
         stressor=state["stressor"],
         meditation_type=state["meditation_type"],
+        intent=state.get("intent", "work"),
         duration_mins=state["duration_mins"],
         sections_with_durations=sections_text,
         target_word_count=state["target_word_count"],
