@@ -137,7 +137,7 @@ def test_speech_density_values_in_range():
 
 def test_pacing_profiles_cover_all_types():
     """Pacing profiles and speech density must exist for all types."""
-    for med_type in ["deadline", "presentation", "burnout", "distraction"]:
+    for med_type in ["deadline", "presentation", "burnout", "distraction", "conflict"]:
         assert med_type in PACING_PROFILES
         assert med_type in SPEECH_DENSITY
 

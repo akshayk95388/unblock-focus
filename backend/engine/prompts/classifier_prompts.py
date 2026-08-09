@@ -13,6 +13,7 @@ Categories:
 - distraction: can't focus, phone addiction, social media, procrastination, scattered
 - overthinking: racing mind, can't stop thinking, analysis paralysis, decision fatigue
 - imposter: self-doubt, not good enough, comparing to others, feeling like a fraud
+- conflict: frustration from manager feedback, team disagreement, harsh criticism, client friction, anger at someone
 - exam: test anxiety, study pressure, academic stress, grades
 - general: anything that doesn't clearly fit the categories above
 
@@ -33,6 +34,7 @@ VALID_TYPES = {
     "distraction",
     "overthinking",
     "imposter",
+    "conflict",
     "exam",
     "general",
 }

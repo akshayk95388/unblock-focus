@@ -26,6 +26,7 @@ PACING_PROFILES = {
     "distraction":   {"wpm": 110, "profile": "conversational"},
     "overthinking":  {"wpm": 100, "profile": "steady"},
     "imposter":      {"wpm": 100, "profile": "steady"},
+    "conflict":      {"wpm": 100, "profile": "steady"},
     "exam":          {"wpm": 110, "profile": "conversational"},
     "general":       {"wpm": 105, "profile": "conversational"},
     "visualization": {"wpm": 100, "profile": "gentle"},
@@ -39,6 +40,7 @@ SPEECH_DENSITY = {
     "distraction":   0.55,
     "overthinking":  0.50,
     "imposter":      0.50,
+    "conflict":      0.50,   # space to process emotions, not rushed
     "exam":          0.55,
     "general":       0.50,
     "visualization": 0.45,   # more silence — space for mental imagery
