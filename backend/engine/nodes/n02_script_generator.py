@@ -16,8 +16,7 @@ from engine.profiles.preset_profiles import get_preset_profile
 from engine.utils.llm_factory import get_chat_model
 from engine.models.schemas import ScriptProseSchema
 from engine.prompts.script_prompts import (
-    SYSTEM_PROMPT,
-    SCRIPT_PROMPT_TEMPLATE,
+    get_prompt_template,
     format_reflection_feedback,
 )
 from engine.builders.timeline_builder import (
@@ -53,7 +52,7 @@ async def script_generator_node(state: MeditationEngineState, config: Optional[d
     fix_attempts = state.get("fix_attempts", 0)
     prompt = format_reflection_feedback(prompt, issues, fix_attempts)
 
-    messages = SCRIPT_PROMPT_TEMPLATE.format_messages(human_prompt=prompt)
+    messages = get_prompt_template(state.get("preset", "guided_session")).format_messages(human_prompt=prompt)
 
     try:
         res: ScriptProseSchema = await structured_llm.ainvoke(messages, config=config)

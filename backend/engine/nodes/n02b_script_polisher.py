@@ -14,7 +14,7 @@ from typing import Optional
 from engine.state import MeditationEngineState
 from engine.utils.llm_factory import get_chat_model
 from engine.models.schemas import ScriptProseSchema
-from engine.prompts.script_prompts import SCRIPT_POLISH_PROMPT_TEMPLATE
+from engine.prompts.script_prompts import get_polish_messages
 from engine.builders.timeline_builder import build_timeline_from_prose, parse_llm_json
 
 logger = logging.getLogger(__name__)
@@ -39,15 +39,14 @@ async def script_polisher_node(state: MeditationEngineState, config: Optional[di
         logger.warning("No raw_prose found in state for script_polisher_node. Bypassing.")
         return {"current_stage": state.get("current_stage", "script_generated")}
 
-    stressor = state.get("stressor", "feeling overwhelmed")
-
     # Use high-capacity model (claude-sonnet-4.6) for creative polishing
     llm = get_chat_model(config=config, temperature=0.7, default_model="claude-sonnet-4.6")
     structured_llm = llm.with_structured_output(ScriptProseSchema)
 
-    messages = SCRIPT_POLISH_PROMPT_TEMPLATE.format_messages(
-        stressor=stressor,
+    messages = get_polish_messages(
+        stressor=state.get("stressor", "feeling overwhelmed"),
         raw_prose_json=json.dumps(raw_prose, indent=2),
+        preset=state.get("preset", "guided_session"),
     )
 
     logger.info(f"[{state.get('job_id', 'local')[:8]}] Polishing script with LLM (claude-sonnet-4.6)...")
