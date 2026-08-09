@@ -13,8 +13,8 @@ class EdgeTTSProvider(TTSProvider):
     """TTS provider using Microsoft Edge TTS (free, high quality)."""
 
     VOICE_MAP = {
-        "calm_female": "en-US-EmmaMultilingualNeural",  # Emma (Female)
-        "warm_male": "en-US-AndrewNeural",            # Andrew (Male)
+        "calm_female": "en-US-EmmaMultilingualNeural",   # Emma (Female)
+        "warm_male": "en-US-AndrewNeural",               # Andrew (Male)
     }
 
     @property
@@ -24,6 +24,12 @@ class EdgeTTSProvider(TTSProvider):
     @property
     def voice_map(self) -> dict[str, str]:
         return self.VOICE_MAP
+
+    def _resolve_voice(self, voice_id: str) -> str:
+        if voice_id in self.VOICE_MAP:
+            return self.VOICE_MAP[voice_id]
+        logger.warning(f"Unrecognized Edge TTS voice_id '{voice_id}', falling back to 'warm_male'")
+        return self.VOICE_MAP["warm_male"]
 
     async def generate(
         self,
@@ -38,7 +44,7 @@ class EdgeTTSProvider(TTSProvider):
         import edge_tts
 
         # Resolve voice key to Edge TTS voice name
-        resolved_voice = self.VOICE_MAP.get(voice_id, voice_id)
+        resolved_voice = self._resolve_voice(voice_id)
 
         path = Path(output_path)
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -60,7 +66,7 @@ class EdgeTTSProvider(TTSProvider):
         """Edge TTS timestamp generation using native WordBoundary events."""
         import edge_tts
 
-        resolved_voice = self.VOICE_MAP.get(voice_id, voice_id)
+        resolved_voice = self._resolve_voice(voice_id)
         communicate = edge_tts.Communicate(text, resolved_voice, rate=rate)
 
         audio_chunks = []

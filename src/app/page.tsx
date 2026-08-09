@@ -51,7 +51,7 @@ export default function Home() {
   const [stressor, setStressor] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [durationMins, setDurationMins] = useState(3);
-  const [voice, setVoice] = useState("gentle_female");
+  const [voice, setVoice] = useState("warm_male");
   const [music, setMusic] = useState("none");
 
   const suggestions = [
@@ -233,8 +233,8 @@ export default function Home() {
                       value={voice}
                       onChange={setVoice}
                       options={[
-                        { value: "calm_female", label: "Aria · Calm" },
                         { value: "warm_male", label: "Kai · Warm" },
+                        { value: "calm_female", label: "Aria · Calm" },
                       ]}
                     />
 

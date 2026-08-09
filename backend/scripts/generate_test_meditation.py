@@ -5,7 +5,7 @@ Usage:
     python scripts/generate_test_meditation.py \
         --stressor "anxiety before presenting to 100 people" \
         --duration 5 \
-        --voice gentle_female \
+        --voice warm_male \
         --music none \
         --output /tmp/test_meditation.mp3
 """
@@ -26,7 +26,7 @@ def main():
     parser = argparse.ArgumentParser(description="Generate a test meditation")
     parser.add_argument("--stressor", required=True, help="What the user is dealing with")
     parser.add_argument("--duration", type=int, required=True, help="Duration in minutes")
-    parser.add_argument("--voice", default="gentle_female", help="Voice key")
+    parser.add_argument("--voice", default="warm_male", help="Voice key")
     parser.add_argument("--music", default="none", help="Music key (none|ambient)")
     parser.add_argument("--output", default="/tmp/test_meditation.mp3", help="Output path")
     args = parser.parse_args()

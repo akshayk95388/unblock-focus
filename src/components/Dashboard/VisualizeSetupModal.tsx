@@ -24,7 +24,7 @@ export default function VisualizeSetupModal({
 }: VisualizeSetupModalProps) {
   const [goal, setGoal] = useState("");
   const [durationMins, setDurationMins] = useState(3);
-  const [voice, setVoice] = useState("calm_female");
+  const [voice, setVoice] = useState("warm_male");
   const { habits } = useHabits();
   const [selectedHabitId, setSelectedHabitId] = useState("");
 
@@ -46,7 +46,7 @@ export default function VisualizeSetupModal({
     if (isOpen) {
       setGoal("");
       setDurationMins(3);
-      setVoice("calm_female");
+      setVoice("warm_male");
     }
   }, [isOpen]);
 
@@ -151,8 +151,8 @@ export default function VisualizeSetupModal({
                 value={voice}
                 onChange={setVoice}
                 options={[
-                  { value: "calm_female", label: "Aria · Calm" },
                   { value: "warm_male", label: "Kai · Warm" },
+                  { value: "calm_female", label: "Aria · Calm" },
                 ]}
               />
             </div>

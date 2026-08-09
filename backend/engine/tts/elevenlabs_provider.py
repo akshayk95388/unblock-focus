@@ -15,8 +15,8 @@ class ElevenLabsTTSProvider(TTSProvider):
     VOICE_MAP = {
         # "calm_female": "EXAVITQu4vr4xnSDxMaL",  # Sarah (Female)
         # "warm_male": "JBFqnCBsd6RMkjVDRZzb",    # George (Male)
-        "calm_female": "OOk3INdXVLRmSaQoAX9D",  # Alicia (Female)
-        "warm_male": "a4CnuaYbALRvW39mDitg",    # Dan (Male)
+        "calm_female": "OOk3INdXVLRmSaQoAX9D",    # Alicia (Female)
+        "warm_male": "a4CnuaYbALRvW39mDitg",      # Dan (Male)
     }
 
     def __init__(self, api_key: str):
@@ -29,6 +29,12 @@ class ElevenLabsTTSProvider(TTSProvider):
     @property
     def voice_map(self) -> dict[str, str]:
         return self.VOICE_MAP
+
+    def _resolve_voice(self, voice_id: str) -> str:
+        if voice_id in self.VOICE_MAP:
+            return self.VOICE_MAP[voice_id]
+        logger.warning(f"Unrecognized ElevenLabs voice_id '{voice_id}', falling back to 'warm_male'")
+        return self.VOICE_MAP["warm_male"]
 
     async def generate(
         self,
@@ -45,7 +51,7 @@ class ElevenLabsTTSProvider(TTSProvider):
         client = ElevenLabs(api_key=self._api_key)
 
         # Resolve voice key to ElevenLabs voice ID
-        resolved_voice = self.VOICE_MAP.get(voice_id, voice_id)
+        resolved_voice = self._resolve_voice(voice_id)
 
         convert_kwargs = {
             "voice_id": resolved_voice,
@@ -97,7 +103,7 @@ class ElevenLabsTTSProvider(TTSProvider):
         from elevenlabs.client import ElevenLabs
 
         client = ElevenLabs(api_key=self._api_key)
-        resolved_voice = self.VOICE_MAP.get(voice_id, voice_id)
+        resolved_voice = self._resolve_voice(voice_id)
 
         effective_speed = speed if speed != 1.0 else 0.94
         convert_kwargs = {

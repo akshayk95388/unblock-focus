@@ -7,7 +7,7 @@ class GenerateRequest(BaseModel):
     stressor: str = Field(..., min_length=3, max_length=500)
     duration_category: Optional[str] = Field(default="quick")  # "quick" | "deep"
     duration_mins: Optional[int] = Field(default=None, ge=1, le=30)
-    voice: str = Field(default="calm_female")
+    voice: str = Field(default="warm_male")
     music: str = Field(default="none")
     preset: Optional[str] = Field(default="guided_session")  # "guided_session" | "visualization" | "unblock_reel"
     include_words_ts: Optional[bool] = Field(default=False)

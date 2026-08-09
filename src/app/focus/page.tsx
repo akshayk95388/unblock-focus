@@ -68,7 +68,7 @@ function DashboardContent() {
   const [pendingStressor, setPendingStressor] = useState("");
   const [directFocusMode, setDirectFocusMode] = useState(false);
   const [durationMins, setDurationMins] = useState(3);
-  const [voice, setVoice] = useState("gentle_female");
+  const [voice, setVoice] = useState("warm_male");
   const [music, setMusic] = useState("none");
 
   // Modal setup presets (direct focus session)
@@ -144,7 +144,7 @@ function DashboardContent() {
           });
           setPendingStressor(session.stressor.trim());
           setDurationMins(session.durationMins || 5);
-          setVoice(session.voice || "gentle_female");
+          setVoice(session.voice || "warm_male");
           setMusic(session.music || "none");
           setDirectFocusMode(false);
           setCurrentTab("meditation");
@@ -465,8 +465,8 @@ function DashboardContent() {
                           value={voice}
                           onChange={setVoice}
                           options={[
-                            { value: "calm_female", label: "Aria · Calm" },
                             { value: "warm_male", label: "Kai · Warm" },
+                            { value: "calm_female", label: "Aria · Calm" },
                           ]}
                         />
 

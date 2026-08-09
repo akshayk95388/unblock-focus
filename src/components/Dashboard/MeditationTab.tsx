@@ -157,7 +157,7 @@ export default function MeditationTab({
   directFocusMode = false,
   onSessionComplete,
   initialDurationMins = 3,
-  initialVoice = "gentle_female",
+  initialVoice = "warm_male",
   initialMusic = "none",
   onZenModeChange,
   zenActive = false,
