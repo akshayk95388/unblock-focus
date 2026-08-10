@@ -179,6 +179,12 @@ export default function MeditationTab({
   const durationCategory = durationMins > 5 ? "deep" : "quick";
   const [voice, setVoice] = useState(restoreSnapshot?.voice ?? initialVoice);
   const [music, setMusic] = useState(restoreSnapshot?.music ?? initialMusic);
+  const [preset, setPreset] = useState(restoreSnapshot?.preset ?? initialPreset);
+
+  useEffect(() => {
+    if (restoreSnapshot?.preset) return;
+    setPreset(initialPreset);
+  }, [initialPreset, restoreSnapshot?.preset]);
 
   // Post-reset settings (moved from idle form)
   const [llmFocusTask, setLlmFocusTask] = useState(restoreSnapshot?.llmFocusTask ?? "");
@@ -766,9 +772,12 @@ export default function MeditationTab({
           duration_mins: durationMins,
           voice,
           music,
-          preset: initialPreset || "guided_session",
+          preset: preset || initialPreset || "guided_session",
         }),
       });
+
+      // Reset preset to default guided_session for subsequent manual resets
+      setPreset("guided_session");
 
       if (!response.ok) {
         const errorBody = await response.json().catch(() => null);

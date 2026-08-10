@@ -228,6 +228,7 @@ function DashboardContent() {
 
   const handleClearAutoStart = useCallback(() => {
     setAutoStartFocus(false);
+    setPendingPreset("guided_session");
   }, []);
 
   const handleSessionComplete = useCallback(() => {
