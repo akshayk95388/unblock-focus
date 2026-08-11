@@ -104,7 +104,10 @@ def build_timeline_from_prose(prose: dict, state: Dict[str, Any]) -> MeditationT
                 if pause_type_str not in PAUSE_WEIGHTS:
                     pause_type_str = DEFAULT_PAUSE_TYPE
 
-            if profile.pause_mode == "snappy":
+            if section["name"] in ("viral_hook", "hook"):
+                # Hooks transition cleanly into the next section — preserve explicit pause_s (e.g. transition)
+                pass
+            elif profile.pause_mode == "snappy":
                 pause_type_str = "transition" if j == len(lines) - 1 else "short"
             else:
                 # Apply reflection pause (5s) before breath cycles, section_end on standard section ends

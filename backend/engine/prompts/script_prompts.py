@@ -154,6 +154,108 @@ For each stage, follow its purpose:
 CRITICAL: Output ONLY valid JSON matching the schema with top-level fields: title, intention, focus_task, and sections. Output ONLY the sections listed in the stage plan above. Do not add or invent extra sections.
 Do not use colons, semicolons, bullet points, or em dashes in any "text" value. Ensure no line is shorter than 8 words or longer than 15 words. Avoid using similar phrases or ideas in close proximity to eliminate repetition."""
 
+# ── Viral hook instructions (shared by video presets) ───────────────
+
+_VIRAL_HOOK_GUIDED = """- viral_hook: A single scroll-stopping social media hook sentence (10–15 words) stating the viewer's exact blocker cleanly (as a question, scenario, or condition). Do NOT add physical grounding or greetings. Use pause_s: 2–3."""
+
+_VIRAL_HOOK_VISUALIZATION = """- viral_hook: A single scroll-stopping social media hook sentence (10–15 words) that drops the viewer directly into their vivid future vision. Do NOT add spiritual language or greetings. Use pause_s: 2–3."""
+
+# ── Social media video prompts ──────────────────────────────────────
+# Same structure as guided/visualization deep sessions with a 1-line
+# viral_hook section prepended directly before breathing.
+
+GUIDED_VIDEO_PROMPT = """Write a {duration_mins}-minute mental reset video for someone blocked by: "{stressor}"
+Category: {meditation_type}
+Intent: {intent}
+Target narration: {target_word_count} words (spoken at 100-115 words per minute)
+
+This is a YouTube video. The first section must immediately grab the viewer's attention with a single crisp sentence.
+
+Structure the reset through these stages in order:
+{sections_with_durations}
+
+For each stage, follow its purpose:
+
+""" + _VIRAL_HOOK_GUIDED + """
+
+- breathing_reset: CRITICAL — write a MAXIMUM of 2 sentences. Your only job is to announce that an automated breathing cue is starting. Do NOT write steps like "breathe in" or "breathe out". Examples: "Let's take a moment to breathe. Just follow along with me." (Use as inspiration — adapt naturally.)
+
+- core_reset: This is the core psychological shift. CRITICAL: Do NOT talk about "work", "taking action", or "taking small steps" in this section. This section is pure psychology to fix the mindset. Save all action-oriented advice for the reframe stage. Ensure each line offers a unique insight or perspective without repetition. Adapt based on the category:
+  * deadline/exam: help them zoom out and release the immediate pressure, letting go of the massive wall
+  * presentation: help them picture the room, feel their feet on the ground, own the space
+  * burnout: give them permission to rest, acknowledge the exhaustion is real
+  * distraction: help them observe their urges without judgment, letting them pass
+  * overthinking: help them notice the mental loop, then redirect attention to the present moment
+  * imposter: normalize the feeling, remind them of their inherent capability
+  * conflict: help them separate the external event from their own response. Validate the frustration without feeding it
+  * general: help them name what's in their control and let go of what isn't
+
+- reframe: Adapt this section based on the person's intent.
+  When the person's intent is work: Use a 2-line contrast pattern: first release what they don't need to finish right now, then pivot to their single micro-step. Tailor the micro-step specifically to their task if provided; if general, keep it universal without inventing unmentioned tasks.
+  When the person's intent is decompression: Do NOT mention work, tasks, action steps, or productivity. Focus entirely on emotional release and perspective.
+
+- closing: One warm, grounded, complete closing sentence (8–14 words).
+  When the person's intent is work: Direct them naturally back to their work. Do NOT repeat the micro-step details already stated in reframe.
+  When the person's intent is decompression: Do NOT reference work. End with a calmer closing that honors rest.
+
+CRITICAL: Output ONLY the sections listed in the stage plan above. Do not add or invent extra sections.
+
+Sentence depth: each spoken line is 12–18 words — fuller sentences with texture and warmth.
+Never write fragments under 6 words.
+
+core_reset line allocation (core_reset MUST be the longest, most substantial section):
+- core_reset MUST have 14–16 lines (~180–210 words total)
+
+Pause duration rules (pause_s values):
+- 2–3: after viral_hook
+- 1–2: after quick transitions
+- 3: after a transition between ideas
+- 4–6: after body awareness cues
+- 7–15: during core_reset, giving them space to process
+- Use 5–8s on the final closing line.
+
+"breath_cycle" must be null or one of: box_4, sleep_478, calm_46, focus_44
+Only sections with breathing in the plan should set breath_cycle."""
+
+VISUALIZATION_VIDEO_PROMPT = """Write a {duration_mins}-minute goal visualization video for someone working toward: "{stressor}"
+Target narration: {target_word_count} words (spoken at 95-105 words per minute)
+
+This is a YouTube video. The first section must immediately grab the viewer's attention with a single vivid sentence.
+
+Structure the visualization through these stages in order:
+{sections_with_durations}
+
+For each stage, follow its purpose:
+
+""" + _VIRAL_HOOK_VISUALIZATION + """
+
+- breathing_anchor: CRITICAL — write a MAXIMUM of 2 sentences. Your only job is to announce that an automated breathing cue is starting. Do NOT write steps like "breathe in" or "breathe out". Examples: "Let's take a moment to breathe and settle into this." (Use as inspiration — adapt naturally.)
+
+- sensory_immersion: This is the CORE of the visualization. Guide them to vividly imagine the moment they have already achieved their goal. Use rich sensory detail — what do they see, hear, and feel? Describe the room, the people around them, their posture, their emotional state. Write as if it has already happened. Each line should paint one specific, vivid detail. Do NOT use abstract or vague language.
+
+- identity_anchor: Help them feel the quiet, grounded confidence of their future self. This is about identity — who they ARE as the person who achieved this, not what they did. Help them feel gratitude and certainty without being preachy.
+
+- execution_bridge: Bring them back gently to the present moment. Connect the vision to ONE small, concrete action they can take today that moves them toward that future. Keep it grounded and practical. End with a warm, complete closing sentence.
+
+CRITICAL: Output ONLY the sections listed in the stage plan above. Do not add or invent extra sections.
+
+Sentence depth: each spoken line is 12–18 words — fuller sentences with texture and imagery.
+Never write fragments under 6 words.
+
+sensory_immersion line allocation (sensory_immersion MUST be the longest, most vivid section):
+- sensory_immersion MUST have 10–14 lines (~130–170 words total)
+
+Pause duration rules (pause_s values):
+- 2–3: after viral_hook
+- 1–2: after quick transitions
+- 3–4: after a transition between ideas
+- 5–8: during sensory_immersion, giving them space to picture the scene
+- 8–12: after key identity_anchor moments — long pauses for feeling
+- 5–8: on the final closing line
+
+"breath_cycle" must be null or one of: box_4, sleep_478, calm_46, focus_44
+Only sections with breathing in the plan should set breath_cycle."""
+
 SCRIPT_PROMPT_TEMPLATE = ChatPromptTemplate.from_messages([
     ("system", SYSTEM_PROMPT),
     ("human", "{human_prompt}"),
@@ -167,7 +269,7 @@ VISUALIZATION_PROMPT_TEMPLATE = ChatPromptTemplate.from_messages([
 
 def get_prompt_template(preset: str) -> ChatPromptTemplate:
     """Return the right system prompt template based on preset type."""
-    if preset == "visualization":
+    if preset in ("visualization", "visualization_video"):
         return VISUALIZATION_PROMPT_TEMPLATE
     return SCRIPT_PROMPT_TEMPLATE
 
@@ -207,7 +309,8 @@ Rules:
 4. Eliminate robotic repetition, template-sounding phrases, or stiff clichés (never use: journey, embrace, flow, transform, revolutionary, namaste, sacred).
 5. Active Listening: Never assume hidden motivations, unmentioned tasks, or unstated feelings. Reflect what the user explicitly stated, validate their experience, and guide them forward without inventing fictional scenarios.
 6. Tone & Vocabulary: Retain the core message and intention of each section while speaking like a calm, grounded, trusted friend talking out loud (adult-to-adult tone). Use natural, simple spoken language that is effortless to process under stress.
-7. Return ONLY valid JSON matching the exact ScriptProseSchema."""
+7. If present, keep `hook` or `viral_hook` sections as a single punchy, direct sentence — do not append reassurances or solutions.
+8. Return ONLY valid JSON matching the exact ScriptProseSchema."""
 
 SCRIPT_POLISH_HUMAN_PROMPT_GUIDED = """The user is blocked by: "{stressor}"
 
@@ -230,7 +333,7 @@ def get_polish_messages(stressor: str, raw_prose_json: str, preset: str = "guide
     Visualization sessions frame the user as 'working toward' a goal.
     All other sessions frame the user as 'blocked by' a stressor.
     """
-    if preset == "visualization":
+    if preset in ("visualization", "visualization_video"):
         human_prompt = SCRIPT_POLISH_HUMAN_PROMPT_VISUALIZATION
     else:
         human_prompt = SCRIPT_POLISH_HUMAN_PROMPT_GUIDED

@@ -45,6 +45,26 @@ VISUALIZATION = [
     SectionTemplate("execution_bridge",     0.15, None,       0),  # Bridge back to one action today
 ]
 
+# ── Social media video templates ────────────────────────────────────
+# Same structure as guided/visualization deep sessions but with a single
+# 1-line viral_hook prepended directly before breathing.
+
+GUIDED_VIDEO = [
+    SectionTemplate("viral_hook",       0.05, None,       0),  # Single 1-line hook
+    SectionTemplate("breathing_reset",  0.20, "calm_46",  4),  # Deep: 4 breath cycles
+    SectionTemplate("core_reset",       0.40, None,       0),
+    SectionTemplate("reframe",          0.20, None,       0),
+    SectionTemplate("closing",          0.10, None,       0),
+]
+
+VISUALIZATION_VIDEO = [
+    SectionTemplate("viral_hook",           0.05, None,       0),  # Single 1-line hook
+    SectionTemplate("breathing_anchor",     0.15, "calm_46",  4),  # Deep: 4 breath cycles
+    SectionTemplate("sensory_immersion",    0.35, None,       0),
+    SectionTemplate("identity_anchor",      0.20, None,       0),
+    SectionTemplate("execution_bridge",     0.15, None,       0),
+]
+
 
 def get_template_for_preset(preset: str, duration_category: str) -> List[SectionTemplate]:
     """Return structural template based on preset or duration category."""
@@ -56,4 +76,3 @@ def get_template_for_preset(preset: str, duration_category: str) -> List[Section
 def get_template_for_category(duration_category: str) -> List[SectionTemplate]:
     """Return the structural template for a duration category."""
     return DEEP_RESET if duration_category == "deep" else QUICK_RESET
-

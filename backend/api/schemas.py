@@ -9,7 +9,7 @@ class GenerateRequest(BaseModel):
     duration_mins: Optional[int] = Field(default=None, ge=1, le=30)
     voice: str = Field(default="warm_male")
     music: str = Field(default="none")
-    preset: Optional[str] = Field(default="guided_session")  # "guided_session" | "visualization" | "unblock_reel"
+    preset: Optional[str] = Field(default="guided_session")  # guided_session | visualization | unblock_reel | guided_video | visualization_video
     include_words_ts: Optional[bool] = Field(default=False)
 
 

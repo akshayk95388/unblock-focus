@@ -21,7 +21,7 @@ class MeditationEngineState(TypedDict, total=False):
     duration_mins: int
     voice_key: str
     music_key: str
-    preset: str                   # guided_session | visualization | unblock_reel
+    preset: str                   # guided_session | visualization | unblock_reel | guided_video | visualization_video
 
     # ── Classifier output ──
     meditation_type: str          # anxiety | sleep | focus

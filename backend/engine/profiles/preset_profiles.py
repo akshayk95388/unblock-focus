@@ -6,8 +6,16 @@ from engine.profiles.section_templates import (
     SectionTemplate,
     UNBLOCK_REEL,
     VISUALIZATION,
+    GUIDED_VIDEO,
+    VISUALIZATION_VIDEO,
 )
-from engine.prompts.script_prompts import SCRIPT_PROMPT, REEL_HUMAN_PROMPT, VISUALIZATION_PROMPT
+from engine.prompts.script_prompts import (
+    SCRIPT_PROMPT,
+    REEL_HUMAN_PROMPT,
+    VISUALIZATION_PROMPT,
+    GUIDED_VIDEO_PROMPT,
+    VISUALIZATION_VIDEO_PROMPT,
+)
 
 
 @dataclass
@@ -45,9 +53,27 @@ PRESET_PROFILES: Dict[str, PresetProfile] = {
         template=VISUALIZATION,
         prompt_template=VISUALIZATION_PROMPT,
     ),
+    # ── Social media video presets (deep sessions with viral hook) ──
+    "guided_video": PresetProfile(
+        name="guided_video",
+        target_duration_s=420.0,       # Fixed 7 minutes (deep)
+        target_words=385,              # ~105 WPM × 0.52 density × 420s
+        pause_mode="guided",
+        template=GUIDED_VIDEO,
+        prompt_template=GUIDED_VIDEO_PROMPT,
+    ),
+    "visualization_video": PresetProfile(
+        name="visualization_video",
+        target_duration_s=420.0,       # Fixed 7 minutes (deep)
+        target_words=315,              # ~100 WPM × 0.45 density × 420s
+        pause_mode="guided",
+        template=VISUALIZATION_VIDEO,
+        prompt_template=VISUALIZATION_VIDEO_PROMPT,
+    ),
 }
 
 
 def get_preset_profile(preset_name: Optional[str]) -> PresetProfile:
     """Return PresetProfile for given preset name, defaulting to guided_session."""
     return PRESET_PROFILES.get(preset_name or "guided_session", PRESET_PROFILES["guided_session"])
+

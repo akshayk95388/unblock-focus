@@ -63,20 +63,28 @@ async def classifier_node(state: MeditationEngineState, config: Optional[dict] =
         else:
             duration_category = "quick"
 
-    # ── Visualization preset: skip classification entirely ──
-    if preset == "visualization":
+    # ── Visualization presets: skip classification entirely ──
+    if preset in ("visualization", "visualization_video"):
         meditation_type = "visualization"
         intent = "prime"
         profile = get_preset_profile(preset)
         template = profile.template
-        # Visualization uses slower, imagery-rich pacing
-        vis_wpm = PACING_PROFILES.get("visualization", {"wpm": 100, "profile": "gentle"})
-        vis_density = SPEECH_DENSITY.get("visualization", 0.45)
-        total_s = 300.0 if duration_category == "deep" else 180.0
-        duration_mins = 5 if duration_category == "deep" else 3
+
+        if profile.target_duration_s is not None:
+            # Fixed-duration video preset — use profile values directly
+            total_s = profile.target_duration_s
+            target_words = profile.target_words or 135
+            duration_mins = int(round(total_s / 60.0))
+        else:
+            # Dynamic visualization session — scale with Quick/Deep
+            vis_wpm = PACING_PROFILES.get("visualization", {"wpm": 100, "profile": "gentle"})
+            vis_density = SPEECH_DENSITY.get("visualization", 0.45)
+            total_s = 300.0 if duration_category == "deep" else 180.0
+            duration_mins = 5 if duration_category == "deep" else 3
+            target_speech_s = total_s * vis_density
+            target_words = int((target_speech_s / 60) * vis_wpm["wpm"])
+
         duration_target_s = duration_mins * 60
-        target_speech_s = total_s * vis_density
-        target_words = int((target_speech_s / 60) * vis_wpm["wpm"])
 
         return {
             "duration_category": duration_category,
@@ -84,7 +92,7 @@ async def classifier_node(state: MeditationEngineState, config: Optional[dict] =
             "meditation_type": meditation_type,
             "intent": intent,
             "section_plan": scale_sections(template, total_s),
-            "pacing_profile": vis_wpm["profile"],
+            "pacing_profile": PACING_PROFILES.get("visualization", {"wpm": 100, "profile": "gentle"})["profile"],
             "target_word_count": target_words,
             "duration_target_s": duration_target_s,
             "current_stage": "classifying",
