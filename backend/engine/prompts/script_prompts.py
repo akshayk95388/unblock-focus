@@ -17,7 +17,7 @@ Rules:
 7. NEVER use preachy or pseudo-spiritual buzzwords: namaste, manifest, chakra, universe, sacred, revolutionary.
 8. As the reset progresses, use fewer lines and longer pauses — not shorter words.
 9. Maintain a natural, progressive flow across the entire script. Do not repeat the same phrases or ideas in different sections. The transition between stages should feel seamless and organic.
-10. Use simple, conversational, everyday spoken words while keeping a calm, grounded, adult-to-adult tone. Avoid complex vocabulary or formal corporate jargon.
+10. Use simple, conversational, everyday spoken words with natural contractions (you're, it's, don't, doesn't, we're). Keep a calm, grounded, adult-to-adult tone. Avoid complex vocabulary or formal corporate jargon.
 11. When examples are provided, use them as inspiration for tone and structure — feel free to adapt or use what feels most natural for the context.
 12. Return ONLY valid JSON."""
 
@@ -35,7 +35,7 @@ Rules:
 7. NEVER use preachy or pseudo-spiritual buzzwords: namaste, manifest, chakra, universe, sacred, revolutionary, hustle, grind.
 8. As the visualization deepens, use richer imagery and longer pauses — not shorter words.
 9. Maintain a natural, immersive flow across the entire script. Each section should build on the previous one seamlessly.
-10. Use simple, vivid, everyday spoken words. Avoid complex vocabulary or corporate jargon.
+10. Use simple, vivid, everyday spoken words with natural contractions (you're, it's, don't, doesn't, we're). Avoid complex vocabulary or corporate jargon.
 11. When examples are provided, use them as inspiration — adapt naturally for the context.
 12. Return ONLY valid JSON."""
 
@@ -306,7 +306,7 @@ Instead of chasing perfection, focus on consistency:
 
 Rules:
 1. DO NOT change the JSON structure, the section names, or the pause_s timings. Keep all section names, pause durations, breath_cycle, and breath_repetitions intact.
-2. Polish the spoken "text" of each line so it reads with natural human cadence, warmth, and grounded presence.
+2. Polish the spoken "text" of each line so it reads with natural human cadence, warmth, and spoken contractions (it's, you're, don't, doesn't).
 3. Ensure each line remains a single, spoken sentence (8–15 words). No abrupt fragments under 6 words and no overly long compound sentences over 18 words.
 4. Eliminate robotic repetition, template-sounding phrases, or stiff clichés (never use: journey, embrace, flow, transform, revolutionary, namaste, sacred).
 5. Active Listening: Never assume hidden motivations, unmentioned tasks, or unstated feelings. Reflect what the user explicitly stated, validate their experience, and guide them forward without inventing fictional scenarios.
