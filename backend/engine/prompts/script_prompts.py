@@ -56,7 +56,8 @@ For each stage, follow its purpose:
 - body_release: Guide releasing physical tension — shoulders, jaw, hands. Quick and practical, not a full body scan.
 
 - core_reset: This is the core psychological shift. CRITICAL: Do NOT talk about "work", "taking action", or "taking small steps" in this section. This section is pure psychology to fix the mindset. Save all action-oriented advice for the reframe stage. Ensure each line offers a unique insight or perspective without repetition. Adapt based on the category:
-  * deadline/exam: help them zoom out and release the immediate pressure, letting go of the massive wall
+  * deadline: help them zoom out and release the immediate pressure, letting go of the massive wall
+  * exam: release the panic of blanking, trust past preparation, remind them that anxiety doesn't equal lack of knowledge
   * presentation: help them picture the room, feel their feet on the ground, own the space
   * burnout: give them permission to rest, acknowledge the exhaustion is real
   * distraction: help them observe their urges without judgment, letting them pass
@@ -181,7 +182,8 @@ For each stage, follow its purpose:
 - breathing_reset: CRITICAL — write a MAXIMUM of 2 sentences. Your only job is to announce that an automated breathing cue is starting. Do NOT write steps like "breathe in" or "breathe out". Examples: "Let's take a moment to breathe. Just follow along with me." (Use as inspiration — adapt naturally.)
 
 - core_reset: This is the core psychological shift. CRITICAL: Do NOT talk about "work", "taking action", or "taking small steps" in this section. This section is pure psychology to fix the mindset. Save all action-oriented advice for the reframe stage. Ensure each line offers a unique insight or perspective without repetition. Adapt based on the category:
-  * deadline/exam: help them zoom out and release the immediate pressure, letting go of the massive wall
+  * deadline: help them zoom out and release the immediate pressure, letting go of the massive wall
+  * exam: release the panic of blanking, trust past preparation, remind them that anxiety doesn't equal lack of knowledge
   * presentation: help them picture the room, feel their feet on the ground, own the space
   * burnout: give them permission to rest, acknowledge the exhaustion is real
   * distraction: help them observe their urges without judgment, letting them pass
