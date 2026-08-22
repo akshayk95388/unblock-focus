@@ -75,7 +75,7 @@ class ScriptProseSchema(BaseModel):
         description="One sentence describing what this reset accomplishes."
     )
     focus_task: str = Field(
-        description="Action-oriented next task (3 to 7 words, starting with a strong verb like Write, Code, Draft, Debug)."
+        description="Action-oriented next task (3 to 7 words, starting with a strong verb). If general, keep it universal (e.g. 'Take the first step'); if they named a specific task, tailor it (e.g. Write, Code, Draft, Debug)."
     )
     sections: List[ScriptSectionSchema] = Field(
         description="Sequential list of script stage sections."
