@@ -16,6 +16,7 @@ CategoryType = Literal[
     "conflict",
     "exam",
     "general",
+    "gibberish",
 ]
 
 IntentType = Literal[

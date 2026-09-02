@@ -27,7 +27,7 @@ async def script_polisher_node(state: MeditationEngineState, config: Optional[di
     """
     configurable = config.get("configurable", {}) if config else {}
     enable_polisher = configurable.get(
-        "enable_polisher", state.get("enable_polisher", True)
+        "enable_polisher", state.get("enable_polisher", False)
     )
 
     if not enable_polisher:

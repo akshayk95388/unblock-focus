@@ -16,6 +16,7 @@ Categories:
 - conflict: frustration from manager feedback, team disagreement, harsh criticism, client friction, anger at someone
 - exam: test anxiety, study pressure, academic stress, grades
 - general: anything that doesn't clearly fit the categories above
+- gibberish: random characters, keyboard mashing, emoji spam, test strings, or completely nonsensical input that doesn't describe a real problem
 
 Intent categories:
 - work: the person wants to clear their block and get back to a task, project, or execution
@@ -37,6 +38,7 @@ VALID_TYPES = {
     "conflict",
     "exam",
     "general",
+    "gibberish",
 }
 
 VALID_INTENTS = {

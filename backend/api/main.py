@@ -8,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
 from db.session import init_db
-from api.routes import generate, status, history
+from api.routes import generate, status, history, intake
 from api.auth import verify_api_key
 
 # Configure logging
@@ -60,6 +60,7 @@ app.mount("/media", StaticFiles(directory=str(media_dir)), name="media")
 app.include_router(generate.router, dependencies=[Depends(verify_api_key)])
 app.include_router(status.router, dependencies=[Depends(verify_api_key)])
 app.include_router(history.router, dependencies=[Depends(verify_api_key)])
+app.include_router(intake.router, dependencies=[Depends(verify_api_key)])
 
 
 @app.get("/api/health")

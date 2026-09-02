@@ -12,6 +12,7 @@ import CustomSelect from "@/components/ui/CustomSelect";
 import PaywallModal from "@/components/ui/PaywallModal";
 import { useActiveSession } from "@/components/ActiveSessionContext";
 import { createPortal } from "react-dom";
+import IntakeView from "@/components/Dashboard/IntakeView";
 import {
   ACTIVE_SESSION_KEY,
   createClientSessionId,
@@ -209,7 +210,7 @@ export default function MeditationTab({
   // App state
   const { habits } = useHabits();
   const [status, setStatus] = useState<
-    "idle" | "generating" | "playing" | "post_reset" | "focus_timer" | "session_complete" | "failed"
+    "idle" | "intake" | "generating" | "playing" | "post_reset" | "focus_timer" | "session_complete" | "failed"
   >(
     replayConfig
       ? "playing"
@@ -218,11 +219,16 @@ export default function MeditationTab({
         : directFocusMode
           ? "post_reset"
           : initialStressor.trim()
-            ? "generating"
+            ? "intake"
             : "idle"
   );
+
+  // Intake state
+  const [intakeCategory, setIntakeCategory] = useState("");
+  const [intakeIntent, setIntakeIntent] = useState("");
   const [jobId, setJobId] = useState<string | null>(restoreSnapshot?.jobId ?? null);
   const [error, setError] = useState<string | null>(null);
+  const [errorTitle, setErrorTitle] = useState<string | null>(null);
 
   // Buffered audio ready flag — lets breathing finish its cycle before transitioning
   const [audioReady, setAudioReady] = useState(
@@ -310,13 +316,13 @@ export default function MeditationTab({
     }
   }, [habits]);
 
-  // When pre-filled from the dashboard, skip the setup form and generate immediately.
+  // When pre-filled from the dashboard, start the intake flow.
   // A ref guard prevents a duplicate job (e.g. React strict-mode double effects).
   useEffect(() => {
     if (initialStressor && initialStressor.trim() && !autoStartedRef.current) {
       autoStartedRef.current = true;
       setStressor(initialStressor);
-      handleGenerate(initialStressor);
+      handleStartSession(initialStressor);
     }
   }, [initialStressor]);
 
@@ -482,7 +488,7 @@ export default function MeditationTab({
 
   // Coordinate Zen Mode status
   useEffect(() => {
-    const isSessionActive = status === "generating" || status === "playing" || status === "focus_timer";
+    const isSessionActive = status === "intake" || status === "generating" || status === "playing" || status === "focus_timer";
     onZenModeChange?.(isSessionActive);
     return () => {
       onZenModeChange?.(false);
@@ -493,7 +499,10 @@ export default function MeditationTab({
   // This lets the sidebar card show the flow visualizer or mini timer.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (status === "generating") {
+    if (status === "intake") {
+      // Don't show sidebar generating card during intake — nothing is being built yet
+      setSession(null);
+    } else if (status === "generating") {
       setSession({
         type: "guided",
         totalSeconds: durationMins * 60,
@@ -748,17 +757,69 @@ export default function MeditationTab({
     poll();
   };
 
-  // Start Generation
-  const handleGenerate = async (stressorOverride?: string) => {
+  // Start Session — classify first, then enter intake mode
+  const handleStartSession = async (stressorOverride?: string) => {
     const text = stressorOverride || stressor;
     if (!text.trim()) return;
 
-    setStatus("generating");
+    // Skip intake for short-form presets (reels, videos) — go straight to generation
+    const currentPreset = preset || initialPreset || "guided_session";
+    const skipIntakePresets = ["unblock_reel", "guided_video", "visualization_video", "visualization"];
+    if (skipIntakePresets.includes(currentPreset)) {
+      handleGenerateWithContext(text);
+      return;
+    }
+
     setError(null);
-    setPercent(0);
-    setStage("Warming up…");
+    setErrorTitle(null);
     setSessionLogged(false);
     loggedRef.current = false;
+
+    try {
+      // Classify first to get category context for intake
+      const classifyRes = await fetch("/api/intake/classify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stressor: text }),
+      });
+
+      if (classifyRes.ok) {
+        const classifyData = await classifyRes.json();
+        const cat = classifyData.category || "general";
+        const int = classifyData.intent || "work";
+
+        // Gate: if the stressor is gibberish, don't start a session
+        if (cat === "gibberish") {
+          setErrorTitle("Need a bit more detail");
+          setError("Share a real blocker or challenge to build your session around.");
+          setStatus("failed");
+          return;
+        }
+
+        setIntakeCategory(cat);
+        setIntakeIntent(int);
+      } else {
+        // If classify fails, use defaults and continue
+        setIntakeCategory("general");
+        setIntakeIntent("work");
+      }
+
+      setStatus("intake");
+    } catch {
+      // If classify fails entirely, skip intake and go directly to generation
+      setIntakeCategory("general");
+      setIntakeIntent("work");
+      setStatus("intake");
+    }
+  };
+
+  // Generate with enriched context — called after intake completes or on skip
+  const handleGenerateWithContext = async (enrichedStressor: string) => {
+    setStatus("generating");
+    setError(null);
+    setErrorTitle(null);
+    setPercent(0);
+    setStage("Warming up…");
     setResetDone(true);
     setAudioReady(false);
 
@@ -767,7 +828,7 @@ export default function MeditationTab({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          stressor: text,
+          stressor: enrichedStressor,
           duration_category: durationCategory,
           duration_mins: durationMins,
           voice,
@@ -797,6 +858,12 @@ export default function MeditationTab({
       setStatus("failed");
       setError(err instanceof Error ? err.message : "An unexpected error occurred.");
     }
+  };
+
+  // Legacy alias for direct generation (used by handleResetAll etc.)
+  const handleGenerate = async (stressorOverride?: string) => {
+    const text = stressorOverride || stressor;
+    handleGenerateWithContext(text);
   };
 
   // Audio Playback Sync Subtitles & Breath Guides (60fps requestAnimationFrame)
@@ -1056,6 +1123,7 @@ export default function MeditationTab({
   useEffect(() => {
     if (isReplay) return;
     if (
+      status === "intake" ||
       status === "generating" ||
       status === "playing" ||
       status === "post_reset" ||
@@ -1210,6 +1278,19 @@ export default function MeditationTab({
     <div className="flex flex-col flex-1 p-6 md:p-12 space-y-10 overflow-y-auto">
       <div className="max-w-2xl w-full mx-auto space-y-10">
 
+        {/* ============ INTAKE STATE — Follow-up questions ============ */}
+        {status === "intake" && (
+          <IntakeView
+            stressor={stressor}
+            category={intakeCategory}
+            intent={intakeIntent}
+            onComplete={(enriched) => handleGenerateWithContext(enriched)}
+            onSkip={() => handleGenerateWithContext(stressor)}
+            zenActive={zenActive}
+            onToggleZen={onToggleZen}
+            onCancel={handleResetAll}
+          />
+        )}
 
         {/* ============ GENERATION STATE — 4-7-8 Breathing While Waiting ============ */}
         {status === "generating" && (
@@ -1230,16 +1311,18 @@ export default function MeditationTab({
         {/* ============ ERROR STATE ============ */}
         {status === "failed" && (
           <div className="bg-surface-container-low/40 backdrop-blur-md border border-outline-variant/15 rounded-2xl p-6 md:p-10 text-center space-y-6 max-w-lg mx-auto flex flex-col items-center justify-center min-h-[calc(100vh-8rem)] overflow-hidden">
-            <div className="w-16 h-16 rounded-full bg-error/10 flex items-center justify-center text-2xl text-error mx-auto">
-              ⚠️
+            <div className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl mx-auto ${
+              errorTitle ? "bg-primary/10 text-primary" : "bg-error/10 text-error"
+            }`}>
+              {errorTitle ? "💭" : "⚠️"}
             </div>
             <div className="space-y-2">
-              <h3 className="text-xl font-bold text-on-surface">Couldn&apos;t build your session</h3>
+              <h3 className="text-xl font-bold text-on-surface">{errorTitle || "Couldn't build your session"}</h3>
               <p className="text-sm text-on-surface-variant">{error || "Something went wrong on our end. Please try again."}</p>
             </div>
             <button
               onClick={() => onSessionComplete?.()}
-              className="px-6 py-3 rounded-xl bg-surface-container-highest text-on-surface hover:bg-surface-container-highest/80 font-bold text-sm transition-all"
+              className="px-6 py-3 rounded-xl bg-surface-container-highest text-on-surface hover:bg-surface-container-highest/80 font-bold text-sm transition-all cursor-pointer"
             >
               Try Again
             </button>

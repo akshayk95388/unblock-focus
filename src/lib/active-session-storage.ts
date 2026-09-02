@@ -38,6 +38,7 @@ export interface GuidedSnapshot {
   durationMins: number;
   voice?: string;
   music?: string;
+  preset?: string;
   actualDuration: number;
   /** Static (query-stripped) audio URL; re-signed on restore if it is an S3 URL. */
   audioUrl?: string | null;

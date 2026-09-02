@@ -39,10 +39,53 @@ Rules:
 11. When examples are provided, use them as inspiration — adapt naturally for the context.
 12. Return ONLY valid JSON."""
 
+# ── One-shot golden example: teaches tone, rhythm, and arc by demonstration ──
+
+_GUIDED_EXAMPLE = """
+<example>
+Stressor: "Can't start writing my investor pitch deck, been putting it off all day"
+Category: deadline
+Intent: work
+Duration: 3 minutes
+
+Title: Clear the Deck
+Intention: Cut through the procrastination loop and open that first slide.
+Focus task: Draft the opening slide
+
+[grounding]
+- Settle in for a moment and let your hands rest where they are.
+- You've been circling this pitch deck all day and that's exhausting.
+- That's okay. You're here now, and that counts for something.
+
+[breathing_reset]
+- Let's slow things down with a few breaths. Just follow along with me.
+
+[core_reset]
+- Your brain is looking at this deck as one massive thing to finish.
+- No wonder it feels impossible. You're trying to solve the whole thing at once.
+- But that's not how it works. Nobody writes a deck start to finish in one pass.
+- All that weight you're feeling is about the finished version, not the first draft.
+- What if the only thing that matters right now is opening a blank slide.
+- Not a perfect slide. Not a polished slide. Just a starting point.
+- That's the gap between stuck and moving. One sentence on one slide.
+
+[reframe]
+- You don't need to finish this deck right now. That's not the job.
+- The job is one slide. Just the opening. That's the entire scope.
+
+[closing]
+- Open your deck and start typing that first sentence.
+</example>
+"""
+
 SCRIPT_PROMPT = """Write a {duration_mins}-minute mental reset for someone blocked by: "{stressor}"
 Category: {meditation_type}
 Intent: {intent}
 Target narration: {target_word_count} words (spoken at 100-115 words per minute)
+
+Here is an example of the tone, rhythm, and emotional depth you should match:
+""" + _GUIDED_EXAMPLE + """
+Now write a reset for this person. Match the example's warmth, specificity, and natural spoken rhythm — but adapt fully for their unique situation.
 
 Structure the reset through these stages in order:
 {sections_with_durations}
