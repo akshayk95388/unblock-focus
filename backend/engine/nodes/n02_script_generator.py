@@ -19,6 +19,7 @@ from engine.prompts.script_prompts import (
     get_prompt_template,
     format_reflection_feedback,
 )
+from engine.prompts.few_shot_library import get_examples, format_examples_block
 from engine.builders.timeline_builder import (
     build_timeline_from_prose,
     parse_llm_json,
@@ -38,14 +39,26 @@ async def script_generator_node(state: MeditationEngineState, config: Optional[d
     script_prompt_template = profile.prompt_template
 
     sections_text = format_sections_for_prompt(state["section_plan"])
-    prompt = script_prompt_template.format(
+
+    # Select golden example(s) matched to this user's category + intent
+    category = state.get("meditation_type", "general")
+    intent = state.get("intent", "work")
+    examples = get_examples(category=category, intent=intent)
+    golden_examples_text = format_examples_block(examples)
+
+    # Build format kwargs — only include golden_examples if the template uses it
+    format_kwargs = dict(
         stressor=state["stressor"],
-        meditation_type=state["meditation_type"],
-        intent=state.get("intent", "work"),
+        meditation_type=category,
+        intent=intent,
         duration_mins=state["duration_mins"],
         sections_with_durations=sections_text,
         target_word_count=state["target_word_count"],
     )
+    if "{golden_examples}" in script_prompt_template:
+        format_kwargs["golden_examples"] = golden_examples_text
+
+    prompt = script_prompt_template.format(**format_kwargs)
 
     # Reflection / Feedback loop: Append previous validation issues if retrying
     issues = state.get("validation_issues", [])
