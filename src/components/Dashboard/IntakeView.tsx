@@ -16,6 +16,7 @@ interface IntakeViewProps {
   zenActive: boolean;
   onToggleZen?: () => void;
   onCancel?: () => void;
+  preset?: string;
 }
 
 export default function IntakeView({
@@ -27,6 +28,7 @@ export default function IntakeView({
   zenActive,
   onToggleZen,
   onCancel,
+  preset,
 }: IntakeViewProps) {
   const [conversation, setConversation] = useState<ConversationMessage[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState("");
@@ -138,6 +140,7 @@ export default function IntakeView({
             intent,
             conversation: conv,
             question_number: qNum,
+            preset: preset || "guided_session",
           }),
           signal: controller.signal,
         });
@@ -308,7 +311,7 @@ export default function IntakeView({
             value={userInput}
             onChange={(e) => setUserInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={isBusy ? "Thinking..." : "Type your answer..."}
+            placeholder={isBusy ? "Thinking..." : (preset === "visualization" ? "Describe your vision..." : "Type your answer...")}
             disabled={isBusy}
             className="w-full px-5 py-3.5 pr-14 bg-surface-container rounded-xl border border-outline-variant/20 text-on-surface placeholder:text-on-surface-variant/70 text-sm focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all disabled:opacity-90"
           />
@@ -342,7 +345,7 @@ export default function IntakeView({
           onClick={onSkip}
           className="text-xs text-on-surface-variant/50 hover:text-on-surface-variant transition-colors cursor-pointer"
         >
-          Skip to session →
+          {preset === "visualization" ? "Skip to visualization →" : "Skip to session →"}
         </button>
       </div>
 

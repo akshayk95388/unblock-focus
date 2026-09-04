@@ -41,6 +41,7 @@ class IntakeAskRequest(BaseModel):
     intent: str
     conversation: List[ConversationMessage] = Field(default_factory=list)
     question_number: int = Field(default=1, ge=1, le=3)
+    preset: str = Field(default="guided_session")
 
 
 # ── POST /api/intake/classify ─────────────────────────────────────────────
@@ -109,6 +110,7 @@ async def intake_ask(request: IntakeAskRequest):
                 intent=request.intent,
                 conversation=conversation_dicts,
                 question_number=request.question_number,
+                preset=request.preset,
             )
 
             # For structured output we can't easily stream token-by-token,

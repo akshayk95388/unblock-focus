@@ -764,7 +764,7 @@ export default function MeditationTab({
 
     // Skip intake for short-form presets (reels, videos) — go straight to generation
     const currentPreset = preset || initialPreset || "guided_session";
-    const skipIntakePresets = ["unblock_reel", "guided_video", "visualization_video", "visualization"];
+    const skipIntakePresets = ["unblock_reel", "guided_video", "visualization_video"];
     if (skipIntakePresets.includes(currentPreset)) {
       handleGenerateWithContext(text);
       return;
@@ -774,6 +774,14 @@ export default function MeditationTab({
     setErrorTitle(null);
     setSessionLogged(false);
     loggedRef.current = false;
+
+    // Visualizations don't need stressor classification — skip straight to intake
+    if (currentPreset === "visualization") {
+      setIntakeCategory("visualization");
+      setIntakeIntent("visualize");
+      setStatus("intake");
+      return;
+    }
 
     try {
       // Classify first to get category context for intake
@@ -1289,6 +1297,7 @@ export default function MeditationTab({
             zenActive={zenActive}
             onToggleZen={onToggleZen}
             onCancel={handleResetAll}
+            preset={preset || initialPreset || "guided_session"}
           />
         )}
 
