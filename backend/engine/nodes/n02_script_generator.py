@@ -19,7 +19,12 @@ from engine.prompts.script_prompts import (
     get_prompt_template,
     format_reflection_feedback,
 )
-from engine.prompts.few_shot_library import get_examples, format_examples_block
+from engine.prompts.few_shot_library import (
+    get_examples,
+    format_examples_block,
+    get_visualization_examples,
+    format_visualization_examples_block,
+)
 from engine.builders.timeline_builder import (
     build_timeline_from_prose,
     parse_llm_json,
@@ -40,11 +45,17 @@ async def script_generator_node(state: MeditationEngineState, config: Optional[d
 
     sections_text = format_sections_for_prompt(state["section_plan"])
 
-    # Select golden example(s) matched to this user's category + intent
+    # Select golden example(s) — visualization presets use their own library
+    preset = state.get("preset", "guided_session")
     category = state.get("meditation_type", "general")
     intent = state.get("intent", "work")
-    examples = get_examples(category=category, intent=intent)
-    golden_examples_text = format_examples_block(examples)
+
+    if preset in ("visualization", "visualization_video"):
+        viz_examples = get_visualization_examples()
+        golden_examples_text = format_visualization_examples_block(viz_examples)
+    else:
+        examples = get_examples(category=category, intent=intent)
+        golden_examples_text = format_examples_block(examples)
 
     # Build format kwargs — only include golden_examples if the template uses it
     format_kwargs = dict(

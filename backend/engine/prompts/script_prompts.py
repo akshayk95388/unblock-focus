@@ -100,6 +100,8 @@ Only sections with breathing in the plan should set breath_cycle."""
 VISUALIZATION_PROMPT = """Write a {duration_mins}-minute goal visualization for someone working toward: "{stressor}"
 Target narration: {target_word_count} words (spoken at 95-105 words per minute)
 
+{golden_examples}
+
 Structure the visualization through these stages in order:
 {sections_with_durations}
 
@@ -223,6 +225,8 @@ Only sections with breathing in the plan should set breath_cycle."""
 
 VISUALIZATION_VIDEO_PROMPT = """Write a {duration_mins}-minute goal visualization video for someone working toward: "{stressor}"
 Target narration: {target_word_count} words (spoken at 95-105 words per minute)
+
+{golden_examples}
 
 This is a YouTube video. The first section must immediately grab the viewer's attention with a single vivid sentence.
 

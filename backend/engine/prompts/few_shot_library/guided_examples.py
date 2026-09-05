@@ -1,9 +1,7 @@
-"""Few-Shot Golden Examples Library.
+"""Guided Session Golden Examples.
 
-Handcrafted reference scripts that teach the LLM tone, rhythm, and
-emotional arc by demonstration.  Each example is keyed by
-(category, intent) so the generator can select the most relevant one
-for a given user's stressor.
+Handcrafted reference scripts keyed by (category, intent) that teach
+the LLM tone, rhythm, and emotional arc for guided reset sessions.
 """
 
 from dataclasses import dataclass
@@ -14,7 +12,7 @@ from typing import List
 
 @dataclass(frozen=True)
 class GoldenExample:
-    """A single handcrafted reference script."""
+    """A single handcrafted reference script (guided sessions)."""
     category: str        # e.g. "deadline", "burnout", "overthinking"
     intent: str          # "work" or "decompress"
     stressor: str        # The fictional stressor used in this example
@@ -22,7 +20,7 @@ class GoldenExample:
 
 
 # ── Golden Scripts ──────────────────────────────────────────────────
-# Format mirrors the existing _GUIDED_EXAMPLE convention:
+# Format:
 #   [section_name]
 #   - Spoken sentence one.
 #   - Spoken sentence two.
@@ -237,7 +235,7 @@ Focus task: Let it go for now
 )
 
 
-# ── Example Registry ────────────────────────────────────────────────
+# ── Registry ────────────────────────────────────────────────────────
 # Keyed by (category, intent).  Adding a new golden example is just
 # one new constant + one new dict entry — no other code changes needed.
 
