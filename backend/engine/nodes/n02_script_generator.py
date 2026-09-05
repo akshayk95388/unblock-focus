@@ -24,6 +24,8 @@ from engine.prompts.few_shot_library import (
     format_examples_block,
     get_visualization_examples,
     format_visualization_examples_block,
+    get_reel_examples,
+    format_reel_examples_block,
 )
 from engine.builders.timeline_builder import (
     build_timeline_from_prose,
@@ -53,7 +55,11 @@ async def script_generator_node(state: MeditationEngineState, config: Optional[d
     if preset in ("visualization", "visualization_video"):
         viz_examples = get_visualization_examples()
         golden_examples_text = format_visualization_examples_block(viz_examples)
+    elif preset == "unblock_reel":
+        reel_examples = get_reel_examples(category=category, intent=intent)
+        golden_examples_text = format_reel_examples_block(reel_examples)
     else:
+        # guided_session and guided_video share the same guided examples
         examples = get_examples(category=category, intent=intent)
         golden_examples_text = format_examples_block(examples)
 

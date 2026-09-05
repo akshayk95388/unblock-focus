@@ -143,6 +143,8 @@ Category: {meditation_type}
 Intent: {intent}
 Target narration: {target_word_count} words (spoken at 130-140 words per minute)
 
+{golden_examples}
+
 Structure the reset through these stages in order:
 {sections_with_durations}
 
@@ -173,6 +175,8 @@ GUIDED_VIDEO_PROMPT = """Write a {duration_mins}-minute mental reset video for s
 Category: {meditation_type}
 Intent: {intent}
 Target narration: {target_word_count} words (spoken at 100-115 words per minute)
+
+{golden_examples}
 
 This is a YouTube video. The first section must immediately grab the viewer's attention with a single crisp sentence.
 
